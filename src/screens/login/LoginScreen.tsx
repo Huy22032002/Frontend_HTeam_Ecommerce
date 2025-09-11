@@ -9,9 +9,6 @@ import {
   Stack,
 } from "@mui/material";
 
-const BASE_URL = import.meta.env.VITE_BASE_URL;
-const FB_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID;
-
 // icons
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import LockIcon from "@mui/icons-material/Lock";
@@ -20,10 +17,13 @@ import Visibility from "@mui/icons-material/Visibility";
 import LoginIcon from "@mui/icons-material/Login";
 import GoogleIcon from "@mui/icons-material/Google";
 //components
-import FBLoginButton from "../../components/button/btnLogin";
+import SocialLogin from "../../components/button/SocialLogin";
+import useLogin from "./Login.hook";
 
 const LoginScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
+
+  const { handleLoginFB } = useLogin();
 
   return (
     <Box
@@ -93,7 +93,11 @@ const LoginScreen = () => {
       </Button>
       {/* login with fb, gg */}
       <Stack direction="row" spacing={2}>
-        <FBLoginButton appId={FB_APP_ID} backendEndpoint={BASE_URL} />
+        {/* Facebook login */}
+        <SocialLogin
+          provider="facebook"
+          onLogin={(res) => handleLoginFB(res.authResponse.accessToken)}
+        />
 
         <Button variant="outlined" startIcon={<GoogleIcon />}>
           Google
