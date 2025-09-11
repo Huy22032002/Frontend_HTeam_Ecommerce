@@ -12,15 +12,20 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 
 import Topbar from "./components/Topbar";
 
+//screens
+import LoginScreen from "./screens/login/LoginScreen";
+
 function AppContent() {
   const location = useLocation();
-  const hideLayout = location.pathname === "/";
+  const hideLayout = location.pathname === "/login";
 
   return (
     <div className="app">
       <main className="content">
         {!hideLayout && <Topbar />}
-        <Routes></Routes>
+        <Routes>
+          <Route path="/login" element={<LoginScreen />} />
+        </Routes>
       </main>
     </div>
   );
