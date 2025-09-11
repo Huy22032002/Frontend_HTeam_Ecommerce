@@ -14,6 +14,7 @@ import Topbar from "./components/Topbar";
 
 //screens
 import LoginScreen from "./screens/login/LoginScreen";
+import HomeScreen from "./screens/home/HomeScreen";
 
 function AppContent() {
   const location = useLocation();
@@ -25,6 +26,7 @@ function AppContent() {
         {!hideLayout && <Topbar />}
         <Routes>
           <Route path="/login" element={<LoginScreen />} />
+          <Route path="/" element={<HomeScreen />} />
         </Routes>
       </main>
     </div>
