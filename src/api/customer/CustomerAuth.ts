@@ -22,12 +22,23 @@ export const loginFacebook = async (
     );
 
     const loginResponse: LoginResponse = r.data;
-    localStorage.setItem("token", loginResponse.token);
-    localStorage.setItem("id", loginResponse.id.toString());
 
+    if (loginResponse) {
+      localStorage.setItem("token", loginResponse.token);
+      localStorage.setItem("id", loginResponse.id.toString());
+    }
     return loginResponse;
-  } catch (err: any) {
-    console.error("FB Backend login failed", err.response?.data || err.message);
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      console.error(
+        "OAuth2 Backend login failed",
+        err.response?.data || err.message
+      );
+    } else if (err instanceof Error) {
+      console.error("OAuth2 Backend login failed", err.message);
+    } else {
+      console.error("OAuth2 Backend login failed", String(err));
+    }
     throw err;
   }
 };
@@ -43,12 +54,20 @@ export const login = async (authRequest: AuthRequest) => {
       }
     );
     const loginResponse: LoginResponse = r.data;
-    localStorage.setItem("token", loginResponse.token);
-    localStorage.setItem("id", loginResponse.id.toString());
+    if (loginResponse) {
+      localStorage.setItem("token", loginResponse.token);
+      localStorage.setItem("id", loginResponse.id.toString());
+    }
 
     return loginResponse;
-  } catch (err: any) {
-    console.error("FB Backend login failed", err.response?.data || err.message);
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      console.error("Backend login failed", err.response?.data || err.message);
+    } else if (err instanceof Error) {
+      console.error("Backend login failed", err.message);
+    } else {
+      console.error("Backend login failed", String(err));
+    }
     throw err;
   }
 };
@@ -69,12 +88,23 @@ export const loginGoogle = async (jwtGoogleToken: string) => {
     );
 
     const loginResponse: LoginResponse = r.data;
-    localStorage.setItem("token", loginResponse.token);
-    localStorage.setItem("id", loginResponse.id.toString());
+    if (loginResponse) {
+      localStorage.setItem("token", loginResponse.token);
+      localStorage.setItem("id", loginResponse.id.toString());
+    }
 
     return loginResponse;
-  } catch (err: any) {
-    console.error("GG Backend login failed", err.response?.data || err.message);
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      console.error(
+        "OAuth2 Backend login failed",
+        err.response?.data || err.message
+      );
+    } else if (err instanceof Error) {
+      console.error("OAuth2 Backend login failed", err.message);
+    } else {
+      console.error("OAuth2 Backend login failed", String(err));
+    }
     throw err;
   }
 };

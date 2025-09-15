@@ -20,10 +20,13 @@ import Visibility from "@mui/icons-material/Visibility";
 import LoginIcon from "@mui/icons-material/Login";
 //components
 import SocialLogin from "../../components/button/SocialLogin";
+import ErrorPopup from "../../components/ErrorPopup";
+
 //hooks
 import useLogin from "./Login.hook";
 import { tokens } from "../../theme/theme";
-import ErrorPopup from "../../components/ErrorPopup";
+import AuthLayout from "../../components/auth/Layout";
+import { Link } from "react-router-dom";
 
 const LoginScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -48,130 +51,145 @@ const LoginScreen = () => {
   const colors = tokens(theme.palette.mode);
 
   return (
-    <Box
-      component="form"
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 2,
-        width: "70%",
-        borderRadius: 3,
-        padding: 4,
-        "& > *": {
-          width: "90%", // tất cả con đều 90%
-        },
-      }}
-    >
-      <Typography mb={2} variant="h3">
-        Đăng nhập
-      </Typography>
-
-      {/* Username */}
-      <TextField
-        required
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        label="Tên đăng nhập"
-        variant="outlined"
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <AccountCircle sx={{ color: colors.primary[100] }} />
-              </InputAdornment>
-            ),
-          },
-        }}
-      />
-
-      {/* Password */}
-      <TextField
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-        label="Mật khẩu"
-        type={showPassword ? "text" : "password"}
-        variant="outlined"
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <LockIcon sx={{ color: colors.primary[100] }} />
-              </InputAdornment>
-            ),
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  edge="end"
-                >
-                  {showPassword ? (
-                    <Visibility sx={{ color: colors.primary[100] }} />
-                  ) : (
-                    <VisibilityOff />
-                  )}
-                </IconButton>
-              </InputAdornment>
-            ),
-          },
-        }}
-      />
-      {/* button login */}
-      <Button
+    <AuthLayout screenName="login">
+      <Box
+        component="form"
         sx={{
-          backgroundColor: colors.redAccent[500],
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 2,
+          width: "480px",
+          borderRadius: 3,
+          padding: 4,
+          "& > *": {
+            width: "90%", // tất cả con đều 90%
+          },
+          background: "white",
         }}
-        variant="contained"
-        startIcon={<LoginIcon />}
-        onClick={handleLogin}
       >
-        ĐĂNG NHẬP
-      </Button>
-      {/* forget password */}
-      <Button
-        variant="text"
-        size="small"
-        sx={{ textAlign: "left", color: colors.blueAccent[500] }}
-      >
-        Quên mật khẩu
-      </Button>
-      {/* login with fb, gg */}
-      <Stack direction="row" spacing={2}>
-        {/* Facebook login */}
-        <SocialLogin
-          provider="facebook"
-          onLogin={(res) => handleLoginFB(res.authResponse.accessToken)}
+        <Typography mb={2} variant="h3">
+          Đăng nhập
+        </Typography>
+
+        {/* Username */}
+        <TextField
+          required
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          label="Tên đăng nhập"
+          variant="outlined"
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <AccountCircle sx={{ color: colors.primary[100] }} />
+                </InputAdornment>
+              ),
+            },
+          }}
         />
 
-        <SocialLogin
-          provider="google"
-          onLogin={(res) => handleLoginGG(res.credential)}
+        {/* Password */}
+        <TextField
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          label="Mật khẩu"
+          type={showPassword ? "text" : "password"}
+          variant="outlined"
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <LockIcon sx={{ color: colors.primary[100] }} />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    edge="end"
+                  >
+                    {showPassword ? (
+                      <Visibility sx={{ color: colors.primary[100] }} />
+                    ) : (
+                      <VisibilityOff />
+                    )}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
+          }}
         />
-      </Stack>
+        {/* button login */}
+        <Button
+          sx={{
+            backgroundColor: colors.redAccent[500],
+          }}
+          variant="contained"
+          startIcon={<LoginIcon />}
+          onClick={handleLogin}
+        >
+          ĐĂNG NHẬP
+        </Button>
 
-      {/* snackbar when login success  */}
-      <Snackbar
-        open={success}
-        autoHideDuration={3000}
-        onClose={() => setSuccess(false)}
-      >
-        <Alert severity="success" variant="filled" sx={{ width: "100%" }}>
-          Đăng nhập thành công
-        </Alert>
-      </Snackbar>
+        {/* forget password */}
+        <Typography>
+          <Link
+            style={{
+              color: colors.blueAccent[500],
+              fontSize: 14,
+              textDecoration: "none",
+            }}
+            to="/forget-password"
+          >
+            Quên mật khẩu
+          </Link>
+        </Typography>
 
-      {/* error */}
-      <ErrorPopup
-        open={error}
-        errorMessage={messsage}
-        onClose={() => setError(false)}
-      />
+        {/* login with fb, gg */}
+        <Stack direction="row" spacing={2}>
+          {/* Facebook login */}
+          <SocialLogin
+            provider="facebook"
+            onLogin={(res) => handleLoginFB(res.authResponse.accessToken)}
+          />
 
-      {/* sign up */}
-      <Typography>Chưa có tài khoản? Đăng ký</Typography>
-    </Box>
+          <SocialLogin
+            provider="google"
+            onLogin={(res) => handleLoginGG(res.credential)}
+          />
+        </Stack>
+
+        {/* snackbar when login success  */}
+        <Snackbar
+          open={success}
+          autoHideDuration={3000}
+          onClose={() => setSuccess(false)}
+        >
+          <Alert severity="success" variant="filled" sx={{ width: "100%" }}>
+            Đăng nhập thành công
+          </Alert>
+        </Snackbar>
+
+        {/* error */}
+        <ErrorPopup
+          open={error}
+          errorMessage={messsage}
+          onClose={() => setError(false)}
+        />
+
+        {/* sign up */}
+        <Typography sx={{ color: colors.grey[600] }}>
+          Chưa có tài khoản?{" "}
+          <Link style={{ color: "red", textDecoration: "none" }} to="/signup">
+            Đăng ký
+          </Link>
+        </Typography>
+      </Box>
+    </AuthLayout>
   );
 };
 

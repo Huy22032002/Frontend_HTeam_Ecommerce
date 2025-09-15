@@ -41,11 +41,15 @@ const useLogin = () => {
       setTimeout(() => {
         navigate("/");
       }, 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setSuccess(false);
-      setError(true);
       setLoading(false);
-      setMessage(err.message || "Đăng nhập thất bại");
+      if (err instanceof Error) {
+        setError(true);
+        setMessage(err.message || "Đăng nhập thất bại");
+      } else {
+        setMessage("Đã xảy ra lỗi không xác định");
+      }
     }
   };
 
@@ -74,11 +78,15 @@ const useLogin = () => {
       setTimeout(() => {
         navigate("/");
       }, 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setSuccess(false);
-      setError(true);
       setLoading(false);
-      setMessage(err.message || "Đăng nhập thất bại");
+      if (err instanceof Error) {
+        setError(true);
+        setMessage(err.message || "Đăng nhập thất bại");
+      } else {
+        setMessage("Đã xảy ra lỗi không xác định");
+      }
     }
   };
 
@@ -102,11 +110,15 @@ const useLogin = () => {
       setTimeout(() => {
         navigate("/");
       }, 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setSuccess(false);
-      setError(true);
       setLoading(false);
-      setMessage(err.message || "Đăng nhập thất bại");
+      if (err instanceof Error) {
+        setError(true);
+        setMessage(err.message || "Đăng nhập thất bại");
+      } else {
+        setMessage("Đã xảy ra lỗi không xác định");
+      }
     }
   };
 
