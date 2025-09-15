@@ -62,6 +62,16 @@ export const tokens = (mode: Mode) => ({
           800: "#2a2d64",
           900: "#151632",
         },
+        brandColors: {
+          primary: {
+            main: "#6366F1",
+            700: "#4338CA",
+          },
+          secondary: {
+            main: "#EC4899",
+            300: "#F9A8D4",
+          },
+        },
       }
     : {
         grey: {
@@ -118,6 +128,16 @@ export const tokens = (mode: Mode) => ({
           700: "#a4a9fc",
           800: "#c3c6fd",
           900: "#e1e2fe",
+        },
+        brandColors: {
+          primary: {
+            main: "#6366F1",
+            700: "#A5B4FC",
+          },
+          secondary: {
+            main: "#EC4899",
+            300: "#BE185D",
+          },
         },
       }),
 });

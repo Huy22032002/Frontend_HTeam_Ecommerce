@@ -14,10 +14,15 @@ import Topbar from "./components/Topbar";
 
 //screens
 import LoginScreen from "./screens/login/LoginScreen";
+import SignupScreen from "./screens/signup/SignupScreen";
+import HomeScreen from "./screens/home/HomeScreen";
 
 function AppContent() {
   const location = useLocation();
-  const hideLayout = location.pathname === "/login";
+  const hideLayout =
+    location.pathname === "/login" ||
+    location.pathname === "/signup" ||
+    location.pathname === "/forget-password";
 
   return (
     <div className="app">
@@ -25,6 +30,8 @@ function AppContent() {
         {!hideLayout && <Topbar />}
         <Routes>
           <Route path="/login" element={<LoginScreen />} />
+          <Route path="/signup" element={<SignupScreen />} />
+          <Route path="/" element={<HomeScreen />} />
         </Routes>
       </main>
     </div>

@@ -10,7 +10,7 @@ export const providers = {
       window.google.accounts.id.renderButton(buttonRef, {
         theme: "filled_blue",
         size: "large",
-        width: "250",
+        width: "160",
       });
     },
   },
