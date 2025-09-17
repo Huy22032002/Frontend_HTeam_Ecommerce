@@ -62,13 +62,8 @@ export const login = async (authRequest: AuthRequest) => {
     return loginResponse;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
-      console.error("Backend login failed", err.response?.data || err.message);
-    } else if (err instanceof Error) {
-      console.error("Backend login failed", err.message);
-    } else {
-      console.error("Backend login failed", String(err));
+      throw err.response?.data;
     }
-    throw err;
   }
 };
 

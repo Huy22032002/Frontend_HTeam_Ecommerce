@@ -16,7 +16,6 @@ const HeaderAuth: React.FC<HeaderAuthProps> = (props) => {
       sx={{
         width: "100%",
         minHeight: "80px",
-        // background: colors.primary[900],
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
@@ -26,7 +25,7 @@ const HeaderAuth: React.FC<HeaderAuthProps> = (props) => {
     >
       <Typography
         sx={{
-          color: colors.brandColors.primary.main,
+          color: colors.greenAccent[100],
           fontWeight: "bold",
           fontSize: 32,
         }}

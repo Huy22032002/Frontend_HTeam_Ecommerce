@@ -65,7 +65,7 @@ const useLogin = () => {
     try {
       const loginResponse = await login(data);
 
-      if (loginResponse == null) {
+      if (!loginResponse) {
         setSuccess(false);
         setError(true);
         setLoading(false);
@@ -78,15 +78,11 @@ const useLogin = () => {
       setTimeout(() => {
         navigate("/");
       }, 1500);
-    } catch (err: unknown) {
+    } catch (err: any) {
       setSuccess(false);
       setLoading(false);
-      if (err instanceof Error) {
-        setError(true);
-        setMessage(err.message || "Đăng nhập thất bại");
-      } else {
-        setMessage("Đã xảy ra lỗi không xác định");
-      }
+      setError(true);
+      setMessage(err.errorMessage);
     }
   };
 

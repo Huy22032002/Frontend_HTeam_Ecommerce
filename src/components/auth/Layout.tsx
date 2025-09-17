@@ -26,9 +26,29 @@ const AuthLayout = ({ children, screenName }: AuthLayoutProps) => {
         subtitle={screenName === "login" ? "Đăng nhập" : "Đăng ký"}
       />
 
-      {/* Form */}
-      <Box sx={{ flex: 1, background: colors.brandColors.primary[700] }}>
-        {children}
+      {/* Form & banner*/}
+      <Box sx={{ flex: 1, display: "flex" }}>
+        {/* Banner bên trái */}
+        <Box
+          sx={{
+            flex: 1,
+            background: colors.greenAccent[100],
+            //background: "url(/banner.png) center/cover no-repeat",
+          }}
+        />
+
+        {/* Form bên phải */}
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-start",
+            background: colors.greenAccent[100],
+          }}
+        >
+          {children}
+        </Box>
       </Box>
     </Box>
   );

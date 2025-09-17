@@ -66,7 +66,7 @@ const LoginScreen = () => {
           "& > *": {
             width: "90%", // tất cả con đều 90%
           },
-          background: "white",
+          background: colors.greenAccent[900],
         }}
       >
         <Typography mb={2} variant="h3">
