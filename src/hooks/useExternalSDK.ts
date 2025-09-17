@@ -1,0 +1,17 @@
+import { useEffect } from "react";
+
+export function useExternalSDK(url: string, onload: () => void) {
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = url;
+    script.async = true;
+    script.defer = true;
+    script.onload = onload;
+
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, [url, onload]);
+}
