@@ -9,13 +9,14 @@ export const fetchListCategories = async () => {
       `${backendEndpoint}/api/public/categories`
     );
 
-    if (response.data) {
-      return response.data || [];
+    if (Array.isArray(response.data)) {
+      return response.data;
     }
     return [];
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
       throw err.response?.data;
     }
+    return [];
   }
 };
