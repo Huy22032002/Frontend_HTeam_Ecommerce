@@ -19,7 +19,23 @@ const Topbar: React.FC = () => {
   const colorMode = useContext(ColorModeContext);
 
   return (
-    <Box display="flex" justifyContent="space-between" p={2}>
+    <Box
+      bgcolor={colors.greenAccent[900]}
+      display="flex"
+      justifyContent="space-between"
+      p={2}
+    >
+      {/* logo */}
+      <img
+        height="40px"
+        src="/src/assets/logo.png"
+        alt="Banner"
+        style={{
+          objectFit: "cover",
+          borderRadius: "20px",
+        }}
+      />
+
       {/* SEARCH BAR */}
       <Box display="flex" bgcolor={colors.primary[400]} borderRadius="3px">
         <InputBase sx={{ ml: 2, flex: 1 }} placeholder="Search" />

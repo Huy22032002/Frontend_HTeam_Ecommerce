@@ -5,6 +5,7 @@ import {
   CardMedia,
   Typography,
   useTheme,
+  Box,
 } from "@mui/material";
 import type { Category } from "../models/catalogs/Category";
 import { tokens } from "../theme/theme";
@@ -17,33 +18,54 @@ const CategoryItem = ({ category }: { category: Category }) => {
     <Card
       sx={{
         maxWidth: 160,
-        maxHeight: 169,
         background: "transparent",
         boxShadow: "none",
-        "&:hover": {
-          background: colors.greenAccent[500],
-          textDecoration: "underline",
-        },
       }}
     >
-      <CardActionArea>
-        <CardMedia
-          component="img"
-          className="card-media"
-          image={category.imageUrl}
-          title={category.code}
+      <CardActionArea
+        sx={{
+          textAlign: "center",
+          "&:hover .category-name": {
+            textDecoration: "underline",
+          },
+        }}
+      >
+        {/* wrapper cho image */}
+        <Box
           sx={{
-            height: 100,
-            objectFit: "contain", // hình không bị méo
+            borderRadius: 2,
             p: 1,
-            transition: "transform 0.4s ease", // mượt khi hover
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: 100,
             "&:hover": {
-              transform: "rotate(4deg)",
+              background: colors.greenAccent[500],
             },
           }}
-        />
-        <CardContent>
-          <Typography variant="subtitle1" align="center" fontWeight="bold">
+        >
+          <CardMedia
+            component="img"
+            image={category.imageUrl}
+            title={category.code}
+            sx={{
+              maxHeight: "80px",
+              objectFit: "contain",
+              padding: "8px",
+              "&:hover": {
+                transform: "rotate(8deg)",
+                transition: "all 0.3s ease",
+              },
+            }}
+          />
+        </Box>
+
+        <CardContent sx={{ p: 1 }}>
+          <Typography
+            className="category-name"
+            variant="subtitle1"
+            fontWeight="bold"
+          >
             {category.name}
           </Typography>
         </CardContent>

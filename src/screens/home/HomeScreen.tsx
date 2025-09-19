@@ -1,4 +1,4 @@
-import { Box, useTheme } from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import useHome from "./Home.hook";
 import CategoryItem from "../../components/CategoryItem";
 import { useEffect } from "react";
@@ -39,8 +39,23 @@ const HomeScreen = () => {
       </Box>
 
       {/* category */}
-      {categories.length > 0 &&
-        categories.map((c) => <CategoryItem key={c.id} category={c} />)}
+      <Typography fontWeight="bold" textAlign="start" variant="h2">
+        Danh mục nổi bật
+      </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 3,
+          justifyContent: "center",
+          mt: 2,
+        }}
+      >
+        {categories.map((c) => (
+          <CategoryItem key={c.id} category={c} />
+        ))}
+      </Box>
+
       {/* suggestion */}
       {/* products */}
       {/* footer */}
