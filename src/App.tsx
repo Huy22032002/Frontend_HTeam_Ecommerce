@@ -30,6 +30,8 @@ import PartnerListScreen from "./screens/partners/PartnerListScreen";
 import WarrantyScreen from "./screens/warranty/WarrantyScreen";
 import PageListScreen from "./screens/pages/PageListScreen";
 import PromotionListScreen from "./screens/promotions/PromotionListScreen";
+import InvoiceListScreen from "./screens/transactions/InvoiceListScreen";
+import PaymentListScreen from "./screens/transactions/PaymentListScreen";
 
 function AppContent() {
   const location = useLocation();
@@ -44,6 +46,8 @@ function AppContent() {
   location.pathname.startsWith("/products") ||
   location.pathname.startsWith("/categories") ||
   location.pathname.startsWith("/orders") ||
+  location.pathname.startsWith("/invoices") ||
+  location.pathname.startsWith("/payments") ||
   location.pathname.startsWith("/shipments") ||
   location.pathname.startsWith("/returns") ||
   location.pathname.startsWith("/warehouse") ||
@@ -68,6 +72,8 @@ function AppContent() {
           <Route path="/products" element={<ProductListScreen />} />
           <Route path="/categories" element={<CategoryListScreen />} />
           <Route path="/orders" element={<OrderListScreen />} />
+          <Route path="/invoices" element={<InvoiceListScreen />} />
+          <Route path="/payments" element={<PaymentListScreen />} />
           <Route path="/shipments" element={<ShipmentListScreen />} />
           <Route path="/returns" element={<ReturnListScreen />} />
           <Route path="/warehouse" element={<WarehouseScreen />} />

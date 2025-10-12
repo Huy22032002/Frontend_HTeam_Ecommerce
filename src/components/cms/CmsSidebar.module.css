@@ -1,0 +1,90 @@
+.sidebarRoot {
+  width: 250px;
+  flex-shrink: 0;
+  border-right: 1.5px solid var(--mui-palette-divider, #e0e0e0);
+  height: 100%;
+  overflow-y: auto;
+  background: var(--mui-palette-background-paper, #fff);
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
+  border-radius: 18px;
+  margin: 8px;
+  padding: 8px;
+  min-height: 96vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebarHeader {
+  padding: 16px 16px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  background: var(--mui-palette-primary-main, #1976d2);
+  color: var(--mui-palette-primary-contrastText, #fff);
+  box-shadow: 0 2px 8px 0 rgba(25, 118, 210, 0.12);
+  text-align: center;
+}
+
+.sidebarTitle {
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  font-family: 'Lato', sans-serif;
+}
+
+.sidebarNavItem {
+  padding-left: 16px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  transition: all 0.18s;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--mui-palette-text-primary, #222);
+  background: transparent;
+}
+
+.sidebarNavItemActive {
+  background: var(--mui-palette-primary-100, #e3f2fd);
+  color: var(--mui-palette-primary-main, #1976d2);
+  font-weight: 700;
+}
+
+.sidebarNavItem:hover {
+  background: var(--mui-palette-primary-50, #e3f2fd);
+  color: var(--mui-palette-primary-main, #1976d2);
+  box-shadow: 0 2px 8px 0 rgba(25, 118, 210, 0.08);
+  transform: translateX(2px) scale(1.03);
+}
+
+.sidebarIcon {
+  font-size: 1.4rem;
+  width: 34px;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebarNavChild {
+  padding-left: 48px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+  color: var(--mui-palette-text-secondary, #666);
+  background: transparent;
+  transition: all 0.18s;
+}
+
+.sidebarNavChildActive {
+  background: var(--mui-palette-primary-50, #e3f2fd);
+  color: var(--mui-palette-primary-main, #1976d2);
+  font-weight: 700;
+}
+
+.sidebarNavChild:hover {
+  background: var(--mui-palette-primary-100, #bbdefb);
+  color: var(--mui-palette-primary-main, #1976d2);
+  box-shadow: 0 1px 4px 0 rgba(25, 118, 210, 0.08);
+  transform: translateX(2px) scale(1.03);
+}
