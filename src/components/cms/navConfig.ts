@@ -20,7 +20,9 @@ export const cmsNav: CmsNavItem[] = [
     ] },
   { key: 'giaodich', label: 'Giao dịch', icon: '📄', children: [
       { key: 'orders', label: 'Đơn hàng', path: '/orders' },
-      { key: 'shipments', label: 'Chuyển hàng', path: '/shipments' },
+      { key: 'invoices', label: 'Hóa đơn', icon: '🧾', path: '/invoices' },
+      { key: 'payments', label: 'Thanh toán', icon: '💳', path: '/payments' },
+      { key: 'shipments', label: 'Vận chuyển', path: '/shipments' },
       { key: 'returns', label: 'Đổi trả hàng', path: '/returns' },
     ] },
   { key: 'khokd', label: 'Kho không kinh doanh', icon: '📦', children: [

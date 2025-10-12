@@ -1,44 +1,99 @@
-import { Box, Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip, Button } from '@mui/material';
+import React from 'react';
+import { Box, Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip, Button, Collapse, IconButton } from '@mui/material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { CmsLayout } from '../../components/cms/CmsLayout';
+import { useProducts } from '../../hooks/useProducts';
+import type { Product } from '../../models/catalogs/Product';
+import type { ProductVariant } from '../../models/catalogs/ProductVariant';
 
-// Placeholder product list to be replaced by API
-const products = [
-  { id: 'P1001', name: 'Laptop ABC', price: 25990000, stock: 12, status: 'ACTIVE', category: 'Laptop' },
-  { id: 'P1002', name: 'Chuột Gaming XYZ', price: 799000, stock: 34, status: 'ACTIVE', category: 'Phụ kiện' },
-  { id: 'P1003', name: 'Bàn phím cơ 87 phím', price: 1599000, stock: 0, status: 'OUT', category: 'Phụ kiện' },
-];
+const getStatus = (p: Product) => {
+  if (p.available === false) return 'OUT';
+  return 'ACTIVE';
+};
+
 
 const ProductListScreen = () => {
+  const { products, loading, error } = useProducts();
+  // State để theo dõi sản phẩm nào đang mở variants
+  const [openRow, setOpenRow] = React.useState<number | null>(null);
+
   return (
     <CmsLayout>
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
         <Typography variant="h4" fontWeight={600}>Danh sách sản phẩm</Typography>
         <Button variant="contained" size="small">+ Thêm</Button>
       </Box>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>Mã</TableCell>
-            <TableCell>Tên</TableCell>
-            <TableCell>Danh mục</TableCell>
-            <TableCell align="right">Giá</TableCell>
-            <TableCell>Kho</TableCell>
-            <TableCell>Trạng thái</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {products.map(p => (
-            <TableRow key={p.id} hover>
-              <TableCell>{p.id}</TableCell>
-              <TableCell>{p.name}</TableCell>
-              <TableCell>{p.category}</TableCell>
-              <TableCell align="right">{p.price.toLocaleString()}₫</TableCell>
-              <TableCell>{p.stock}</TableCell>
-              <TableCell><Chip size="small" color={p.status === 'ACTIVE' ? 'success' : 'default'} label={p.status === 'OUT' ? 'Hết hàng' : 'Đang bán'} /></TableCell>
+      {loading ? (
+        <Typography>Đang tải sản phẩm...</Typography>
+      ) : error ? (
+        <Typography color="error">Lỗi: {String(error)}</Typography>
+      ) : (
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell />
+              <TableCell>ID</TableCell>
+              <TableCell>Tên sản phẩm</TableCell>
+              <TableCell>Danh mục</TableCell>
+              <TableCell>Loại</TableCell>
+              <TableCell>Trạng thái</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHead>
+          <TableBody>
+            {products.map((p) => (
+              <React.Fragment key={p.id}>
+                <TableRow hover>
+                  <TableCell>
+                    <IconButton size="small" onClick={() => setOpenRow(openRow === p.id ? null : p.id)}>
+                      <KeyboardArrowDownIcon style={{ transform: openRow === p.id ? 'rotate(180deg)' : undefined }} />
+                    </IconButton>
+                  </TableCell>
+                  <TableCell>{p.id}</TableCell>
+                  <TableCell>{p.productName}</TableCell>
+                  <TableCell>{p.listCategories?.map((c: { name: string }) => c.name).join(', ')}</TableCell>
+                  <TableCell>{p.productType}</TableCell>
+                  <TableCell>
+                    <Chip size="small" color={getStatus(p) === 'ACTIVE' ? 'success' : 'default'} label={getStatus(p) === 'OUT' ? 'Hết hàng' : 'Đang bán'} />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+                    <Collapse in={openRow === p.id} timeout="auto" unmountOnExit>
+                      <Box margin={1}>
+                        <Typography variant="subtitle1" gutterBottom>Biến thể (Variants):</Typography>
+                        <Table size="small">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>SKU</TableCell>
+                              <TableCell>Mặc định</TableCell>
+                              <TableCell>Options</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {(p.variants || []).map((v: ProductVariant) => (
+                              <TableRow key={v.id}>
+                                <TableCell>{v.sku}</TableCell>
+                                <TableCell>{v.defaultSelection ? '✔' : ''}</TableCell>
+                                <TableCell>
+                                  {(v.options || []).map((opt: any, idx: number) => (
+                                    <span key={idx} style={{ marginRight: 8 }}>
+                                      {opt.name || opt.color || ''} ({opt.sku || ''})
+                                    </span>
+                                  ))}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </Box>
+                    </Collapse>
+                  </TableCell>
+                </TableRow>
+              </React.Fragment>
+            ))}
+          </TableBody>
+        </Table>
+      )}
     </CmsLayout>
   );
 };
