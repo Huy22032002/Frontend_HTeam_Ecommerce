@@ -1,0 +1,14 @@
+.swiper-button-prev,
+.swiper-button-next {
+  color: white;
+  background-color: rgba(0, 0, 0, 0.4); /* nền mờ */
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  padding: 8px;
+}
+
+.swiper-button-prev:hover,
+.swiper-button-next:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+}

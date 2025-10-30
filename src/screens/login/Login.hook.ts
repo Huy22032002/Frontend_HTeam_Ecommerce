@@ -28,12 +28,10 @@ const useLogin = () => {
       if (loginResponse == null) {
         console.log(loginResponse);
 
-        setSuccess(false);
         setError(true);
         setLoading(false);
         return;
       }
-
       setLoading(false);
       setSuccess(true);
 
@@ -89,6 +87,8 @@ const useLogin = () => {
   const handleLoginGG = async (jwtGoogleToken: string) => {
     setLoading(true);
     setSuccess(false);
+
+    console.log("jwt Google: ", jwtGoogleToken);
 
     try {
       const loginResponse = await loginGoogle(jwtGoogleToken);

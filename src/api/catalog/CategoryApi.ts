@@ -1,17 +1,24 @@
-import axios from 'axios';
-import type { Category } from '../../models/catalogs/Category';
+import axios from "axios";
+import type { Category } from "../../models/catalogs/Category";
 
-const API_BASE = import.meta.env.VITE_BASE_URL + '/api/categories';
+const API_BASE = import.meta.env.VITE_BASE_URL + "/api";
 
 function getAuthHeader() {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 export const CategoryApi = {
   // Lấy danh sách danh mục (có phân trang)
   getAll: (page = 0, size = 20) =>
-    axios.get(`${API_BASE}?page=${page}&size=${size}`, { headers: getAuthHeader() }),
+    axios.get(`${API_BASE}/public/categories?page=${page}&size=${size}`, {
+      headers: getAuthHeader(),
+    }),
+
+  getAllNoPaging: () =>
+    axios.get(`${API_BASE}/public/categories`, {
+      headers: getAuthHeader(),
+    }),
 
   // Lấy chi tiết danh mục theo id
   getById: (id: string) =>

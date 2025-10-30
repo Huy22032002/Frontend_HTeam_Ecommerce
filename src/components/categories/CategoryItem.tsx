@@ -7,8 +7,8 @@ import {
   useTheme,
   Box,
 } from "@mui/material";
-import type { Category } from "../models/catalogs/Category";
-import { tokens } from "../theme/theme";
+import type { Category } from "../../models/catalogs/Category";
+import { tokens } from "../../theme/theme";
 
 const CategoryItem = ({ category }: { category: Category }) => {
   const theme = useTheme();
@@ -34,11 +34,11 @@ const CategoryItem = ({ category }: { category: Category }) => {
         <Box
           sx={{
             borderRadius: 2,
-            p: 1,
+            p: 4,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            height: 100,
+            minHeight: 100,
             "&:hover": {
               background: colors.greenAccent[500],
             },

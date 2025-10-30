@@ -1,17 +1,33 @@
-import { Box, Typography, useTheme } from "@mui/material";
-import useHome from "./Home.hook";
-import CategoryItem from "../../components/CategoryItem";
+import { Box, Button, Typography, useTheme } from "@mui/material";
+import CategoryItem from "../../components/categories/CategoryItem";
 import { useEffect } from "react";
 import { tokens } from "../../theme/theme";
+//components
+import Footer from "../../components/Footer";
+//hooks
+import useHome from "./Home.hook";
+import ProductVariantList from "../../components/product/ProductVariantsList";
+import type { ProductVariants } from "../../models/products/ProductVariant";
+import BannerSlider from "../../models/BannerSlider";
 
 const HomeScreen = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
-  const { categories, getAllCategories } = useHome();
+  const {
+    //categories
+    categories,
+    getAllCategories,
+    //search
+    listTopSearch,
+    //products
+    suggestProducts,
+    getAllSuggestProducts,
+  } = useHome();
 
   useEffect(() => {
     getAllCategories();
+    getAllSuggestProducts();
   }, []);
 
   return (
@@ -22,23 +38,16 @@ const HomeScreen = () => {
         flexDirection: "column",
         alignItems: "center",
         background: colors.greenAccent[900],
+        gap: 2,
       }}
     >
       {/* header */}
       {/* banner */}
       <Box sx={{ width: "100%", maxWidth: 1200, mb: 4 }}>
-        <img
-          src="/src/assets/banner.jpg"
-          alt="Banner"
-          style={{
-            width: "100%",
-            borderRadius: 8,
-            objectFit: "cover",
-          }}
-        />
+        <BannerSlider />
       </Box>
 
-      {/* category */}
+      {/* highlights category */}
       <Typography fontWeight="bold" textAlign="start" variant="h2">
         Danh mục nổi bật
       </Typography>
@@ -57,8 +66,34 @@ const HomeScreen = () => {
       </Box>
 
       {/* suggestion */}
-      {/* products */}
+      {suggestProducts && (
+        <ProductVariantList data={suggestProducts as ProductVariants[]} />
+      )}
+
+      {/* top searchs */}
+      <Box
+        px={{ xs: 2, sm: 8, md: 16, lg: 26 }}
+        sx={{ alignSelf: "flex-start" }}
+      >
+        <Typography fontWeight="bold" variant="h3" mb={2}>
+          Tìm kiếm nhiều nhất
+        </Typography>
+        <Box display="flex" flexWrap="wrap" gap={1.5}>
+          {listTopSearch.map((v) => (
+            <Button
+              key={v}
+              variant="contained"
+              color="info"
+              sx={{ borderRadius: "20px", textTransform: "none" }}
+            >
+              {v}
+            </Button>
+          ))}
+        </Box>
+      </Box>
+
       {/* footer */}
+      <Footer />
     </Box>
   );
 };

@@ -1,4 +1,5 @@
-import type { Category } from './Category';
+import type { ProductVariants } from "../products/ProductVariant";
+import type { Category } from "./Category";
 
 export interface ProductDimensions {
   // Định nghĩa các trường dimensions nếu cần
@@ -15,7 +16,7 @@ export interface Product {
   listRelationships?: any[];
   listCategories?: Category[];
   productType?: string;
-  variants?: any[];
+  variants?: ProductVariants[];
   dateAvailable?: string;
   available?: boolean;
   preOrder?: boolean;
