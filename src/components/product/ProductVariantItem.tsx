@@ -25,9 +25,11 @@ const ProductVariant = ({ data }: { data: ProductVariants }) => {
         "&:hover .product-img": {
           transform: "scale(1.05)",
           transition: "transform 0.3s ease",
+          cursor: "pointer",
         },
         "&:hover .product-name": {
           textDecoration: "underline",
+          cursor: "pointer",
         },
       }}
     >

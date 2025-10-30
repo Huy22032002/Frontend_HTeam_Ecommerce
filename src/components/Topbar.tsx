@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 
 import { ColorModeContext, tokens } from "../theme/theme";
 
@@ -22,11 +22,17 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { MenuItem } from "react-pro-sidebar";
 import { useNavigate } from "react-router-dom";
 
-//user
+//customer api
 import { CustomerApi } from "../api/customer/CustomerApi";
-import type { ReadableCustomer } from "../models/customer/ReadableCustomer";
+//redux
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "../store/store";
+import { login, logout } from "../store/customerSlice";
 
 const Topbar: React.FC = () => {
+  //redux
+  const dispatch = useDispatch();
+
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const colorMode = useContext(ColorModeContext);
@@ -35,15 +41,16 @@ const Topbar: React.FC = () => {
   const navigate = useNavigate();
 
   //customer info
-  const [user, setUser] = useState<ReadableCustomer | null>(null);
+  const user = useSelector((state: RootState) => state.customerAuth.customer);
 
   const getCustomerById = async () => {
     const id = localStorage.getItem("id");
     if (id != null) {
       const data = await CustomerApi.getById(id);
-      console.log(data);
-
-      setUser(data);
+      //save to Redux toolkit
+      if (data) {
+        dispatch(login(data));
+      }
     }
   };
 
@@ -122,8 +129,7 @@ const Topbar: React.FC = () => {
 
             <IconButton
               onClick={() => {
-                localStorage.clear();
-                setUser(null);
+                dispatch(logout());
                 navigate("/login");
               }}
             >
