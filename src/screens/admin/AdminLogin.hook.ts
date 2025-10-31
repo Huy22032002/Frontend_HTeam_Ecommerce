@@ -21,29 +21,38 @@ export const useAdminLogin = () => {
         try {
             const response = await UserApi.login(username, password);
             const { token, id } = response.data || {};
+            
+            console.log("✅ Login API response:", { token: token ? "EXISTS" : "MISSING", id });
 
             if (token && id) {
+                // 1. Save token FIRST
                 localStorage.setItem("token", token);
+                console.log("✅ Token saved to localStorage");
                 
-                // Lấy chi tiết người dùng từ ID
-                const userDetail = await UserApi.getById(String(id));
-                const user = userDetail.data;
-                
-                // Lưu vào Redux store
-                dispatch(loginAction(user));
+                // 2. Dispatch login action to Redux with minimal user info
+                // Don't call getById - it can fail with 401 and trigger logout
+                dispatch(loginAction({ 
+                    id, 
+                    username,
+                    adminPassword: "", // Empty for security
+                } as any));
+                console.log("✅ User info saved to Redux");
                 
                 setMessage("Đăng nhập thành công!");
                 
-                // Điều hướng tới dashboard sau 1 giây
+                // 3. Navigate to dashboard
+                // Use shorter delay to avoid page refresh interrupting
                 setTimeout(() => {
+                    console.log("✅ Navigating to /admin/dashboard");
                     navigate("/admin/dashboard");
-                }, 1000);
+                }, 500);
             } else {
                 setError("Invalid credentials or server error.");
+                console.error("❌ No token or id in response");
             }
         } catch (err) {
             setError("Failed to login. Please check your credentials.");
-            console.error(err);
+            console.error("❌ Login error:", err);
         } finally {
             setIsLoading(false);
         }

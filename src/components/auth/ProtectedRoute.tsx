@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { CircularProgress, Box } from '@mui/material';
+import { useMemo } from 'react';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -14,7 +15,8 @@ interface ProtectedRouteProps {
  * If loading, shows spinner
  */
 export const ProtectedRoute = ({ children, isLoading = false }: ProtectedRouteProps) => {
-  const token = localStorage.getItem('token');
+  const location = useLocation();
+  const token = useMemo(() => localStorage.getItem('token'), [location.pathname]);
 
   if (isLoading) {
     return (
@@ -24,11 +26,15 @@ export const ProtectedRoute = ({ children, isLoading = false }: ProtectedRoutePr
     );
   }
 
+  console.log("🔍 ProtectedRoute - URL:", location.pathname, "Token:", token ? "✅ EXISTS" : "❌ MISSING");
+
   // If no token, redirect to login
   if (!token) {
+    console.warn("❌ No token! Redirecting to /admin/login");
     return <Navigate to="/admin/login" replace />;
   }
 
   // Token exists, render children
+  console.log("✅ Token valid, rendering protected content");
   return <>{children}</>;
 };

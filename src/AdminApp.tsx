@@ -2,7 +2,6 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  useLocation,
 } from "react-router-dom";
 import { Provider } from "react-redux";
 import store from "./store/store";
@@ -32,39 +31,42 @@ import InvoiceListScreen from "./screens/transactions/InvoiceListScreen";
 import PaymentListScreen from "./screens/transactions/PaymentListScreen";
 
 function AdminAppContent() {
-  const location = useLocation();
-  const isLoginPage = location.pathname === "/admin/login";
-
-  if (isLoginPage) {
-    return <AdminLoginScreen />;
-  }
-
-  // Protected - requires token
   return (
-    <ProtectedRoute>
-      <CmsLayout>
-        <Routes>
-          <Route path="/dashboard" element={<DashboardScreen />} />
-          <Route path="/activity-log" element={<ActivityLogScreen />} />
-          <Route path="/reports" element={<ReportsScreen />} />
-          <Route path="/users" element={<UserManagementScreen />} />
-          <Route path="/products" element={<ProductListScreen />} />
-          <Route path="/categories" element={<CategoryListScreen />} />
-          <Route path="/orders" element={<OrderListScreen />} />
-          <Route path="/invoices" element={<InvoiceListScreen />} />
-          <Route path="/payments" element={<PaymentListScreen />} />
-          <Route path="/shipments" element={<ShipmentListScreen />} />
-          <Route path="/returns" element={<ReturnListScreen />} />
-          <Route path="/warehouse" element={<WarehouseScreen />} />
-          <Route path="/partners" element={<PartnerListScreen />} />
-          <Route path="/warranty" element={<WarrantyScreen />} />
-          <Route path="/pages" element={<PageListScreen />} />
-          <Route path="/promotions" element={<PromotionListScreen />} />
-          {/* Redirect all other /admin paths to dashboard */}
-          <Route path="*" element={<DashboardScreen />} />
-        </Routes>
-      </CmsLayout>
-    </ProtectedRoute>
+    <Routes>
+      {/* Login route - no protection */}
+      <Route path="/admin/login" element={<AdminLoginScreen />} />
+      
+      {/* Protected routes */}
+      <Route
+        path="/admin/*"
+        element={
+          <ProtectedRoute>
+            <CmsLayout>
+              <Routes>
+                <Route path="dashboard" element={<DashboardScreen />} />
+                <Route path="activity-log" element={<ActivityLogScreen />} />
+                <Route path="reports" element={<ReportsScreen />} />
+                <Route path="users" element={<UserManagementScreen />} />
+                <Route path="products" element={<ProductListScreen />} />
+                <Route path="categories" element={<CategoryListScreen />} />
+                <Route path="orders" element={<OrderListScreen />} />
+                <Route path="invoices" element={<InvoiceListScreen />} />
+                <Route path="payments" element={<PaymentListScreen />} />
+                <Route path="shipments" element={<ShipmentListScreen />} />
+                <Route path="returns" element={<ReturnListScreen />} />
+                <Route path="warehouse" element={<WarehouseScreen />} />
+                <Route path="partners" element={<PartnerListScreen />} />
+                <Route path="warranty" element={<WarrantyScreen />} />
+                <Route path="pages" element={<PageListScreen />} />
+                <Route path="promotions" element={<PromotionListScreen />} />
+                {/* Redirect root /admin to dashboard */}
+                <Route path="*" element={<DashboardScreen />} />
+              </Routes>
+            </CmsLayout>
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
   );
 }
 
