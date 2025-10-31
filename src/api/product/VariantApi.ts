@@ -25,4 +25,17 @@ export const VariantsApi = {
       return null;
     }
   },
+  getById: async (variantId: number) => {
+    try {
+      const response = await axios.get(
+        `${API_BASE}/api/public/product/variant/${variantId}`
+      );
+      if (response.data) {
+        return response.data;
+      }
+    } catch (error) {
+      console.error("Failed to fetch product variant:", error);
+      return null;
+    }
+  },
 };

@@ -9,10 +9,13 @@ import {
 import { tokens } from "../../theme/theme";
 import type { ProductVariants } from "../../models/products/ProductVariant";
 import { formatCurrency } from "../../utils/formatCurrency";
+import { useNavigate } from "react-router-dom";
 
 const ProductVariant = ({ data }: { data: ProductVariants }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+
+  const navigate = useNavigate();
 
   return (
     <Card
@@ -33,6 +36,7 @@ const ProductVariant = ({ data }: { data: ProductVariants }) => {
           cursor: "pointer",
         },
       }}
+      onClick={() => navigate(`/product/${data.id}`)}
     >
       <CardMedia
         component="img"
