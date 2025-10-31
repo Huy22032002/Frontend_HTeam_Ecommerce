@@ -35,10 +35,7 @@ const useLogin = () => {
       setLoading(false);
       setSuccess(true);
 
-      // đợi 1.5s rồi mới chuyển trang
-      setTimeout(() => {
-        navigate("/");
-      }, 1500);
+      navigate("/");
     } catch (err: unknown) {
       setSuccess(false);
       setLoading(false);
@@ -73,14 +70,16 @@ const useLogin = () => {
       setLoading(false);
       setSuccess(true);
 
-      setTimeout(() => {
-        navigate("/");
-      }, 1500);
-    } catch (err: any) {
+      navigate("/");
+    } catch (err: unknown) {
       setSuccess(false);
       setLoading(false);
-      setError(true);
-      setMessage(err.errorMessage);
+      if (err instanceof Error) {
+        setError(true);
+        setMessage(err.message || "Đăng nhập thất bại");
+      } else {
+        setMessage("Đã xảy ra lỗi không xác định");
+      }
     }
   };
 
@@ -103,9 +102,7 @@ const useLogin = () => {
       setLoading(false);
       setSuccess(true);
 
-      setTimeout(() => {
-        navigate("/");
-      }, 1500);
+      navigate("/");
     } catch (err: unknown) {
       setSuccess(false);
       setLoading(false);

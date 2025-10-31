@@ -9,10 +9,17 @@ import {
 } from "@mui/material";
 import type { Category } from "../../models/catalogs/Category";
 import { tokens } from "../../theme/theme";
+import { useNavigate } from "react-router-dom";
 
 const CategoryItem = ({ category }: { category: Category }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/product-category/${category.id}`);
+  };
 
   return (
     <Card
@@ -21,6 +28,7 @@ const CategoryItem = ({ category }: { category: Category }) => {
         background: "transparent",
         boxShadow: "none",
       }}
+      onClick={handleClick}
     >
       <CardActionArea
         sx={{

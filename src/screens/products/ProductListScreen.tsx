@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { useProducts } from "../../hooks/useProducts";
-import type { Product } from "../../models/catalogs/Product";
+import type { Product } from "../../models/products/Product";
 import type { ProductVariants } from "../../models/products/ProductVariant";
 
 const getStatus = (p: Product) => {

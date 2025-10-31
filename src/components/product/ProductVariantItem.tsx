@@ -9,27 +9,34 @@ import {
 import { tokens } from "../../theme/theme";
 import type { ProductVariants } from "../../models/products/ProductVariant";
 import { formatCurrency } from "../../utils/formatCurrency";
+import { useNavigate } from "react-router-dom";
 
 const ProductVariant = ({ data }: { data: ProductVariants }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
+  const navigate = useNavigate();
+
   return (
     <Card
       sx={{
         borderRadius: 3,
-        bgcolor: colors.primary[900],
+        bgcolor: colors.primary[400],
+        width: 250,
         padding: 2,
         display: "flex",
         flexDirection: "column",
         "&:hover .product-img": {
           transform: "scale(1.05)",
           transition: "transform 0.3s ease",
+          cursor: "pointer",
         },
         "&:hover .product-name": {
           textDecoration: "underline",
+          cursor: "pointer",
         },
       }}
+      onClick={() => navigate(`/product/${data.id}`)}
     >
       <CardMedia
         component="img"
@@ -45,7 +52,17 @@ const ProductVariant = ({ data }: { data: ProductVariants }) => {
       />
 
       <CardContent>
-        <Typography className="product-name">{data.name}</Typography>
+        <Typography
+          sx={{
+            width: "100%", // chiếm hết width của Card
+            fontWeight: "bold",
+            wordWrap: "break-word", // xuống dòng khi quá dài
+            overflowWrap: "break-word",
+          }}
+          className="product-name"
+        >
+          {data.name}
+        </Typography>
         <Typography sx={{ color: colors.redAccent[500] }}>
           {formatCurrency(data.options[0].availability.regularPrice)}
         </Typography>
@@ -54,7 +71,7 @@ const ProductVariant = ({ data }: { data: ProductVariants }) => {
           <Typography>Màu</Typography>
           {/* list colors */}
           <Box display="flex" ml={1}>
-            {data.options.map((option) => (
+            {data.options?.map((option) => (
               <Box
                 key={option.id}
                 sx={{
