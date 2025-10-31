@@ -10,5 +10,6 @@ export interface ProductOption {
   reviewCount?: number;
   description?: string | null;
   availability: Availability;
+  price: number;
   images?: [];
 }

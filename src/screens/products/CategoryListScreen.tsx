@@ -1,12 +1,11 @@
 import { Box, Typography, List, ListItem, ListItemText, Button, CircularProgress } from '@mui/material';
-import { CmsLayout } from '../../components/cms/CmsLayout';
 import { useCategories } from '../../hooks/useCategories';
 
 const CategoryListScreen = () => {
   const { categories, loading, error } = useCategories();
 
   return (
-    <CmsLayout>
+    <Box>
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
         <Typography variant="h4" fontWeight={600}>Danh mục</Typography>
         <Button variant="contained" size="small">+ Thêm</Button>
@@ -27,7 +26,7 @@ const CategoryListScreen = () => {
           ))}
         </List>
       )}
-    </CmsLayout>
+    </Box>
   );
 };
 

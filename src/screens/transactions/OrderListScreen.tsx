@@ -1,11 +1,57 @@
 import * as React from 'react';
-import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip, Box, TextField, MenuItem, Select, InputLabel, FormControl, CircularProgress, Paper, type SelectChangeEvent } from '@mui/material';
+import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip, Box, TextField, MenuItem, Select, InputLabel, FormControl, CircularProgress, Paper, IconButton, Menu, Button, type SelectChangeEvent } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import { CmsLayout } from '../../components/cms/CmsLayout';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useOrders } from '../../hooks/useOrders';
+import { OrderApi } from '../../api/order/OrderApi';
 
 const OrderListScreen = () => {
   const { orders, loading, error, filters, setFilters } = useOrders({ page: 0, size: 20 });
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [selectedOrderId, setSelectedOrderId] = React.useState<string | null>(null);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>, orderId: string) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedOrderId(orderId);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedOrderId(null);
+  };
+
+  const handleCreateOrder = () => {
+    console.log('Tạo đơn hàng mới');
+    // Call API to create order
+    OrderApi.create({
+      id: '',
+      customerName: '',
+      total: 0,
+      status: 'PENDING',
+      createdAt: new Date().toISOString(),
+    })
+      .then(() => {
+        console.log('Tạo đơn hàng thành công');
+        // Reload orders list
+      })
+      .catch((err) => {
+        console.error('Lỗi tạo đơn hàng:', err);
+      });
+    handleMenuClose();
+  };
+
+  const handleCancelOrder = (orderId: string) => {
+    console.log('Huỷ đơn hàng:', orderId);
+    handleMenuClose();
+  };
+
+  const handleViewDetail = (orderId: string) => {
+    console.log('Xem chi tiết đơn hàng:', orderId);
+    handleMenuClose();
+  };
 
   const handleTextFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -22,8 +68,17 @@ const OrderListScreen = () => {
   };
 
   return (
-    <CmsLayout>
-      <Typography variant="h4" fontWeight={600} mb={2}>Hoá đơn bán</Typography>
+    <Box>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h4" fontWeight={600}>Đơn hàng</Typography>
+        <Button 
+          variant="contained" 
+          startIcon={<AddIcon />}
+          onClick={handleCreateOrder}
+        >
+          Tạo đơn hàng
+        </Button>
+      </Box>
       <Paper sx={{ p: 2, mb: 2 }}>
         <Box display="flex" flexWrap="wrap" gap={2} alignItems="center">
           <TextField
@@ -67,16 +122,40 @@ const OrderListScreen = () => {
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Mã</TableCell>
-              <TableCell>Khách hàng</TableCell>
-              <TableCell align="right">Tổng</TableCell>
-              <TableCell>Trạng thái</TableCell>
-              <TableCell>Ngày</TableCell>
+              <TableCell width={80} sx={{ whiteSpace: 'nowrap' }}>Thao tác</TableCell>
+              <TableCell width={100} sx={{ whiteSpace: 'nowrap' }}>Mã</TableCell>
+              <TableCell width={150}>Khách hàng</TableCell>
+              <TableCell width={120} align="right" sx={{ whiteSpace: 'nowrap' }}>Tổng</TableCell>
+              <TableCell width={120} sx={{ whiteSpace: 'nowrap' }}>Trạng thái</TableCell>
+              <TableCell width={120} sx={{ whiteSpace: 'nowrap' }}>Ngày</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {orders.map(o => (
               <TableRow key={o.id} hover>
+                <TableCell>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => handleMenuOpen(e, o.id)}
+                  >
+                    <MoreVertIcon fontSize="small" />
+                  </IconButton>
+                  <Menu
+                    anchorEl={selectedOrderId === o.id ? anchorEl : null}
+                    open={selectedOrderId === o.id && Boolean(anchorEl)}
+                    onClose={handleMenuClose}
+                  >
+                    <MenuItem onClick={handleCreateOrder}>
+                      <AddIcon fontSize="small" sx={{ mr: 1 }} /> Tạo đơn hàng
+                    </MenuItem>
+                    <MenuItem onClick={() => handleViewDetail(o.id)}>
+                      <VisibilityIcon fontSize="small" sx={{ mr: 1 }} /> Xem chi tiết
+                    </MenuItem>
+                    <MenuItem onClick={() => handleCancelOrder(o.id)} sx={{ color: 'error.main' }}>
+                      <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Huỷ đơn hàng
+                    </MenuItem>
+                  </Menu>
+                </TableCell>
                 <TableCell>{o.id}</TableCell>
                 <TableCell>{o.customerName}</TableCell>
                 <TableCell align="right">{o.total.toLocaleString()}₫</TableCell>
@@ -87,7 +166,7 @@ const OrderListScreen = () => {
           </TableBody>
         </Table>
       )}
-    </CmsLayout>
+    </Box>
   );
 };
 

@@ -1,12 +1,11 @@
-import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip } from '@mui/material';
-import { CmsLayout } from '../../components/cms/CmsLayout';
+import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip, Box } from '@mui/material';
 
 const warrantyForms = [
   { id: 'WR-01', product: 'Laptop ABC', customer: 'Nguyễn Văn A', status: 'OPEN', createdAt: '2025-10-04' },
 ];
 
 const WarrantyScreen = () => (
-  <CmsLayout>
+  <Box>
     <Typography variant="h4" fontWeight={600} mb={2}>Phiếu bảo hành</Typography>
     <Table size="small">
       <TableHead>
@@ -30,7 +29,7 @@ const WarrantyScreen = () => (
         ))}
       </TableBody>
     </Table>
-  </CmsLayout>
+  </Box>
 );
 
 export default WarrantyScreen;

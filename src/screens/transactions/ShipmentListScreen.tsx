@@ -1,5 +1,4 @@
-import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip } from '@mui/material';
-import { CmsLayout } from '../../components/cms/CmsLayout';
+import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip, Box } from '@mui/material';
 
 const shipments = [
   { id: 'SHP-2001', orderId: 'ORD-1001', carrier: 'GHN', status: 'IN_TRANSIT', updatedAt: '2025-10-03' },
@@ -7,7 +6,7 @@ const shipments = [
 ];
 
 const ShipmentListScreen = () => (
-  <CmsLayout>
+  <Box>
     <Typography variant="h4" fontWeight={600} mb={2}>Chuyển hàng</Typography>
     <Table size="small">
       <TableHead>
@@ -31,7 +30,7 @@ const ShipmentListScreen = () => (
         ))}
       </TableBody>
     </Table>
-  </CmsLayout>
+  </Box>
 );
 
 export default ShipmentListScreen;

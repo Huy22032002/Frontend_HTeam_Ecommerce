@@ -1,5 +1,4 @@
 import { Typography, List, ListItem, ListItemText, Chip, Button, Box } from '@mui/material';
-import { CmsLayout } from '../../components/cms/CmsLayout';
 
 const pages = [
   { id: 'PG-01', title: 'Giới thiệu', status: 'PUBLISHED', updatedAt: '2025-09-30' },
@@ -7,7 +6,7 @@ const pages = [
 ];
 
 const PageListScreen = () => (
-  <CmsLayout>
+  <Box>
     <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
       <Typography variant="h4" fontWeight={600}>Trang website</Typography>
       <Button variant="contained" size="small">+ Thêm</Button>
@@ -19,7 +18,7 @@ const PageListScreen = () => (
         </ListItem>
       ))}
     </List>
-  </CmsLayout>
+  </Box>
 );
 
 export default PageListScreen;

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Order } from '../../models/dashboard/Order';
 
-const API_BASE = import.meta.env.VITE_BASE_URL + '/api/orders';
+const API_BASE = import.meta.env.VITE_BASE_URL + '/api/admins/orders';
 
 function getAuthHeader() {
   const token = localStorage.getItem('token');

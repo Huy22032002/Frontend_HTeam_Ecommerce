@@ -1,35 +1,41 @@
-import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip } from '@mui/material';
-import { CmsLayout } from '../../components/cms/CmsLayout';
+import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Box, CircularProgress } from '@mui/material';
+import { useCustomers } from '../../hooks/useCustomers';
 
-const partners = [
-  { id: 'PT-01', name: 'Công ty A', segment: 'B2B', status: 'ACTIVE' },
-  { id: 'PT-02', name: 'Cửa hàng B', segment: 'Retail', status: 'INACTIVE' },
-];
+const PartnerListScreen = () => {
+  const { customers, loading, error } = useCustomers();
 
-const PartnerListScreen = () => (
-  <CmsLayout>
-    <Typography variant="h4" fontWeight={600} mb={2}>Đối tác / Khách hàng</Typography>
-    <Table size="small">
-      <TableHead>
-        <TableRow>
-          <TableCell>Mã</TableCell>
-          <TableCell>Tên</TableCell>
-          <TableCell>Phân khúc</TableCell>
-          <TableCell>Trạng thái</TableCell>
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {partners.map(p => (
-          <TableRow key={p.id} hover>
-            <TableCell>{p.id}</TableCell>
-            <TableCell>{p.name}</TableCell>
-            <TableCell>{p.segment}</TableCell>
-            <TableCell><Chip size="small" color={p.status === 'ACTIVE' ? 'success' : 'default'} label={p.status} /></TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  </CmsLayout>
-);
+  return (
+    <Box>
+      <Typography variant="h4" fontWeight={600} mb={2}>Đối tác / Khách hàng</Typography>
+      
+      {loading && <CircularProgress sx={{ display: 'block', margin: '20px auto' }} />}
+      {error && <Typography color="error">Lỗi: {error}</Typography>}
+      {!loading && !error && (
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Tên</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Số điện thoại</TableCell>
+              <TableCell>Địa chỉ</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {customers.map(c => (
+              <TableRow key={c.id} hover>
+                <TableCell>{c.id}</TableCell>
+                <TableCell>{c.name}</TableCell>
+                <TableCell>{c.email}</TableCell>
+                <TableCell>{c.phone || '-'}</TableCell>
+                <TableCell>{c.address || '-'}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </Box>
+  );
+};
 
 export default PartnerListScreen;

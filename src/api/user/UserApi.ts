@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { UserSummary } from "../../models/dashboard/UserSummary";
 
-const API_BASE = import.meta.env.VITE_BASE_URL + "/api/users";
+const API_BASE = import.meta.env.VITE_BASE_URL + "/api/admins";
 
 function getAuthHeader() {
   const token = localStorage.getItem("token");
@@ -16,8 +16,8 @@ export const UserApi = {
     }),
 
   // Lấy chi tiết người dùng theo id
-  getById: (id: string) =>
-    axios.get(`${API_BASE}/${id}`, { headers: getAuthHeader() }),
+  getById: (id: number) =>
+    axios.get(`${API_BASE}/${id}`, { headers: getAuthHeader(), timeout: 8000 }),
 
   // Tạo người dùng mới
   create: (user: Partial<UserSummary>) =>
@@ -30,4 +30,28 @@ export const UserApi = {
   // Xoá người dùng
   delete: (id: string) =>
     axios.delete(`${API_BASE}/${id}`, { headers: getAuthHeader() }),
+
+  // Đăng nhập người dùng
+  login: (username: string, password: string) =>
+    axios.post(`${API_BASE}/login`, { username, password }, { timeout: 10000 }),
+
+  // Đăng ký người dùng mới
+  register: (user: Partial<UserSummary>) =>
+    axios.post(`${API_BASE}/register`, user),
+
+  // Đăng xuất người dùng
+  logout: () => {
+    localStorage.removeItem("token");
+  },
+
+  // Quên mật khẩu
+  forgotPassword: (phone: string) =>
+    axios.post(`${API_BASE}/forgot-password`, { phone }),
+
+  // Đặt lại mật khẩu (nhập khẩu cũ để kiểm tra sau đó đặt mật khẩu mới)
+  resetPassword: (oldPassword: string, newPassword: string) =>
+    axios.post(`${API_BASE}/reset-password`, { oldPassword, newPassword, }, { headers: getAuthHeader() }),
+
+  
+
 };

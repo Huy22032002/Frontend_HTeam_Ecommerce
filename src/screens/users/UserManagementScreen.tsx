@@ -1,12 +1,11 @@
 import { Box, Typography, Table, TableHead, TableRow, TableCell, TableBody, CircularProgress, Paper } from '@mui/material';
-import { CmsLayout } from '../../components/cms/CmsLayout';
 import { useUsers } from '../../hooks/useUsers';
 
 const UserManagementScreen = () => {
   const { users, loading, error } = useUsers();
 
   return (
-    <CmsLayout>
+    <Box>
       <Typography variant="h4" fontWeight={600} mb={2}>Quản lý người dùng</Typography>
       
       {loading ? (
@@ -39,7 +38,7 @@ const UserManagementScreen = () => {
           </Table>
         </Paper>
       )}
-    </CmsLayout>
+    </Box>
   );
 };
 
