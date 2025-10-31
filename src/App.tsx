@@ -13,9 +13,11 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import Topbar from "./components/Topbar";
 
 //screens
+import TestProductForm from "./screens/products/listProduct/TestCreateProduct";
 import LoginScreen from "./screens/login/LoginScreen";
 import SignupScreen from "./screens/signup/SignupScreen";
 import HomeScreen from "./screens/home/HomeScreen";
+import ProductsByCategory from "./screens/products/listProduct/ProductsByCategory";
 import DashboardScreen from "./screens/dashboard/DashboardScreen";
 import ActivityLogScreen from "./screens/activity/ActivityLogScreen";
 import ReportsScreen from "./screens/reports/ReportsScreen";
@@ -32,30 +34,30 @@ import PageListScreen from "./screens/pages/PageListScreen";
 import PromotionListScreen from "./screens/promotions/PromotionListScreen";
 import InvoiceListScreen from "./screens/transactions/InvoiceListScreen";
 import PaymentListScreen from "./screens/transactions/PaymentListScreen";
+import Footer from "./components/Footer";
 
 function AppContent() {
   const location = useLocation();
   const hideLayout =
     location.pathname === "/login" ||
     location.pathname === "/signup" ||
-  location.pathname === "/forget-password" || 
-  location.pathname.startsWith("/dashboard") ||
-  location.pathname.startsWith("/activity-log") ||
-  location.pathname.startsWith("/reports") ||
-  location.pathname.startsWith("/users") ||
-  location.pathname.startsWith("/products") ||
-  location.pathname.startsWith("/categories") ||
-  location.pathname.startsWith("/orders") ||
-  location.pathname.startsWith("/invoices") ||
-  location.pathname.startsWith("/payments") ||
-  location.pathname.startsWith("/shipments") ||
-  location.pathname.startsWith("/returns") ||
-  location.pathname.startsWith("/warehouse") ||
-  location.pathname.startsWith("/partners") ||
-  location.pathname.startsWith("/warranty") ||
-  location.pathname.startsWith("/pages") ||
-  location.pathname.startsWith("/promotions");
-
+    location.pathname === "/forget-password" ||
+    location.pathname.startsWith("/dashboard") ||
+    location.pathname.startsWith("/activity-log") ||
+    location.pathname.startsWith("/reports") ||
+    location.pathname.startsWith("/users") ||
+    location.pathname.startsWith("/products") ||
+    location.pathname.startsWith("/categories") ||
+    location.pathname.startsWith("/orders") ||
+    location.pathname.startsWith("/invoices") ||
+    location.pathname.startsWith("/payments") ||
+    location.pathname.startsWith("/shipments") ||
+    location.pathname.startsWith("/returns") ||
+    location.pathname.startsWith("/warehouse") ||
+    location.pathname.startsWith("/partners") ||
+    location.pathname.startsWith("/warranty") ||
+    location.pathname.startsWith("/pages") ||
+    location.pathname.startsWith("/promotions");
 
   return (
     <div className="app">
@@ -65,6 +67,11 @@ function AppContent() {
           <Route path="/login" element={<LoginScreen />} />
           <Route path="/signup" element={<SignupScreen />} />
           <Route path="/" element={<HomeScreen />} />
+          <Route
+            path="/product-category/:categoryId"
+            element={<ProductsByCategory />}
+          />
+          <Route path="/testCreate" element={<TestProductForm />} />
           <Route path="/dashboard" element={<DashboardScreen />} />
           <Route path="/activity-log" element={<ActivityLogScreen />} />
           <Route path="/reports" element={<ReportsScreen />} />
@@ -82,6 +89,7 @@ function AppContent() {
           <Route path="/pages" element={<PageListScreen />} />
           <Route path="/promotions" element={<PromotionListScreen />} />
         </Routes>
+        {!hideLayout && <Footer />}
       </main>
     </div>
   );

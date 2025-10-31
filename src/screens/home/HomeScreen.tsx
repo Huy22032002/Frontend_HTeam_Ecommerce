@@ -37,7 +37,7 @@ const HomeScreen = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        background: colors.greenAccent[900],
+        background: colors.greenAccent[700],
         gap: 2,
       }}
     >
@@ -91,9 +91,6 @@ const HomeScreen = () => {
           ))}
         </Box>
       </Box>
-
-      {/* footer */}
-      <Footer />
     </Box>
   );
 };

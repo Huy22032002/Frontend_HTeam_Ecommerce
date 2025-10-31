@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Product } from "../../models/catalogs/Product";
+import type { Product } from "../../models/products/Product";
 const API_BASE = import.meta.env.VITE_BASE_URL + "/api";
 
 function getAuthHeader() {
@@ -13,6 +13,21 @@ export const ProductApi = {
     axios.get(`${API_BASE}/admins/products?page=${page}&size=${size}`, {
       headers: getAuthHeader(),
     }),
+  getAllByCategoryId: async (categoryId: number) => {
+    try {
+      const response = await axios.get(`${API_BASE}/public/products`, {
+        params: { categoryId },
+      });
+      if (response.data) {
+        console.log("product:", response.data);
+
+        return response.data;
+      }
+    } catch (error) {
+      console.error("Failed to fetch list product variants options:", error);
+      return null;
+    }
+  },
 
   // Lấy chi tiết sản phẩm theo id
   getById: (id: number) =>
