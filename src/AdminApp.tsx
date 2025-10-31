@@ -9,7 +9,6 @@ import store from "./store/store";
 import { ColorModeContext, useMode } from "./theme/theme";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { CmsLayout } from "./components/cms/CmsLayout";
-import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 //screens
 import AdminLoginScreen from "./screens/admin/AdminLoginScreen";
@@ -33,37 +32,35 @@ import PaymentListScreen from "./screens/transactions/PaymentListScreen";
 function AdminAppContent() {
   return (
     <Routes>
-      {/* Login route - no protection */}
+      {/* Login route */}
       <Route path="/admin/login" element={<AdminLoginScreen />} />
       
-      {/* Protected routes */}
+      {/* Admin routes with CmsLayout */}
       <Route
         path="/admin/*"
         element={
-          <ProtectedRoute>
-            <CmsLayout>
-              <Routes>
-                <Route path="dashboard" element={<DashboardScreen />} />
-                <Route path="activity-log" element={<ActivityLogScreen />} />
-                <Route path="reports" element={<ReportsScreen />} />
-                <Route path="users" element={<UserManagementScreen />} />
-                <Route path="products" element={<ProductListScreen />} />
-                <Route path="categories" element={<CategoryListScreen />} />
-                <Route path="orders" element={<OrderListScreen />} />
-                <Route path="invoices" element={<InvoiceListScreen />} />
-                <Route path="payments" element={<PaymentListScreen />} />
-                <Route path="shipments" element={<ShipmentListScreen />} />
-                <Route path="returns" element={<ReturnListScreen />} />
-                <Route path="warehouse" element={<WarehouseScreen />} />
-                <Route path="partners" element={<PartnerListScreen />} />
-                <Route path="warranty" element={<WarrantyScreen />} />
-                <Route path="pages" element={<PageListScreen />} />
-                <Route path="promotions" element={<PromotionListScreen />} />
-                {/* Redirect root /admin to dashboard */}
-                <Route path="*" element={<DashboardScreen />} />
-              </Routes>
-            </CmsLayout>
-          </ProtectedRoute>
+          <CmsLayout>
+            <Routes>
+              <Route path="dashboard" element={<DashboardScreen />} />
+              <Route path="activity-log" element={<ActivityLogScreen />} />
+              <Route path="reports" element={<ReportsScreen />} />
+              <Route path="users" element={<UserManagementScreen />} />
+              <Route path="products" element={<ProductListScreen />} />
+              <Route path="categories" element={<CategoryListScreen />} />
+              <Route path="orders" element={<OrderListScreen />} />
+              <Route path="invoices" element={<InvoiceListScreen />} />
+              <Route path="payments" element={<PaymentListScreen />} />
+              <Route path="shipments" element={<ShipmentListScreen />} />
+              <Route path="returns" element={<ReturnListScreen />} />
+              <Route path="warehouse" element={<WarehouseScreen />} />
+              <Route path="partners" element={<PartnerListScreen />} />
+              <Route path="warranty" element={<WarrantyScreen />} />
+              <Route path="pages" element={<PageListScreen />} />
+              <Route path="promotions" element={<PromotionListScreen />} />
+              {/* Redirect root /admin to dashboard */}
+              <Route path="*" element={<DashboardScreen />} />
+            </Routes>
+          </CmsLayout>
         }
       />
     </Routes>

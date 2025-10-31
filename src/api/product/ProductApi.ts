@@ -16,27 +16,27 @@ export const ProductApi = {
 
   // Lấy chi tiết sản phẩm theo id
   getById: (id: number) =>
-    axios.get(`${API_BASE}/${id}`, { headers: getAuthHeader() }),
+    axios.get(`${API_BASE}/products/${id}`, { headers: getAuthHeader() }),
 
   // Tạo sản phẩm mới
   create: (product: Product) =>
-    axios.post(`${API_BASE}`, product, { headers: getAuthHeader() }),
+    axios.post(`${API_BASE}/admins/products`, product, { headers: getAuthHeader() }),
 
   // Tạo sản phẩm kèm biến thể và tuỳ chọn
   createFull: (data: any) =>
-    axios.post(`${API_BASE}/full-create`, data, { headers: getAuthHeader() }),
+    axios.post(`${API_BASE}/admins/products/full-create`, data, { headers: getAuthHeader() }),
 
   // Thêm biến thể cho sản phẩm
   createVariant: (productId: number, data: any) =>
-    axios.post(`${API_BASE}/${productId}/variants`, data, {
+    axios.post(`${API_BASE}/products/${productId}/variants`, data, {
       headers: getAuthHeader(),
     }),
 
   // Cập nhật sản phẩm
   update: (id: number, product: Partial<Product>) =>
-    axios.put(`${API_BASE}/${id}`, product, { headers: getAuthHeader() }),
+    axios.put(`${API_BASE}/products/${id}`, product, { headers: getAuthHeader() }),
 
   // Xoá sản phẩm
   delete: (id: number) =>
-    axios.delete(`${API_BASE}/${id}`, { headers: getAuthHeader() }),
+    axios.delete(`${API_BASE}/products/${id}`, { headers: getAuthHeader() }),
 };

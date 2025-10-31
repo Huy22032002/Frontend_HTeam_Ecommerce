@@ -1,10 +1,35 @@
 import * as React from 'react';
-import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip, Box, TextField, MenuItem, Select, InputLabel, FormControl, Button, CircularProgress, type SelectChangeEvent } from '@mui/material';
+import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip, Box, TextField, MenuItem, Select, InputLabel, FormControl, Button, CircularProgress, IconButton, Menu, type SelectChangeEvent } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import DeleteIcon from '@mui/icons-material/Delete';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useInvoices } from '../../hooks/useInvoices';
 
 const InvoiceListScreen = () => {
   const { invoices, loading, error, filters, setFilters } = useInvoices({ page: 0, size: 20 });
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [selectedInvoiceId, setSelectedInvoiceId] = React.useState<number | null>(null);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>, invoiceId: number) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedInvoiceId(invoiceId);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedInvoiceId(null);
+  };
+
+  const handleDeleteInvoice = (invoiceId: number) => {
+    console.log('Xoá hóa đơn:', invoiceId);
+    handleMenuClose();
+  };
+
+  const handleViewDetail = (invoiceId: number) => {
+    console.log('Xem chi tiết hóa đơn:', invoiceId);
+    handleMenuClose();
+  };
 
   const handleTextFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -64,16 +89,37 @@ const InvoiceListScreen = () => {
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Mã hóa đơn</TableCell>
-              <TableCell>Khách hàng</TableCell>
-              <TableCell>Ngày tạo</TableCell>
-              <TableCell align="right">Tổng tiền</TableCell>
-              <TableCell>Trạng thái</TableCell>
+              <TableCell width={80} sx={{ whiteSpace: 'nowrap' }}>Thao tác</TableCell>
+              <TableCell width={120} sx={{ whiteSpace: 'nowrap' }}>Mã hóa đơn</TableCell>
+              <TableCell width={150}>Khách hàng</TableCell>
+              <TableCell width={120} sx={{ whiteSpace: 'nowrap' }}>Ngày tạo</TableCell>
+              <TableCell width={130} align="right" sx={{ whiteSpace: 'nowrap' }}>Tổng tiền</TableCell>
+              <TableCell width={120} sx={{ whiteSpace: 'nowrap' }}>Trạng thái</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {invoices.map(inv => (
               <TableRow key={inv.id} hover>
+                <TableCell>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => handleMenuOpen(e, inv.id)}
+                  >
+                    <MoreVertIcon fontSize="small" />
+                  </IconButton>
+                  <Menu
+                    anchorEl={selectedInvoiceId === inv.id ? anchorEl : null}
+                    open={selectedInvoiceId === inv.id && Boolean(anchorEl)}
+                    onClose={handleMenuClose}
+                  >
+                    <MenuItem onClick={() => handleViewDetail(inv.id)}>
+                      <VisibilityIcon fontSize="small" sx={{ mr: 1 }} /> Xem chi tiết
+                    </MenuItem>
+                    <MenuItem onClick={() => handleDeleteInvoice(inv.id)} sx={{ color: 'error.main' }}>
+                      <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Xoá
+                    </MenuItem>
+                  </Menu>
+                </TableCell>
                 <TableCell>{inv.invoiceCode}</TableCell>
                 <TableCell>{inv.customerName}</TableCell>
                 <TableCell>{new Date(inv.createdAt).toLocaleDateString('vi-VN')}</TableCell>

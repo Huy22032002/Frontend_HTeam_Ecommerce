@@ -6,6 +6,7 @@ export interface ProductVariants {
   name: string;
   defaultSelection: boolean;
   sortOrder: number | null;
+  specs: Record<string, any>; 
+  stock: number;
   options: ProductOption[];
-  specs: Record<string, any>; // nếu specs là object tự do
 }

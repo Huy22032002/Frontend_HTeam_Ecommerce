@@ -12,4 +12,5 @@ export interface ProductOption {
   description: string | null;
   image?: string[]; // hoặc Array<string> nếu muốn rõ hơn
   availability: Availability;
+  price: number;
 }

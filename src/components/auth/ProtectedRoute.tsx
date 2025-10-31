@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { CircularProgress, Box } from '@mui/material';
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -15,8 +15,16 @@ interface ProtectedRouteProps {
  * If loading, shows spinner
  */
 export const ProtectedRoute = ({ children, isLoading = false }: ProtectedRouteProps) => {
-  const location = useLocation();
-  const token = useMemo(() => localStorage.getItem('token'), [location.pathname]);
+  const [token, setToken] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // Check token on mount
+  useEffect(() => {
+    const newToken = localStorage.getItem('token');
+    console.log("� ProtectedRoute check - Token:", newToken ? "✅ EXISTS" : "❌ MISSING");
+    setToken(newToken);
+    setMounted(true);
+  }, []);
 
   if (isLoading) {
     return (
@@ -26,11 +34,14 @@ export const ProtectedRoute = ({ children, isLoading = false }: ProtectedRoutePr
     );
   }
 
-  console.log("🔍 ProtectedRoute - URL:", location.pathname, "Token:", token ? "✅ EXISTS" : "❌ MISSING");
+  // Wait for mount to check token
+  if (!mounted) {
+    return null;
+  }
 
   // If no token, redirect to login
   if (!token) {
-    console.warn("❌ No token! Redirecting to /admin/login");
+    console.warn("❌ No token found, redirecting to login");
     return <Navigate to="/admin/login" replace />;
   }
 
@@ -38,3 +49,6 @@ export const ProtectedRoute = ({ children, isLoading = false }: ProtectedRoutePr
   console.log("✅ Token valid, rendering protected content");
   return <>{children}</>;
 };
+
+
+

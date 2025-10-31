@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { InvoiceReadableDTO } from '../../models/invoices/Invoice';
 
-const API_BASE = import.meta.env.VITE_BASE_URL + '/api/invoices';
+const API_BASE = import.meta.env.VITE_BASE_URL + '/api/admins/invoices';
 
 function getAuthHeader() {
   const token = localStorage.getItem('token');

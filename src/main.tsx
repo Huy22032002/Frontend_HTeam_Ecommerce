@@ -3,10 +3,6 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import AdminApp from './AdminApp.tsx'
-import { setupAxiosInterceptors } from './configs/AxiosInterceptor'
-
-// Setup axios interceptor
-setupAxiosInterceptors()
 
 const root = createRoot(document.getElementById('root')!)
 

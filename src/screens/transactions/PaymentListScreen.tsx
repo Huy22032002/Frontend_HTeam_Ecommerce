@@ -1,10 +1,35 @@
 import React from 'react';
-import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip, Box, TextField, MenuItem, Select, InputLabel, FormControl, Button, CircularProgress, type SelectChangeEvent } from '@mui/material';
+import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip, Box, TextField, MenuItem, Select, InputLabel, FormControl, Button, CircularProgress, IconButton, Menu, type SelectChangeEvent } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import DeleteIcon from '@mui/icons-material/Delete';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { usePayments } from '../../hooks/usePayments';
 
 const PaymentListScreen = () => {
   const { payments, loading, error, filters, setFilters } = usePayments({ page: 0, size: 20 });
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [selectedPaymentId, setSelectedPaymentId] = React.useState<number | null>(null);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>, paymentId: number) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedPaymentId(paymentId);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedPaymentId(null);
+  };
+
+  const handleDeletePayment = (paymentId: number) => {
+    console.log('Xoá thanh toán:', paymentId);
+    handleMenuClose();
+  };
+
+  const handleViewDetail = (paymentId: number) => {
+    console.log('Xem chi tiết thanh toán:', paymentId);
+    handleMenuClose();
+  };
 
   const handleTextFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -64,18 +89,39 @@ const PaymentListScreen = () => {
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Mã thanh toán</TableCell>
-              <TableCell>Mã hóa đơn</TableCell>
-              <TableCell>Khách hàng</TableCell>
-              <TableCell>Ngày tạo</TableCell>
-              <TableCell>Phương thức</TableCell>
-              <TableCell align="right">Số tiền</TableCell>
-              <TableCell>Trạng thái</TableCell>
+              <TableCell width={80} sx={{ whiteSpace: 'nowrap' }}>Thao tác</TableCell>
+              <TableCell width={120} sx={{ whiteSpace: 'nowrap' }}>Mã thanh toán</TableCell>
+              <TableCell width={120} sx={{ whiteSpace: 'nowrap' }}>Mã hóa đơn</TableCell>
+              <TableCell width={150}>Khách hàng</TableCell>
+              <TableCell width={120} sx={{ whiteSpace: 'nowrap' }}>Ngày tạo</TableCell>
+              <TableCell width={140} sx={{ whiteSpace: 'nowrap' }}>Phương thức</TableCell>
+              <TableCell width={110} align="right" sx={{ whiteSpace: 'nowrap' }}>Số tiền</TableCell>
+              <TableCell width={120} sx={{ whiteSpace: 'nowrap' }}>Trạng thái</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {payments.map(p => (
               <TableRow key={p.id} hover>
+                <TableCell>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => handleMenuOpen(e, p.id)}
+                  >
+                    <MoreVertIcon fontSize="small" />
+                  </IconButton>
+                  <Menu
+                    anchorEl={selectedPaymentId === p.id ? anchorEl : null}
+                    open={selectedPaymentId === p.id && Boolean(anchorEl)}
+                    onClose={handleMenuClose}
+                  >
+                    <MenuItem onClick={() => handleViewDetail(p.id)}>
+                      <VisibilityIcon fontSize="small" sx={{ mr: 1 }} /> Xem chi tiết
+                    </MenuItem>
+                    <MenuItem onClick={() => handleDeletePayment(p.id)} sx={{ color: 'error.main' }}>
+                      <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Xoá
+                    </MenuItem>
+                  </Menu>
+                </TableCell>
                 <TableCell>{p.paymentCode}</TableCell>
                 <TableCell>{p.invoiceCode}</TableCell>
                 <TableCell>{p.customerName}</TableCell>
