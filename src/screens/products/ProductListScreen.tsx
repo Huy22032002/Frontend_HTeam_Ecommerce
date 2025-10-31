@@ -13,7 +13,6 @@ import {
   IconButton,
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { CmsLayout } from "../../components/cms/CmsLayout";
 import { useProducts } from "../../hooks/useProducts";
 import type { Product } from "../../models/catalogs/Product";
 import type { ProductVariants } from "../../models/products/ProductVariant";
@@ -29,7 +28,7 @@ const ProductListScreen = () => {
   const [openRow, setOpenRow] = React.useState<number | null>(null);
 
   return (
-    <CmsLayout>
+    <Box>
       <Box
         display="flex"
         alignItems="center"
@@ -148,7 +147,7 @@ const ProductListScreen = () => {
           </TableBody>
         </Table>
       )}
-    </CmsLayout>
+    </Box>
   );
 };
 

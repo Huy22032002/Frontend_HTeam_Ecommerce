@@ -1,5 +1,4 @@
-import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip } from '@mui/material';
-import { CmsLayout } from '../../components/cms/CmsLayout';
+import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip, Box } from '@mui/material';
 
 const partners = [
   { id: 'PT-01', name: 'Công ty A', segment: 'B2B', status: 'ACTIVE' },
@@ -7,7 +6,7 @@ const partners = [
 ];
 
 const PartnerListScreen = () => (
-  <CmsLayout>
+  <Box>
     <Typography variant="h4" fontWeight={600} mb={2}>Đối tác / Khách hàng</Typography>
     <Table size="small">
       <TableHead>
@@ -29,7 +28,7 @@ const PartnerListScreen = () => (
         ))}
       </TableBody>
     </Table>
-  </CmsLayout>
+  </Box>
 );
 
 export default PartnerListScreen;

@@ -4,13 +4,12 @@ import { StatsGrid } from "../../components/dashboard/StatsGrid";
 import { OrdersTable } from "../../components/dashboard/OrdersTable";
 import { UsersTable } from "../../components/dashboard/UsersTable";
 import { ActivityTimeline } from "../../components/dashboard/ActivityTimeline";
-import { CmsLayout } from "../../components/cms/CmsLayout";
 
 const DashboardScreen = () => {
   const { kpis, orders, users, activities, loading, error, reload } = useDashboard();
 
   return (
-    <CmsLayout>
+    <Box>
       <Box mb={3} display="flex" alignItems="center" justifyContent="space-between">
         <Typography variant="h4" fontWeight={600}>Bảng điều khiển</Typography>
         <Button variant="contained" onClick={reload}>Tải lại</Button>
@@ -31,7 +30,7 @@ const DashboardScreen = () => {
           </Box>
         </>
       )}
-    </CmsLayout>
+    </Box>
   );
 };
 

@@ -1,27 +1,94 @@
-import { Box, IconButton, Avatar, Tooltip, Button, Menu, MenuItem } from '@mui/material';
+import { Box, IconButton, Avatar, Tooltip, Button, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { logout as logoutAction } from '../../store/userSlice';
+import { UserApi } from '../../api/user/UserApi';
 
 interface CmsTopbarProps {
   onToggleSidebar?: () => void;
 }
 
-import React from 'react';
-
 type NotificationItem = { id: string | number; title: string };
 type ActivityItem = { id: string | number; title: string };
 
 export const CmsTopbar = ({ onToggleSidebar }: CmsTopbarProps) => {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [anchorElNotif, setAnchorElNotif] = React.useState<null | HTMLElement>(null);
-  const [anchorElActivity, setAnchorElActivity] = React.useState<null | HTMLElement>(null);
-  const [notifications] = React.useState<NotificationItem[]>([
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [anchorElNotif, setAnchorElNotif] = useState<null | HTMLElement>(null);
+  const [anchorElActivity, setAnchorElActivity] = useState<null | HTMLElement>(null);
+  const [openPasswordDialog, setOpenPasswordDialog] = useState(false);
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const user = useSelector((state: any) => state.user.user);
+
+  const [notifications] = useState<NotificationItem[]>([
     { id: 1, title: 'Bạn có đơn hàng mới' },
     { id: 2, title: 'Khách hàng vừa đăng ký' },
   ]);
-  const [activities] = React.useState<ActivityItem[]>([
+  const [activities] = useState<ActivityItem[]>([
     { id: 1, title: 'Đã cập nhật sản phẩm' },
     { id: 2, title: 'Đã thêm khách hàng mới' },
   ]);
+
+  const handleLogout = () => {
+    UserApi.logout();
+    dispatch(logoutAction());
+    navigate('/admin/login');
+    setAnchorEl(null);
+  };
+
+  const handleChangePassword = async () => {
+    setPasswordError('');
+    
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      setPasswordError('Vui lòng điền đầy đủ thông tin');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Mật khẩu mới không khớp');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setPasswordError('Mật khẩu mới phải có ít nhất 6 ký tự');
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      await UserApi.resetPassword(oldPassword, newPassword);
+      setPasswordError('');
+      setOpenPasswordDialog(false);
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      // Show success message
+      alert('Đổi mật khẩu thành công!');
+    } catch (err) {
+      setPasswordError('Đổi mật khẩu thất bại. Kiểm tra lại mật khẩu cũ.');
+      console.error(err);
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const getAvatarLabel = () => {
+    if (user?.name) {
+      return user.name.charAt(0).toUpperCase();
+    }
+    if (user?.username) {
+      return user.username.charAt(0).toUpperCase();
+    }
+    return 'U';
+  };
 
   return (
     <Box display="flex" alignItems="center" justifyContent="space-between" px={2} height={56} borderBottom={theme => `1px solid ${theme.palette.divider}`} bgcolor="background.paper">
@@ -76,12 +143,14 @@ export const CmsTopbar = ({ onToggleSidebar }: CmsTopbarProps) => {
         </Menu>
 
         {/* Tài khoản */}
-        <Tooltip title="Tài khoản">
+        <Tooltip title={user?.username || 'Tài khoản'}>
           <IconButton
             size="small"
             onClick={e => setAnchorEl(e.currentTarget)}
           >
-            <Avatar sx={{ width: 32, height: 32 }}>U</Avatar>
+            <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
+              {getAvatarLabel()}
+            </Avatar>
           </IconButton>
         </Tooltip>
         <Menu
@@ -91,17 +160,67 @@ export const CmsTopbar = ({ onToggleSidebar }: CmsTopbarProps) => {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
+          <MenuItem disabled>
+            👤 {user?.username || 'Người dùng'}
+          </MenuItem>
+          <MenuItem disabled>
+            📧 {user?.emailAddress || ''}
+          </MenuItem>
           <MenuItem onClick={() => { /* Xử lý chuyển đến trang hồ sơ */ setAnchorEl(null); }}>
             Hồ sơ
           </MenuItem>
-          <MenuItem onClick={() => { /* Xử lý đổi mật khẩu */ setAnchorEl(null); }}>
+          <MenuItem onClick={() => { setOpenPasswordDialog(true); setAnchorEl(null); }}>
             Đổi mật khẩu
           </MenuItem>
-          <MenuItem onClick={() => { /* Xử lý đăng xuất */ setAnchorEl(null); }}>
+          <MenuItem onClick={handleLogout}>
             Đăng xuất
           </MenuItem>
         </Menu>
       </Box>
+
+      {/* Dialog đổi mật khẩu */}
+      <Dialog open={openPasswordDialog} onClose={() => !isChangingPassword && setOpenPasswordDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Đổi mật khẩu</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+          <TextField
+            label="Mật khẩu cũ"
+            type="password"
+            value={oldPassword}
+            onChange={(e) => setOldPassword(e.target.value)}
+            fullWidth
+            disabled={isChangingPassword}
+          />
+          <TextField
+            label="Mật khẩu mới"
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            fullWidth
+            disabled={isChangingPassword}
+          />
+          <TextField
+            label="Xác nhận mật khẩu mới"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            fullWidth
+            disabled={isChangingPassword}
+          />
+          {passwordError && (
+            <Box sx={{ color: 'error.main', fontSize: '0.875rem' }}>
+              {passwordError}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenPasswordDialog(false)} disabled={isChangingPassword}>
+            Hủy
+          </Button>
+          <Button onClick={handleChangePassword} variant="contained" disabled={isChangingPassword}>
+            {isChangingPassword ? 'Đang xử lý...' : 'Cập nhật'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

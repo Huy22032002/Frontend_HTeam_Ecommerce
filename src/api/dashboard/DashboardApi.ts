@@ -11,29 +11,32 @@ function getAuthHeader() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-const api = axios.create({
-  baseURL: API_BASE,
-  headers: getAuthHeader(),
-});
-
 // We return the `data` property from the response for convenience
 
 export const fetchDashboardKPIs = async (): Promise<KPI[]> => {
-  const response = await api.get('/kpis');
+  const response = await axios.get(`${API_BASE}/kpis`, {
+    headers: getAuthHeader(),
+  });
   return response.data;
 };
 
 export const fetchRecentOrders = async (): Promise<Order[]> => {
-  const response = await api.get('/recent-orders');
+  const response = await axios.get(`${API_BASE}/recent-orders`, {
+    headers: getAuthHeader(),
+  });
   return response.data;
 };
 
 export const fetchRecentUsers = async (): Promise<UserSummary[]> => {
-  const response = await api.get('/recent-users');
+  const response = await axios.get(`${API_BASE}/recent-users`, {
+    headers: getAuthHeader(),
+  });
   return response.data;
 };
 
 export const fetchActivity = async (): Promise<ActivityItem[]> => {
-  const response = await api.get('/activities');
+  const response = await axios.get(`${API_BASE}/activities`, {
+    headers: getAuthHeader(),
+  });
   return response.data;
 };

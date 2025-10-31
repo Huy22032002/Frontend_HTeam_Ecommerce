@@ -1,12 +1,11 @@
-import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip } from '@mui/material';
-import { CmsLayout } from '../../components/cms/CmsLayout';
+import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip, Box } from '@mui/material';
 
 const returnsData = [
   { id: 'RET-3001', orderId: 'ORD-1003', reason: 'Sai sản phẩm', status: 'REQUESTED', createdAt: '2025-10-04' },
 ];
 
 const ReturnListScreen = () => (
-  <CmsLayout>
+  <Box>
     <Typography variant="h4" fontWeight={600} mb={2}>Đổi trả hàng</Typography>
     <Table size="small">
       <TableHead>
@@ -30,7 +29,7 @@ const ReturnListScreen = () => (
         ))}
       </TableBody>
     </Table>
-  </CmsLayout>
+  </Box>
 );
 
 export default ReturnListScreen;

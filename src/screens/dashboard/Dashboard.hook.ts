@@ -13,7 +13,38 @@ export const useDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = async () => {
+  // Load dashboard KPIs only on mount
+  const loadKPIs = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const kpiRes = await fetchDashboardKPIs();
+      setKpis(kpiRes);
+    } catch (e: any) {
+      setError(e?.message || "Failed to load KPIs");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load other data when needed (lazy loading)
+  const loadOtherData = async () => {
+    try {
+      const [orderRes, userRes, actRes] = await Promise.all([
+        fetchRecentOrders(),
+        fetchRecentUsers(),
+        fetchActivity(),
+      ]);
+      setOrders(orderRes);
+      setUsers(userRes);
+      setActivities(actRes);
+    } catch (e: any) {
+      console.error("Failed to load dashboard data:", e);
+    }
+  };
+
+  // Reload all data
+  const reload = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -28,15 +59,20 @@ export const useDashboard = () => {
       setUsers(userRes);
       setActivities(actRes);
     } catch (e: any) {
-      setError(e?.message || "Failed to load dashboard");
+      setError(e?.message || "Failed to reload dashboard");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    load();
+    loadKPIs();
+    // Load other data after a short delay (lazy loading)
+    const timer = setTimeout(() => {
+      loadOtherData();
+    }, 500);
+    return () => clearTimeout(timer);
   }, []);
 
-  return { kpis, orders, users, activities, loading, error, reload: load };
+  return { kpis, orders, users, activities, loading, error, reload };
 };

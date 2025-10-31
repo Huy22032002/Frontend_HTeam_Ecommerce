@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip, Box, TextField, MenuItem, Select, InputLabel, FormControl, CircularProgress, Paper, type SelectChangeEvent } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import { CmsLayout } from '../../components/cms/CmsLayout';
 import { useOrders } from '../../hooks/useOrders';
 
 const OrderListScreen = () => {
@@ -22,7 +21,7 @@ const OrderListScreen = () => {
   };
 
   return (
-    <CmsLayout>
+    <Box>
       <Typography variant="h4" fontWeight={600} mb={2}>Hoá đơn bán</Typography>
       <Paper sx={{ p: 2, mb: 2 }}>
         <Box display="flex" flexWrap="wrap" gap={2} alignItems="center">
@@ -87,7 +86,7 @@ const OrderListScreen = () => {
           </TableBody>
         </Table>
       )}
-    </CmsLayout>
+    </Box>
   );
 };
 

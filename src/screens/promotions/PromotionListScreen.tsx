@@ -1,42 +1,60 @@
-import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip, Button, Box } from '@mui/material';
-import { CmsLayout } from '../../components/cms/CmsLayout';
+import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip, Button, Box, CircularProgress } from '@mui/material';
+import { usePromotions } from '../../hooks/usePromotions';
 
-const promotions = [
-  { id: 'KM-01', name: 'Giảm giá 10%', type: 'Phần trăm', status: 'ACTIVE', start: '2025-10-01', end: '2025-10-31' },
-  { id: 'KM-02', name: 'Tặng quà', type: 'Quà tặng', status: 'INACTIVE', start: '2025-09-01', end: '2025-09-30' },
-];
+const PromotionListScreen = () => {
+  const { promotions, loading, error } = usePromotions();
 
-const PromotionListScreen = () => (
-  <CmsLayout>
-    <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-      <Typography variant="h4" fontWeight={600}>Khuyến mãi</Typography>
-      <Button variant="contained" size="small">+ Thêm</Button>
+  return (
+    <Box>
+      <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+        <Typography variant="h4" fontWeight={600}>Khuyến mãi</Typography>
+        <Button variant="contained" size="small">+ Thêm</Button>
+      </Box>
+
+      {loading ? (
+        <Box display="flex" justifyContent="center" mt={4}>
+          <CircularProgress />
+        </Box>
+      ) : error ? (
+        <Typography color="error">Lỗi: {String(error)}</Typography>
+      ) : (
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Mã</TableCell>
+              <TableCell>Tên chương trình</TableCell>
+              <TableCell>Loại</TableCell>
+              <TableCell>Giá trị</TableCell>
+              <TableCell>Trạng thái</TableCell>
+              <TableCell>Ngày bắt đầu</TableCell>
+              <TableCell>Ngày kết thúc</TableCell>
+              <TableCell>Lần áp dụng</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {promotions.map(p => (
+              <TableRow key={p.id} hover>
+                <TableCell>{p.promotionCode}</TableCell>
+                <TableCell>{p.promotionName}</TableCell>
+                <TableCell>{p.type === 'PERCENTAGE' ? 'Phần trăm' : p.type === 'FIXED_AMOUNT' ? 'Tiền cố định' : 'Quà tặng'}</TableCell>
+                <TableCell>{p.type === 'PERCENTAGE' ? `${p.value}%` : `${p.value?.toLocaleString()}₫`}</TableCell>
+                <TableCell>
+                  <Chip 
+                    size="small" 
+                    color={p.status === 'ACTIVE' ? 'success' : 'default'} 
+                    label={p.status === 'ACTIVE' ? 'Đang chạy' : 'Ngừng'} 
+                  />
+                </TableCell>
+                <TableCell>{new Date(p.startDate).toLocaleDateString('vi-VN')}</TableCell>
+                <TableCell>{new Date(p.endDate).toLocaleDateString('vi-VN')}</TableCell>
+                <TableCell>{p.appliedCount || 0}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
     </Box>
-    <Table size="small">
-      <TableHead>
-        <TableRow>
-          <TableCell>Mã</TableCell>
-          <TableCell>Tên chương trình</TableCell>
-          <TableCell>Loại</TableCell>
-          <TableCell>Trạng thái</TableCell>
-          <TableCell>Ngày bắt đầu</TableCell>
-          <TableCell>Ngày kết thúc</TableCell>
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {promotions.map(p => (
-          <TableRow key={p.id} hover>
-            <TableCell>{p.id}</TableCell>
-            <TableCell>{p.name}</TableCell>
-            <TableCell>{p.type}</TableCell>
-            <TableCell><Chip size="small" color={p.status === 'ACTIVE' ? 'success' : 'default'} label={p.status === 'ACTIVE' ? 'Đang chạy' : 'Ngừng'} /></TableCell>
-            <TableCell>{p.start}</TableCell>
-            <TableCell>{p.end}</TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  </CmsLayout>
-);
+  );
+};
 
 export default PromotionListScreen;
