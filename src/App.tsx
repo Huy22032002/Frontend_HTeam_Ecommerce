@@ -13,9 +13,14 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import Topbar from "./components/Topbar";
 
 //screens
+import TestProductForm from "./screens/products/listProduct/TestCreateProduct";
 import LoginScreen from "./screens/login/LoginScreen";
 import SignupScreen from "./screens/signup/SignupScreen";
 import HomeScreen from "./screens/home/HomeScreen";
+import ProductsByCategory from "./screens/products/listProduct/ProductsByCategory";
+import DashboardScreen from "./screens/dashboard/DashboardScreen";
+import Footer from "./components/Footer";
+import ProductVariantDetail from "./screens/products/productDetail/ProductVariantDetail";
 
 function AppContent() {
   const location = useLocation();
@@ -32,7 +37,18 @@ function AppContent() {
           <Route path="/login" element={<LoginScreen />} />
           <Route path="/signup" element={<SignupScreen />} />
           <Route path="/" element={<HomeScreen />} />
+             <Route
+            path="/product-category/:categoryId"
+            element={<ProductsByCategory />}
+          />
+          <Route
+            path="/product/:variantId"
+            element={<ProductVariantDetail />}
+          />
+          <Route path="/testCreate" element={<TestProductForm />} />
+        
         </Routes>
+        {!hideLayout && <Footer />}
       </main>
     </div>
   );

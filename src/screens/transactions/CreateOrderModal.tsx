@@ -69,7 +69,7 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({ open, onClose, onSu
     // Auto-fill price từ sản phẩm được chọn
     const product = products.find(p => p.id === parseInt(productId));
     if (product && product.variants && product.variants[0]) {
-      setPrice(product.variants[0]. || 0);
+      setPrice(0); // Set default price
     }
   };
 
@@ -129,7 +129,7 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({ open, onClose, onSu
         shippingAddress,
       };
 
-      await OrderApi.create(orderData);
+      await OrderApi.create(orderData as any);
       alert('Tạo đơn hàng thành công!');
       onSuccess();
       handleClose();
@@ -213,7 +213,7 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({ open, onClose, onSu
                 >
                   {products.map(product => (
                     <MenuItem key={product.id} value={product.id}>
-                      {product.name}
+                      {product.productName}
                     </MenuItem>
                   ))}
                 </Select>
