@@ -17,13 +17,13 @@ const BannerSlider = () => {
     >
       <SwiperSlide>
         <img
-          src="/src/assets/banner.jpg"
+          src="/src/assets/banner3.jpg"
           alt="banner1"
           style={{
             width: "100%",
             borderRadius: 8,
             objectFit: "cover",
-            height: 320,
+            height: 400,
           }}
         />
       </SwiperSlide>
@@ -35,19 +35,19 @@ const BannerSlider = () => {
             width: "100%",
             borderRadius: 8,
             objectFit: "cover",
-            height: 320,
+            height: 400,
           }}
         />
       </SwiperSlide>
       <SwiperSlide>
         <img
-          src="/src/assets/banner.jpg"
+          src="/src/assets/banner2.jpg"
           alt="banner3"
           style={{
             width: "100%",
             borderRadius: 8,
             objectFit: "cover",
-            height: 320,
+            height: 400,
           }}
         />
       </SwiperSlide>

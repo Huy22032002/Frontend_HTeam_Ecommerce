@@ -1,9 +1,9 @@
 export interface Availability {
-  id: number;
+  id?: number;
   quantity: number;
   regularPrice: number;
   salePrice: number;
-  productStatus: boolean;
-  productOptionQuantityOrderMin: number;
-  productOptionQuantityOrderMax: number;
+  productStatus?: boolean;
+  productOptionQuantityOrderMin?: number;
+  productOptionQuantityOrderMax?: number;
 }

@@ -17,10 +17,12 @@ const Footer = () => {
   return (
     <Box
       sx={{
-        mt: 4,
         pt: 6,
         pb: 2,
         px: { xs: 2, md: 8 },
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "center",
       }}
     >
       <Grid container spacing={4}>
