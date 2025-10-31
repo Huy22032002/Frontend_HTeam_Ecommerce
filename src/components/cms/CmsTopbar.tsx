@@ -26,7 +26,7 @@ export const CmsTopbar = ({ onToggleSidebar }: CmsTopbarProps) => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const user = useSelector((state: any) => state.user.user);
+  const user = useSelector((state: any) => state.user);
 
   const [notifications] = useState<NotificationItem[]>([
     { id: 1, title: 'Bạn có đơn hàng mới' },
