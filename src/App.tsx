@@ -35,6 +35,7 @@ import PromotionListScreen from "./screens/promotions/PromotionListScreen";
 import InvoiceListScreen from "./screens/transactions/InvoiceListScreen";
 import PaymentListScreen from "./screens/transactions/PaymentListScreen";
 import Footer from "./components/Footer";
+import ProductVariantDetail from "./screens/products/productDetail/ProductVariantDetail";
 
 function AppContent() {
   const location = useLocation();
@@ -70,6 +71,10 @@ function AppContent() {
           <Route
             path="/product-category/:categoryId"
             element={<ProductsByCategory />}
+          />
+          <Route
+            path="/product/:variantId"
+            element={<ProductVariantDetail />}
           />
           <Route path="/testCreate" element={<TestProductForm />} />
           <Route path="/dashboard" element={<DashboardScreen />} />
