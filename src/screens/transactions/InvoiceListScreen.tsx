@@ -5,9 +5,11 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useInvoices } from '../../hooks/useInvoices';
+import { useNavigate } from 'react-router-dom';
 
 const InvoiceListScreen = () => {
   const { invoices, loading, error, filters, setFilters } = useInvoices({ page: 0, size: 20 });
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedInvoiceId, setSelectedInvoiceId] = React.useState<number | null>(null);
 
@@ -27,7 +29,7 @@ const InvoiceListScreen = () => {
   };
 
   const handleViewDetail = (invoiceId: number) => {
-    console.log('Xem chi tiết hóa đơn:', invoiceId);
+    navigate(`/admin/invoices/${invoiceId}`);
     handleMenuClose();
   };
 

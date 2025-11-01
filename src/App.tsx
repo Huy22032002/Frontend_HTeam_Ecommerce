@@ -31,9 +31,19 @@ function AppContent() {
     location.pathname === "/forget-password";
 
   return (
-    <div className="app">
-      <main className="content">
-        {!hideLayout && <Topbar />}
+    <div
+      className="app"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+      }}
+    >
+      {/* Header */}
+      {!hideLayout && <Topbar />}
+
+      {/* Main content */}
+      <main style={{ flex: 1 }}>
         <Routes>
           <Route path="/login" element={<LoginScreen />} />
           <Route path="/signup" element={<SignupScreen />} />
@@ -50,8 +60,10 @@ function AppContent() {
           <Route path="/testCreate" element={<TestProductForm />} />
           <Route path="/cart" element={<CartScreen />} />
         </Routes>
-        {!hideLayout && <Footer />}
       </main>
+
+      {/* Footer */}
+      {!hideLayout && <Footer />}
     </div>
   );
 }

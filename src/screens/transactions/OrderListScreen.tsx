@@ -143,7 +143,7 @@ const OrderListScreen = () => {
                 </TableCell>
                 <TableCell>{o.id}</TableCell>
                 <TableCell>{o.customerName}</TableCell>
-                <TableCell align="right">{o.total.toLocaleString()}₫</TableCell>
+                <TableCell align="right">{(o.total || 0).toLocaleString()}₫</TableCell>
                 <TableCell><Chip size="small" color={o.status === 'PAID' ? 'success' : o.status === 'PENDING' ? 'warning' : 'default'} label={o.status} /></TableCell>
                 <TableCell>{new Date(o.createdAt).toLocaleDateString()}</TableCell>
               </TableRow>

@@ -31,4 +31,16 @@ export const InvoiceApi = {
   // Lấy chi tiết hóa đơn theo id
   getById: (id: string) =>
     axios.get(`${API_BASE}/${id}`, { headers: getAuthHeader() }),
+
+  // Lấy chi tiết hoá đơn đầy đủ
+  getDetail: (id: string | number) =>
+    axios.get(`${API_BASE}/${id}/detail`, { headers: getAuthHeader() }),
+
+  // Lấy hóa đơn theo Order ID
+  getByOrderId: (orderId: string | number) =>
+    axios.get(`${import.meta.env.VITE_BASE_URL}/api/admins/orders/${orderId}/invoice`, { headers: getAuthHeader() }),
+
+  // Tạo hóa đơn từ Order ID
+  createFromOrder: (orderId: string | number) =>
+    axios.post(`${import.meta.env.VITE_BASE_URL}/api/admins/orders/${orderId}/invoice`, {}, { headers: getAuthHeader() }),
 };
