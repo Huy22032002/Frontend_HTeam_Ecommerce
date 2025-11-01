@@ -20,6 +20,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { setCart, updateCartItemQuantity } from "../../store/cartSlice";
 import { CartApi } from "../../api/cart/cartApi";
+import { useNavigate } from "react-router-dom";
 // import { updateCartItemQuantity, removeCartItem } from "../../store/cartSlice";
 
 const CartScreen: React.FC = () => {
@@ -27,6 +28,8 @@ const CartScreen: React.FC = () => {
   const colors = tokens(theme.palette.mode);
   const dispatch = useDispatch();
   const cart = useSelector((state: RootState) => state.cart.cart);
+
+  const navigate = useNavigate();
 
   const handleQuantityChange = async (item: CartItem, type: "inc" | "dec") => {
     if (!cart?.cartCode) return;
@@ -171,6 +174,7 @@ const CartScreen: React.FC = () => {
               </Typography>
             </Stack>
             <Button
+              onClick={() => navigate("/checkout")}
               fullWidth
               variant="contained"
               sx={{
