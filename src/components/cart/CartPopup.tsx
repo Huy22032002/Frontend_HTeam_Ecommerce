@@ -69,8 +69,10 @@ const CartPopup: React.FC<CartPopupProps> = ({ open, onClose, cartItems }) => {
     }
   };
 
-  const handleClickOption = async (optionId: number) => {
-    navigate(`/product/${optionId}`);
+  const handleClickOption = async (optionId: number | undefined) => {
+    if (optionId) {
+      navigate(`/product/${optionId}`);
+    }
   };
 
   return (
@@ -143,18 +145,35 @@ const CartPopup: React.FC<CartPopupProps> = ({ open, onClose, cartItems }) => {
                 flex={1}
                 p={1}
               >
-                <Box
-                  component="img"
-                  src={item.prductImage || "/src/placeholder.png"}
-                  alt={item.productName}
-                  sx={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 1,
-                    objectFit: "cover",
-                    border: "1px solid #ddd",
-                  }}
-                />
+                {item.images && item.images.length > 0 ? (
+                  <Box
+                    component="img"
+                    src={item.images[0].productImageUrl}
+                    alt={item.productName}
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 1,
+                      objectFit: "cover",
+                      border: "1px solid #ddd",
+                    }}
+                  />
+                ) : (
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 1,
+                      border: "1px solid #ddd",
+                      bgcolor: "#f0f0f0",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <ShoppingBagOutlinedIcon fontSize="small" />
+                  </Box>
+                )}
 
                 <Box>
                   <Typography fontWeight="500">{item.productName}</Typography>

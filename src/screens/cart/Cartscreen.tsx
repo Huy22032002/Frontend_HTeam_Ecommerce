@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -18,14 +19,14 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { formatCurrency } from "../../utils/formatCurrency";
-import { setCart, updateCartItemQuantity } from "../../store/cartSlice";
+import { setCart } from "../../store/cartSlice";
 import { CartApi } from "../../api/cart/cartApi";
-// import { updateCartItemQuantity, removeCartItem } from "../../store/cartSlice";
 
 const CartScreen: React.FC = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const cart = useSelector((state: RootState) => state.cart.cart);
 
   const handleQuantityChange = async (item: CartItem, type: "inc" | "dec") => {
@@ -97,16 +98,49 @@ const CartScreen: React.FC = () => {
                     direction="row"
                     justifyContent="space-between"
                     alignItems="center"
-                    sx={{ borderBottom: "1px solid #eee", pb: 1 }}
+                    sx={{ borderBottom: "1px solid #eee", pb: 2 }}
                   >
-                    <Box>
-                      <Typography variant="subtitle1">
-                        Sản phẩm {item.productName}
-                      </Typography>
-                      <Typography variant="body2" color="gray">
-                        {formatCurrency(item.currentPrice)}
-                      </Typography>
-                    </Box>
+                    <Stack direction="row" spacing={2} alignItems="center" sx={{ flex: 1 }}>
+                      {item.images && item.images.length > 0 ? (
+                        <Box
+                          component="img"
+                          src={item.images[0].productImageUrl}
+                          alt={item.productName}
+                          sx={{
+                            width: 80,
+                            height: 80,
+                            objectFit: "cover",
+                            borderRadius: 1,
+                          }}
+                        />
+                      ) : (
+                        <Box
+                          sx={{
+                            width: 80,
+                            height: 80,
+                            borderRadius: 1,
+                            border: "1px solid #ddd",
+                            bgcolor: "#f0f0f0",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          🛍️
+                        </Box>
+                      )}
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="subtitle1">
+                          {item.productName}
+                        </Typography>
+                        <Typography variant="body2" color="gray">
+                          SKU: {item.sku}
+                        </Typography>
+                        <Typography variant="body1" fontWeight={600} color="#FF6B6B" mt={1}>
+                          {formatCurrency(item.currentPrice)}
+                        </Typography>
+                      </Box>
+                    </Stack>
                     <Stack direction="row" spacing={1} alignItems="center">
                       <IconButton
                         onClick={() => handleQuantityChange(item, "dec")}
@@ -173,11 +207,18 @@ const CartScreen: React.FC = () => {
             <Button
               fullWidth
               variant="contained"
+              disabled={!cart?.items?.length}
+              onClick={() => {
+                navigate("/checkout");
+              }}
               sx={{
                 mt: 3,
                 bgcolor: "#00CFFF",
                 textTransform: "none",
                 borderRadius: 5,
+                "&:disabled": {
+                  bgcolor: "#ccc",
+                },
               }}
             >
               Đặt hàng

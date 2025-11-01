@@ -50,4 +50,8 @@ export const OrderApi = {
   // Xoá đơn hàng
   delete: (id: string) =>
     axios.delete(`${API_BASE}/${id}`, { headers: getAuthHeader() }),
+
+  // Khách hàng tạo dơn hàng
+  createByCustomer: (order: Partial<Order>) =>
+    axios.post(`${import.meta.env.VITE_BASE_URL}/api/customers/orders`, order, { headers: getAuthHeader() }),
 };
