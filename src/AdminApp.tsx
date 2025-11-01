@@ -19,6 +19,7 @@ import UserManagementScreen from "./screens/users/UserManagementScreen";
 import ProductListScreen from "./screens/products/ProductListScreen";
 import CategoryListScreen from "./screens/products/CategoryListScreen";
 import OrderListScreen from "./screens/transactions/OrderListScreen";
+import OrderDetailScreen from "./screens/transactions/OrderDetailScreen";
 import ShipmentListScreen from "./screens/transactions/ShipmentListScreen";
 import ReturnListScreen from "./screens/transactions/ReturnListScreen";
 import WarehouseScreen from "./screens/warehouse/WarehouseScreen";
@@ -28,6 +29,7 @@ import PageListScreen from "./screens/pages/PageListScreen";
 import PromotionListScreen from "./screens/promotions/PromotionListScreen";
 import InvoiceListScreen from "./screens/transactions/InvoiceListScreen";
 import PaymentListScreen from "./screens/transactions/PaymentListScreen";
+import CreateOrderScreen from "./screens/admin/CreateOrderScreen";
 
 function AdminAppContent() {
   return (
@@ -48,6 +50,8 @@ function AdminAppContent() {
               <Route path="products" element={<ProductListScreen />} />
               <Route path="categories" element={<CategoryListScreen />} />
               <Route path="orders" element={<OrderListScreen />} />
+              <Route path="orders/create" element={<CreateOrderScreen />} />
+              <Route path="orders/:orderId" element={<OrderDetailScreen />} />
               <Route path="invoices" element={<InvoiceListScreen />} />
               <Route path="payments" element={<PaymentListScreen />} />
               <Route path="shipments" element={<ShipmentListScreen />} />

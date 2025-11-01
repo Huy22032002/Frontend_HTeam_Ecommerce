@@ -3,8 +3,6 @@ const backendEndpoint = import.meta.env.VITE_BASE_URL;
 import axios from "axios";
 import type { Manufacturer } from "../../models/manufacturer/Manufacturer";
 
-const token = localStorage.getItem("token");
-
 export const ManufacturerApi = {
   getAllByCategoryId: async (
     categoryId: number
@@ -14,9 +12,6 @@ export const ManufacturerApi = {
         `${backendEndpoint}/api/public/manufacturers`,
         {
           params: { categoryId: categoryId },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         }
       );
       return response.data;

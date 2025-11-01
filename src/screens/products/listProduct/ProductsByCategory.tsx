@@ -106,7 +106,7 @@ const ProductsByCategory = () => {
               sx={{ width: 200, height: 32, background: colors.primary[400] }}
               options={options}
               value={selectedValue}
-              onChange={(event, newValue) => setSelectedValue(newValue || "")}
+              onChange={(_event, newValue) => setSelectedValue(newValue || "")}
               renderInput={(params) => (
                 <TextField
                   {...params}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Box, Button, Typography, Grid } from "@mui/material";
 import axios from "axios";
 
@@ -148,10 +148,10 @@ const TestProductForm = () => {
               alignItems="center"
               mb={1}
             >
-              <Grid item xs={3}>
+              <Grid sx={{ gridColumn: 'span 3' }}>
                 <Typography>{option.value}</Typography>
               </Grid>
-              <Grid item xs={6}>
+              <Grid sx={{ gridColumn: 'span 6' }}>
                 <input
                   type="file"
                   accept="image/*"
@@ -164,7 +164,7 @@ const TestProductForm = () => {
                   }
                 />
               </Grid>
-              <Grid item xs={3}>
+              <Grid sx={{ gridColumn: 'span 3' }}>
                 {option.image && <Typography>{option.image.name}</Typography>}
               </Grid>
             </Grid>

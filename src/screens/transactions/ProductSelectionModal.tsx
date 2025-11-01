@@ -52,7 +52,7 @@ const ProductSelectionModal: React.FC<ProductSelectionModalProps> = ({
 
   // Flatten all variants from all products
   const allVariants = products.flatMap(product =>
-    (product.variants || []).map(variant => ({
+    (product.variants || []).map((variant: any) => ({
       ...variant,
       productId: product.id,
       productName: product.productName,

@@ -1,5 +1,4 @@
 import axios from 'axios';
-import type { WarehouseReadableDTO } from '../../models/warehouses/Warehouse';
 
 const API_BASE = import.meta.env.VITE_BASE_URL + '/api/warehouses';
 

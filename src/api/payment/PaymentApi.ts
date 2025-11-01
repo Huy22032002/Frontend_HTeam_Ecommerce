@@ -1,5 +1,4 @@
 import axios from 'axios';
-import type { PaymentReadableDTO } from '../../models/payments/Payment';
 
 const API_BASE = import.meta.env.VITE_BASE_URL + '/api/admins/payments';
 

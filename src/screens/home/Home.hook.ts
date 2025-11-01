@@ -31,12 +31,12 @@ const useHome = () => {
     setSuggestProducts(data.content);
   };
 
-  const [listTopSearch, setListTopSearch] = useState([
+  const listTopSearch = [
     "ThinkPad T14 Gen5",
     "attach shark x3",
     "xreal air 2 ultra",
     "attack shark r1",
-  ]);
+  ];
 
   return {
     //categories

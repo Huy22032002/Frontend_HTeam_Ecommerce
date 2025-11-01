@@ -1,7 +1,6 @@
 import axios from 'axios';
-import type { PromotionReadableDTO } from '../../models/promotions/Promotion';
 
-const API_BASE = import.meta.env.VITE_BASE_URL + '/api/promotions';
+const API_BASE = import.meta.env.VITE_BASE_URL + '/api';
 
 function getAuthHeader() {
   const token = localStorage.getItem('token');
@@ -14,7 +13,11 @@ export interface PromotionFilters {
 }
 
 export const PromotionApi = {
-  // Lấy danh sách khuyến mãi
+  // Lấy khuyến mãi active theo SKU sản phẩm (công khai - không cần token)
+  getByProductSku: (sku: string) =>
+    axios.get(`${API_BASE}/promotions/by-product-sku?sku=${sku}`),
+
+  // Lấy tất cả khuyến mãi (admin)
   getAll: (filters: PromotionFilters = {}) => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
@@ -23,22 +26,22 @@ export const PromotionApi = {
       }
     });
 
-    return axios.get(`${API_BASE}?${params.toString()}`, { headers: getAuthHeader() });
+    return axios.get(`${API_BASE}/admins/promotions?${params.toString()}`, { headers: getAuthHeader() });
   },
 
-  // Lấy chi tiết khuyến mãi theo id
-  getById: (id: string) =>
-    axios.get(`${API_BASE}/${id}`, { headers: getAuthHeader() }),
+  // Lấy danh sách khuyến mãi theo trạng thái active (admin)
+  getByActive: (active: boolean) =>
+    axios.get(`${API_BASE}/admins/promotions/active?active=${active}`, { headers: getAuthHeader() }),
 
-  // Tạo khuyến mãi mới
+  // Tạo khuyến mãi mới (admin)
   create: (data: any) =>
-    axios.post(`${API_BASE}`, data, { headers: getAuthHeader() }),
+    axios.post(`${API_BASE}/admins/promotions`, data, { headers: getAuthHeader() }),
 
-  // Cập nhật khuyến mãi
-  update: (id: string, data: any) =>
-    axios.put(`${API_BASE}/${id}`, data, { headers: getAuthHeader() }),
+  // Xóa khuyến mãi (admin)
+  delete: (id: number) =>
+    axios.delete(`${API_BASE}/admins/promotions/${id}`, { headers: getAuthHeader() }),
 
-  // Xóa khuyến mãi
-  delete: (id: string) =>
-    axios.delete(`${API_BASE}/${id}`, { headers: getAuthHeader() }),
+  // Cập nhật trạng thái active (admin)
+  setActive: (id: number, active: boolean) =>
+    axios.post(`${API_BASE}/admins/promotions/set-active`, { id, active }, { headers: getAuthHeader() }),
 };

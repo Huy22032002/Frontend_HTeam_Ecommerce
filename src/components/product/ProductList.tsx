@@ -17,11 +17,8 @@ const ProductList: React.FC = () => {
             style={{ border: "1px solid #eee", padding: 16, width: 220 }}
           >
             <h4>{product.productName}</h4>
-            <div>Loại: {product.productType}</div>
-            <div>
-              Đánh giá: {product.productReviewAvg ?? 0} (
-              {product.productReviewCount ?? 0} đánh giá)
-            </div>
+            <div>Danh mục: {product.categories?.join(", ") || "N/A"}</div>
+            <div>Nhà sản xuất: {product.manufacturerName || "N/A"}</div>
             <div>Còn hàng: {product.available ? "Có" : "Hết"}</div>
           </div>
         ))}

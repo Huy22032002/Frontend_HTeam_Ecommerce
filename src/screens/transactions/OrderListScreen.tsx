@@ -5,10 +5,11 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import { useNavigate } from 'react-router-dom';
 import { useOrders } from '../../hooks/useOrders';
-import { OrderApi } from '../../api/order/OrderApi';
 
 const OrderListScreen = () => {
+  const navigate = useNavigate();
   const { orders, loading, error, filters, setFilters } = useOrders({ page: 0, size: 20 });
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedOrderId, setSelectedOrderId] = React.useState<string | null>(null);
@@ -24,32 +25,19 @@ const OrderListScreen = () => {
   };
 
   const handleCreateOrder = () => {
-    console.log('Tạo đơn hàng mới');
-    // Call API to create order
-    OrderApi.create({
-      id: '',
-      customerName: '',
-      total: 0,
-      status: 'PENDING',
-      createdAt: new Date().toISOString(),
-    })
-      .then(() => {
-        console.log('Tạo đơn hàng thành công');
-        // Reload orders list
-      })
-      .catch((err) => {
-        console.error('Lỗi tạo đơn hàng:', err);
-      });
-    handleMenuClose();
+    navigate('/admin/orders/create');
   };
 
   const handleCancelOrder = (orderId: string) => {
-    console.log('Huỷ đơn hàng:', orderId);
+    if (window.confirm('Bạn có chắc chắn muốn huỷ đơn hàng này không?')) {
+      console.log('Huỷ đơn hàng:', orderId);
+      // TODO: Gọi API xoá đơn hàng
+    }
     handleMenuClose();
   };
 
   const handleViewDetail = (orderId: string) => {
-    console.log('Xem chi tiết đơn hàng:', orderId);
+    navigate(`/admin/orders/${orderId}`);
     handleMenuClose();
   };
 
@@ -145,9 +133,6 @@ const OrderListScreen = () => {
                     open={selectedOrderId === o.id && Boolean(anchorEl)}
                     onClose={handleMenuClose}
                   >
-                    <MenuItem onClick={handleCreateOrder}>
-                      <AddIcon fontSize="small" sx={{ mr: 1 }} /> Tạo đơn hàng
-                    </MenuItem>
                     <MenuItem onClick={() => handleViewDetail(o.id)}>
                       <VisibilityIcon fontSize="small" sx={{ mr: 1 }} /> Xem chi tiết
                     </MenuItem>

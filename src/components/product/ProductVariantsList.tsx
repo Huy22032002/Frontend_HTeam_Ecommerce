@@ -37,11 +37,8 @@ const ProductVariantList = ({
       <Grid container spacing={2} justifyContent="center">
         {data.map((item) => (
           <Grid
-            item
             key={item.id}
-            xs={12}
-            sm={6}
-            md={12 / columns}
+            sx={{ gridColumn: { xs: '1 / -1', sm: '1 / span 6', md: `1 / span ${Math.round(12 / columns)}` } }}
             onClick={() => onItemClick && onItemClick(item)}
           >
             <ProductVariant data={item} />

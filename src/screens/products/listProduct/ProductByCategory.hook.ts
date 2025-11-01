@@ -10,7 +10,6 @@ const useProductByCategory = () => {
   const [manufacturers, setManufacturers] = useState<Manufacturer[]>([]);
   const [variants, setVariants] = useState<ProductVariants[]>([]);
   const [categoryName, setCategoryName] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const getListManufacturerByCategory = async (categoryId: number) => {
@@ -52,7 +51,6 @@ const useProductByCategory = () => {
   return {
     manufacturers,
     variants,
-    loading,
     error,
     getListManufacturerByCategory,
     getListProductByCategoryId,

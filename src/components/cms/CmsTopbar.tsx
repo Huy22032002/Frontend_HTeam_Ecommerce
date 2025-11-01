@@ -1,6 +1,6 @@
 import { Box, IconButton, Avatar, Tooltip, Button, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logout as logoutAction } from '../../store/userSlice';
@@ -26,7 +26,7 @@ export const CmsTopbar = ({ onToggleSidebar }: CmsTopbarProps) => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const user = useSelector((state: any) => state.user.user);
+  const user = useSelector((state: any) => state.user);
 
   const [notifications] = useState<NotificationItem[]>([
     { id: 1, title: 'Bạn có đơn hàng mới' },
@@ -97,7 +97,13 @@ export const CmsTopbar = ({ onToggleSidebar }: CmsTopbarProps) => {
       </Box>
       <Box display="flex" alignItems="center" gap={2}>
         <Button variant="outlined" size="small">THÊM KHÁCH HÀNG</Button>
-        <Button variant="outlined" size="small">BÁN HÀNG</Button>
+        <Button 
+          variant="outlined" 
+          size="small"
+          onClick={() => navigate('/admin/orders/create')}
+        >
+          BÁN HÀNG
+        </Button>
         {/* Thông báo */}
         <Tooltip title="Thông báo">
           <IconButton

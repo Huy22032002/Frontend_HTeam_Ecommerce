@@ -26,17 +26,17 @@ export const useAdminLogin = () => {
                 // Save token
                 localStorage.setItem("token", token);
                 
-                // Dispatch initial user info
-                dispatch(loginAction({
-                    id,
-                    username,
-                    name: username,
-                    emailAddress: "",
-                    gender: false,
-                    dateOfBirth: new Date(),
-                    anonymous: false,
-                    roles: []
-                }));
+                // // Dispatch initial user info
+                // dispatch(loginAction({
+                //     id,
+                //     username,
+                //     name: username,
+                //     emailAddress: "",
+                //     gender: false,
+                //     dateOfBirth: new Date(),
+                //     anonymous: false,
+                //     roles: []
+                // }));
 
                 setMessage("Đăng nhập thành công!");
                 

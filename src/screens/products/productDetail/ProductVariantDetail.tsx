@@ -4,11 +4,11 @@ import {
   CardMedia,
   Chip,
   Divider,
-  Grid,
   Stack,
   Typography,
   useTheme,
 } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import { useEffect } from "react";
 import useVariantDetail from "./ProductVariantDetail.hook";
 import { useParams } from "react-router-dom";
@@ -45,7 +45,7 @@ const ProductVariantDetail = () => {
     <Box sx={{ px: 20, bgcolor: colors.greenAccent[700] }}>
       <Grid container spacing={4} py={4}>
         {/* --- LEFT: IMAGE GALLERY --- */}
-        <Grid bgcolor={"white"} item xs={12} md={6}>
+        <Grid bgcolor={colors.primary[400]} item xs={12} md={6}>
           <Box>
             {/* Ảnh chính */}
             <CardMedia
@@ -115,7 +115,7 @@ const ProductVariantDetail = () => {
         </Grid>
 
         {/* --- RIGHT: PRODUCT INFO --- */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Grid container spacing={1} direction={"column"}>
             <Typography variant="h2" fontWeight="bold">
               {variant?.name}
@@ -191,9 +191,7 @@ const ProductVariantDetail = () => {
               Khuyến mãi
             </Typography>
             <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-              {variant?.options.map(() => (
-                <Chip label={"Chưa có khuyến mãi"} sx={{ cursor: "pointer" }} />
-              ))}
+              <PromotionDisplay sku={currentOption?.sku || ''} />
             </Stack>
 
             {/* Buttons */}
