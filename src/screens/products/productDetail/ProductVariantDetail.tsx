@@ -15,6 +15,7 @@ import { useParams } from "react-router-dom";
 import { tokens } from "../../../theme/theme";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../store/store";
+import type { ProductImage } from "../../../models/products/ProductVariantOption";
 
 const ProductVariantDetail = () => {
   const theme = useTheme();
@@ -44,50 +45,72 @@ const ProductVariantDetail = () => {
     <Box sx={{ px: 20, bgcolor: colors.greenAccent[700] }}>
       <Grid container spacing={4} py={4}>
         {/* --- LEFT: IMAGE GALLERY --- */}
-        <Grid bgcolor={colors.primary[400]} item xs={12} md={6}>
+        <Grid bgcolor={"white"} item xs={12} md={6}>
           <Box>
             {/* Ảnh chính */}
             <CardMedia
               component="img"
-              // src={selectedOption?.images?.[0] ?? "/src/assets/laptop.png"}
-              src={"/src/assets/laptop.png"}
+              src={
+                currentOption?.images?.[0].productImageUrl ??
+                "/src/assets/laptop.png"
+              }
+              // src={"/src/assets/laptop.png"}
               alt={"hinhanh"}
               sx={{
                 width: 800,
                 borderRadius: 2,
-                boxShadow: 3,
-                mb: 2,
-                p: 16,
+                p: 2,
               }}
             />
 
             {/* Danh sách ảnh nhỏ */}
-            <Stack
-              alignItems={"center"}
-              justifyContent={"space-between"}
-              direction="row"
-              spacing={1}
+            <Box
+              sx={{
+                display: "flex",
+                overflowX: "auto",
+                justifyContent: "space-around",
+                gap: 1,
+                py: 1,
+                "&::-webkit-scrollbar": { height: 6 },
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: colors.primary[300],
+                  borderRadius: 10,
+                },
+              }}
             >
               {(currentOption?.images && currentOption.images.length > 0
                 ? currentOption.images
-                : Array(5).fill("/src/assets/laptop.png")
-              ).map((img: string, i: number) => (
+                : Array(5).fill({ productImageUrl: "/src/assets/laptop.png" })
+              ).map((img: ProductImage, i: number) => (
                 <CardMedia
                   key={i}
                   component="img"
-                  src={img}
+                  src={img.productImageUrl}
                   alt={`thumb-${i}`}
+                  onClick={() => {
+                    // click đổi ảnh lớn
+                    setCurrentOption((prev) => ({
+                      ...prev!,
+                      images: [
+                        img, // đưa ảnh được click lên đầu
+                        ...prev!.images.filter((im) => im !== img),
+                      ],
+                    }));
+                  }}
                   sx={{
-                    height: 80,
+                    height: 120,
+                    width: "auto",
                     objectFit: "contain",
                     p: 1,
                     borderRadius: 2,
                     cursor: "pointer",
+                    flexShrink: 0,
+                    transition: "0.2s",
                     "&:hover": { border: `2px solid ${colors.primary[200]}` },
                   }}
                 />
               ))}
-            </Stack>
+            </Box>
           </Box>
         </Grid>
 
