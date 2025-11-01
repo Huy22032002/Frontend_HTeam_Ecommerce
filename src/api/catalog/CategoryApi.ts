@@ -9,16 +9,13 @@ function getAuthHeader() {
 }
 
 export const CategoryApi = {
-  // Lấy danh sách danh mục (có phân trang)
+  // Lấy danh sách danh mục (có phân trang) - public
   getAll: (page = 0, size = 20) =>
-    axios.get(`${API_BASE}/public/categories?page=${page}&size=${size}`, {
-      headers: getAuthHeader(),
-    }),
+    axios.get(`${API_BASE}/public/categories?page=${page}&size=${size}`),
 
+  // Lấy danh sách danh mục không phân trang - public
   getAllNoPaging: () =>
-    axios.get(`${API_BASE}/public/categories`, {
-      headers: getAuthHeader(),
-    }),
+    axios.get(`${API_BASE}/public/categories`),
 
   // Lấy chi tiết danh mục theo id
   getById: (id: string) =>

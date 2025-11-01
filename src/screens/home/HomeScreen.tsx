@@ -2,8 +2,6 @@ import { Box, Button, Typography, useTheme } from "@mui/material";
 import CategoryItem from "../../components/categories/CategoryItem";
 import { useEffect } from "react";
 import { tokens } from "../../theme/theme";
-//components
-import Footer from "../../components/Footer";
 //hooks
 import useHome from "./Home.hook";
 import ProductVariantList from "../../components/product/ProductVariantsList";

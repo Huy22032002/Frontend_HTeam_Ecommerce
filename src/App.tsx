@@ -18,7 +18,6 @@ import LoginScreen from "./screens/login/LoginScreen";
 import SignupScreen from "./screens/signup/SignupScreen";
 import HomeScreen from "./screens/home/HomeScreen";
 import ProductsByCategory from "./screens/products/listProduct/ProductsByCategory";
-import DashboardScreen from "./screens/dashboard/DashboardScreen";
 import Footer from "./components/Footer";
 import ProductVariantDetail from "./screens/products/productDetail/ProductVariantDetail";
 

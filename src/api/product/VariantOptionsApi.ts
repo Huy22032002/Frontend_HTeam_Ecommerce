@@ -1,7 +1,6 @@
 import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_BASE_URL;
-const token = localStorage.getItem("token");
 
 export const VariantsOptionsApi = {
   getAll: async (page: number, size: number) => {
@@ -10,9 +9,6 @@ export const VariantsOptionsApi = {
         `${API_BASE}/api/public/products/variants/options`,
         {
           params: { size, page },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         }
       );
       if (response.data) {

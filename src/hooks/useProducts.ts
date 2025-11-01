@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import type { Product } from '../models/catalogs/Product';
+import type { Product } from '../models/products/Product';
 import { ProductApi } from '../api/product/ProductApi';
 
 export function useProducts(page = 0, size = 20) {

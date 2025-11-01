@@ -78,11 +78,9 @@ const ProductListScreen = () => {
                   <TableCell>{p.id}</TableCell>
                   <TableCell>{p.productName}</TableCell>
                   <TableCell>
-                    {p.listCategories
-                      ?.map((c: { name: string }) => c.name)
-                      .join(", ")}
+                    {p.categories?.join(", ") || "N/A"}
                   </TableCell>
-                  <TableCell>{p.productType}</TableCell>
+                  <TableCell>{p.manufacturerName || "N/A"}</TableCell>
                   <TableCell>
                     <Chip
                       size="small"

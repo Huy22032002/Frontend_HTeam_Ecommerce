@@ -5,7 +5,6 @@ import {
   List,
   ListItemButton,
   ListItemText,
-  Typography,
 } from "@mui/material";
 import styles from "./CmsSidebar.module.css";
 import { cmsNav } from "./navConfig";
@@ -87,7 +86,7 @@ const renderItem = (
   );
 };
 
-export const CmsSidebar = ({ width = 250 }: SidebarProps) => {
+export const CmsSidebar = (_props: SidebarProps) => {
   // Load persisted openMap from localStorage so navigation doesn't reset opened parents
   const [openMap, setOpenMap] = useState<Record<string, boolean>>(() => {
     try {
