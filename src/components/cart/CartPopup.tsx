@@ -69,6 +69,10 @@ const CartPopup: React.FC<CartPopupProps> = ({ open, onClose, cartItems }) => {
     }
   };
 
+  const handleClickOption = async (optionId: number) => {
+    navigate(`/product/${optionId}`);
+  };
+
   return (
     <Paper
       elevation={6}
@@ -90,7 +94,9 @@ const CartPopup: React.FC<CartPopupProps> = ({ open, onClose, cartItems }) => {
         alignItems="center"
         mb={1}
       >
-        <Typography variant="h6">Giỏ hàng ({cartItems.length})</Typography>
+        <Typography fontWeight={700} fontSize={20} variant="h6">
+          Giỏ hàng ({cartItems.length})
+        </Typography>
         <IconButton size="small" onClick={onClose}>
           <CloseIcon fontSize="small" />
         </IconButton>
@@ -127,6 +133,7 @@ const CartPopup: React.FC<CartPopupProps> = ({ open, onClose, cartItems }) => {
                 pb: 1,
                 mb: 1,
               }}
+              onClick={() => handleClickOption(item.id)}
             >
               {/* Hình + Tên + Giá */}
               <Stack
