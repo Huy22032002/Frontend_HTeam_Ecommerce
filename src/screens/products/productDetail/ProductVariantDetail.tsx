@@ -16,6 +16,7 @@ import { tokens } from "../../../theme/theme";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../store/store";
 import type { ProductImage } from "../../../models/products/ProductVariantOption";
+import PromotionDisplay from "../../../components/promotion/PromotionDisplay";
 
 const ProductVariantDetail = () => {
   const theme = useTheme();
