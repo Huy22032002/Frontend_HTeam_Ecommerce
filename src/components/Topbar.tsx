@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import { ColorModeContext, tokens } from "../theme/theme";
 
@@ -28,10 +28,22 @@ import { CustomerApi } from "../api/customer/CustomerApi";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../store/store";
 import { login, logout } from "../store/customerSlice";
+import CartPopup from "./cart/CartPopup";
+import { CartApi } from "../api/cart/cartApi";
+import { setCart } from "../store/cartSlice";
 
 const Topbar: React.FC = () => {
   //redux
   const dispatch = useDispatch();
+
+  //cart from reduux
+  const cart = useSelector((state: RootState) => state.cart.cart);
+
+  const subtotal =
+    cart?.items?.reduce(
+      (sum, item) => sum + item.currentPrice * item.quantity,
+      0
+    ) || 0;
 
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -54,9 +66,29 @@ const Topbar: React.FC = () => {
     }
   };
 
+  //state de open Cart popup
+  const [openCartPopup, setOpenCartPopup] = useState(false);
+  //get or create Cart
+  const getCartByCustomerId = async () => {
+    if (user?.id) {
+      const data = await CartApi.getOrCreateByCustomerId(user.id);
+      console.log("cart: ", data);
+      if (data) {
+        dispatch(setCart(data)); // lưu cart vào redux
+      }
+    }
+  };
+
   useEffect(() => {
     getCustomerById();
   }, []);
+
+  useEffect(() => {
+    // Khi user thay đổi (sau khi Redux login), mới gọi API cart
+    if (user?.id) {
+      getCartByCustomerId();
+    }
+  }, [user]);
 
   return (
     <Box
@@ -165,23 +197,54 @@ const Topbar: React.FC = () => {
           variant="contained"
           startIcon={<ShoppingBagOutlinedIcon />}
           sx={{
+            position: "relative", // để số lượng dùng absolute
             bgcolor: colors.blueAccent[200],
             color: colors.primary[900],
             borderRadius: "20px",
             textTransform: "none",
             fontWeight: "bold",
             boxShadow: "none",
+            px: 3,
+            py: 1,
             "&:hover": {
               bgcolor: colors.blueAccent[400],
             },
           }}
+          onClick={() => setOpenCartPopup(true)}
         >
-          {" "}
-          <Typography component="span" fontWeight="bold">
-            0 ₫
+          {/* Số lượng nhỏ ở góc phải trên */}
+          <Box
+            sx={{
+              position: "absolute",
+              top: 2,
+              right: 2,
+              bgcolor: colors.primary[700],
+              color: "#fff",
+              borderRadius: "50%",
+              width: 16,
+              height: 16,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "0.625rem",
+              fontWeight: "bold",
+            }}
+          >
+            {cart?.items?.length || 0}
+          </Box>
+
+          {/* Nội dung nút: tổng tiền */}
+          <Typography fontWeight="bold" fontSize="1rem">
+            {subtotal?.toLocaleString()}₫
           </Typography>
         </Button>
 
+        {/* Popup */}
+        <CartPopup
+          open={openCartPopup}
+          cartItems={cart?.items || []}
+          onClose={() => setOpenCartPopup(false)}
+        />
         <Menu
           // anchorEl={anchorEl}
           open={false}

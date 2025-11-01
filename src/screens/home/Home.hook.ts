@@ -27,6 +27,7 @@ const useHome = () => {
 
   const getAllSuggestProducts = async () => {
     const data = await VariantsApi.getAll(0, 5);
+
     setSuggestProducts(data.content);
   };
 

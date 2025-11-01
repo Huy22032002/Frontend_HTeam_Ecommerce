@@ -13,11 +13,16 @@ import { useEffect } from "react";
 import useVariantDetail from "./ProductVariantDetail.hook";
 import { useParams } from "react-router-dom";
 import { tokens } from "../../../theme/theme";
-import PromotionDisplay from "../../../components/promotion/PromotionDisplay";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../../store/store";
+import type { ProductImage } from "../../../models/products/ProductVariantOption";
 
 const ProductVariantDetail = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+
+  //get cart from redux
+  const cart = useSelector((state: RootState) => state.cart);
 
   const { variantId } = useParams();
 
@@ -27,6 +32,9 @@ const ProductVariantDetail = () => {
 
     currentOption,
     setCurrentOption,
+
+    //cart
+    addOptionsToCart,
   } = useVariantDetail();
 
   useEffect(() => {
@@ -37,50 +45,72 @@ const ProductVariantDetail = () => {
     <Box sx={{ px: 20, bgcolor: colors.greenAccent[700] }}>
       <Grid container spacing={4} py={4}>
         {/* --- LEFT: IMAGE GALLERY --- */}
-        <Grid size={{ xs: 12, md: 6 }} sx={{ bgcolor: colors.primary[400] }}>
+        <Grid bgcolor={colors.primary[400]} item xs={12} md={6}>
           <Box>
             {/* Ảnh chính */}
             <CardMedia
               component="img"
-              // src={selectedOption?.images?.[0] ?? "/src/assets/laptop.png"}
-              src={"/src/assets/laptop.png"}
+              src={
+                currentOption?.images?.[0].productImageUrl ??
+                "/src/assets/laptop.png"
+              }
+              // src={"/src/assets/laptop.png"}
               alt={"hinhanh"}
               sx={{
                 width: 800,
                 borderRadius: 2,
-                boxShadow: 3,
-                mb: 2,
-                p: 16,
+                p: 2,
               }}
             />
 
             {/* Danh sách ảnh nhỏ */}
-            <Stack
-              alignItems={"center"}
-              justifyContent={"space-between"}
-              direction="row"
-              spacing={1}
+            <Box
+              sx={{
+                display: "flex",
+                overflowX: "auto",
+                justifyContent: "space-around",
+                gap: 1,
+                py: 1,
+                "&::-webkit-scrollbar": { height: 6 },
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: colors.primary[300],
+                  borderRadius: 10,
+                },
+              }}
             >
               {(currentOption?.images && currentOption.images.length > 0
                 ? currentOption.images
-                : Array(5).fill("/src/assets/laptop.png")
-              ).map((img: string, i: number) => (
+                : Array(5).fill({ productImageUrl: "/src/assets/laptop.png" })
+              ).map((img: ProductImage, i: number) => (
                 <CardMedia
                   key={i}
                   component="img"
-                  src={img}
+                  src={img.productImageUrl}
                   alt={`thumb-${i}`}
+                  onClick={() => {
+                    // click đổi ảnh lớn
+                    setCurrentOption((prev) => ({
+                      ...prev!,
+                      images: [
+                        img, // đưa ảnh được click lên đầu
+                        ...prev!.images.filter((im) => im !== img),
+                      ],
+                    }));
+                  }}
                   sx={{
-                    height: 80,
+                    height: 120,
+                    width: "auto",
                     objectFit: "contain",
                     p: 1,
                     borderRadius: 2,
                     cursor: "pointer",
+                    flexShrink: 0,
+                    transition: "0.2s",
                     "&:hover": { border: `2px solid ${colors.primary[200]}` },
                   }}
                 />
               ))}
-            </Stack>
+            </Box>
           </Box>
         </Grid>
 
@@ -169,7 +199,20 @@ const ProductVariantDetail = () => {
               <Button variant="contained" color="primary" size="large">
                 Mua ngay
               </Button>
-              <Button variant="outlined" color="primary" size="large">
+              <Button
+                onClick={() => {
+                  if (cart.cart?.cartCode && currentOption) {
+                    addOptionsToCart(cart.cart.cartCode, currentOption);
+                  } else {
+                    console.log("cart code: ", cart.cart);
+                    console.log("currnet option: ", currentOption);
+                    console.warn("Cart code hoặc option chưa có giá trị");
+                  }
+                }}
+                variant="outlined"
+                color="primary"
+                size="large"
+              >
                 Thêm vào giỏ
               </Button>
             </Stack>
@@ -236,51 +279,9 @@ const ProductVariantDetail = () => {
         <Typography variant="h1" fontWeight={600} mb={2}>
           Đánh giá sản phẩm
         </Typography>
-
-        <Stack
-          borderRadius={4}
-          width={"50%"}
-          p={2}
-          bgcolor={colors.primary[400]}
-          spacing={1}
-        >
-          {Object.entries(variant?.specs || {}).map(([key, value], index) => (
-            <Stack
-              key={key}
-              direction="row"
-              justifyContent="space-between"
-              alignItems="center"
-              sx={{
-                bgcolor:
-                  index % 2 === 0
-                    ? `${colors.primary[900]}`
-                    : `${colors.primary[400]}`, // xen kẽ trắng xám
-                px: 2,
-                py: 1,
-                borderRadius: 1,
-              }}
-            >
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ textAlign: "left", width: "40%" }}
-              >
-                {key}
-              </Typography>
-              <Typography
-                variant="body2"
-                fontWeight={500}
-                sx={{
-                  textAlign: "left",
-                  width: "60%",
-                  color: "text.primary",
-                }}
-              >
-                {String(value)}
-              </Typography>
-            </Stack>
-          ))}
-        </Stack>
+        <Typography variant="body1" color={colors.primary[700]} mb={2}>
+          Chưa có đánh giá nào
+        </Typography>
       </Box>
     </Box>
   );

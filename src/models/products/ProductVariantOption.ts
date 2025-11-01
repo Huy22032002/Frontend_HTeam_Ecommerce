@@ -10,5 +10,13 @@ export interface ProductOption {
   reviewCount?: number;
   description?: string | null;
   availability: Availability;
-  images?: [];
+  price: number;
+  images?: ProductImage[];
+}
+
+export interface ProductImage {
+  id?: number;
+  productImageUrl?: string;
+  sortOrder?: number;
+  altTag: "";
 }
