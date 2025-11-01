@@ -8,6 +8,15 @@ export interface OrderItem {
   discountAmount?: number;
 }
 
+export interface Transaction {
+  id: number;
+  amount: number;
+  status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+  transactionDate: string;
+  paymentType: 'CASH' | 'CARD' | 'TRANSFER' | 'E_WALLET';
+  details?: string;
+}
+
 export interface OrderReadableDTO {
   id: number;
   orderCode: string;
@@ -16,7 +25,8 @@ export interface OrderReadableDTO {
   status: 'PROCESSING' | 'PAID' | 'SHIPPED' | 'CANCELLED';
   createdAt: string;
   items?: OrderItem[];
-  paymentMethod?: string;
+  deposits?: Transaction[];
   notes?: string;
   shippingAddress?: string;
 }
+

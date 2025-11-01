@@ -212,11 +212,25 @@ const OrderDetailScreen: React.FC = () => {
                 <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1565c0' }}>{formatCurrency(order.total)}</Typography>
               </Box>
               <Divider sx={{ my: 3 }} />
-              {order.paymentMethod && (
+              {order.deposits && order.deposits.length > 0 && (
                 <>
                   <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>Phương thức thanh toán:</Typography>
-                    <Chip label={order.paymentMethod} variant="outlined" size="small" />
+                    <Typography variant="body2" sx={{ color: '#666', mb: 1, fontWeight: '600' }}>Thanh Toán ({order.deposits.length}):</Typography>
+                    {order.deposits.map((transaction: any, idx: number) => (
+                      <Box key={idx} sx={{ p: 1.5, mb: 1, backgroundColor: '#f5f5f5', borderRadius: 1, border: '1px solid #e0e0e0' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                          <Typography variant="caption" sx={{ color: '#666' }}>Phương thức: <Chip label={transaction.paymentType} size="small" variant="outlined" sx={{ ml: 0.5 }} /></Typography>
+                          <Chip label={transaction.status} size="small" color={transaction.status === 'COMPLETED' ? 'success' : transaction.status === 'PENDING' ? 'warning' : 'error'} />
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography variant="body2" sx={{ color: '#666' }}>Số tiền:</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: '600', color: '#1976d2' }}>{formatCurrency(transaction.amount)}</Typography>
+                        </Box>
+                        {transaction.transactionDate && (
+                          <Typography variant="caption" sx={{ color: '#999', display: 'block', mt: 0.5 }}>{new Date(transaction.transactionDate).toLocaleString('vi-VN')}</Typography>
+                        )}
+                      </Box>
+                    ))}
                   </Box>
                   <Divider sx={{ my: 2 }} />
                 </>
