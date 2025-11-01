@@ -87,9 +87,15 @@ const ProductVariant = ({ data }: { data: ProductVariants }) => {
                     option.value.toLowerCase() === "đen"
                       ? "#000000"
                       : option.value.toLowerCase() === "đỏ"
-                      ? "#ff0000"
+                      ? "#333affff"
+                      : option.value.toLowerCase() === "trắng"
+                      ? "#ffffffff"
                       : option.value.toLowerCase() === "hồng"
                       ? "#ff00a2ff"
+                      : option.value.toLowerCase() === "xanh dương"
+                      ? "#333affff"
+                      : option.value.toLowerCase() === "bạc"
+                      ? "#909090ff"
                       : "#999999", // default màu xám nếu chưa map
                   border: "1px solid #999",
                   mr: 0.5,
