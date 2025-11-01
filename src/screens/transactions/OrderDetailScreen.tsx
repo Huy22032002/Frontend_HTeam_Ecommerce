@@ -161,6 +161,19 @@ const OrderDetailScreen: React.FC = () => {
             </CardContent>
           </Card>
 
+          {/* Shipping Info */}
+          <Card sx={{ mb: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', borderRadius: 2 }}>
+            <CardHeader title="🏠 Thông Tin Giao Hàng" sx={{ backgroundColor: '#f5f7fa', borderBottom: '2px solid #e8ebf0' }} />
+            <CardContent sx={{ pt: 2.5 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 2 }}>
+                <Box>
+                  <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>Địa chỉ giao hàng</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: '500' }}>{order.shippingAddress || 'Chưa có thông tin'}</Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+
           <Card sx={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)', borderRadius: 2 }}>
             <CardHeader title="🛍️ Sản Phẩm Trong Đơn Hàng" sx={{ backgroundColor: '#f5f7fa', borderBottom: '2px solid #e8ebf0' }} />
             <CardContent sx={{ pt: 0 }}>

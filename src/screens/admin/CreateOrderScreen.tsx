@@ -446,6 +446,24 @@ const CreateOrderScreen: React.FC = () => {
                   }}
                 />
 
+                {/* Receiver Phone Number */}
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Số điện thoại người nhận"
+                  value={order.state.receiverPhoneNumber}
+                  onChange={(e) => order.setReceiverPhoneNumber(e.target.value)}
+                  placeholder="VD: 0987654321"
+                  type="tel"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: '#1976d2',
+                      },
+                    },
+                  }}
+                />
+
                 {/* Display full address preview */}
                 {selectedProvince && selectedDistrict && (
                   <Paper sx={{ 

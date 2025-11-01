@@ -17,6 +17,7 @@ export interface CreateOrderRequest {
   paymentMethod: 'CASH' | 'TRANSFER' | 'CARD' | 'E_WALLET'; // Các phương thức thanh toán
   notes?: string;
   shippingAddress?: string;
+  receiverPhoneNumber?: string; // Số điện thoại người nhận hàng
   totalAmount?: number; // Tổng tiền (tính toán lại ở BE)
 }
 

@@ -9,6 +9,7 @@ export interface CreateOrderState {
   paymentMethod: 'CASH' | 'TRANSFER' | 'CARD' | 'E_WALLET';
   notes: string;
   shippingAddress: string;
+  receiverPhoneNumber: string;
   totalAmount: number;
   loading: boolean;
   error: string | null;
@@ -21,6 +22,7 @@ export const useCreateOrder = () => {
     paymentMethod: 'CASH',
     notes: '',
     shippingAddress: '',
+    receiverPhoneNumber: '',
     totalAmount: 0,
     loading: false,
     error: null,
@@ -179,6 +181,14 @@ export const useCreateOrder = () => {
     }));
   };
 
+  // Cập nhật số điện thoại người nhận
+  const setReceiverPhoneNumber = (phoneNumber: string) => {
+    setState(prev => ({
+      ...prev,
+      receiverPhoneNumber: phoneNumber,
+    }));
+  };
+
   // Tìm promotions cho sản phẩm (dùng SKU)
   const fetchPromotionsForSku = async (sku: string) => {
     try {
@@ -231,6 +241,7 @@ export const useCreateOrder = () => {
       paymentMethod: state.paymentMethod,
       notes: state.notes,
       shippingAddress: state.shippingAddress,
+      receiverPhoneNumber: state.receiverPhoneNumber,
       totalAmount: state.totalAmount,
     };
   };
@@ -243,6 +254,7 @@ export const useCreateOrder = () => {
       paymentMethod: 'CASH',
       notes: '',
       shippingAddress: '',
+      receiverPhoneNumber: '',
       totalAmount: 0,
       loading: false,
       error: null,
@@ -259,6 +271,7 @@ export const useCreateOrder = () => {
     setPaymentMethod,
     setNotes,
     setShippingAddress,
+    setReceiverPhoneNumber,
     fetchPromotionsForSku,
     buildOrderRequest,
     reset,
