@@ -13,10 +13,15 @@ import { useEffect } from "react";
 import useVariantDetail from "./ProductVariantDetail.hook";
 import { useParams } from "react-router-dom";
 import { tokens } from "../../../theme/theme";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../../store/store";
 
 const ProductVariantDetail = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+
+  //get cart from redux
+  const cart = useSelector((state: RootState) => state.cart);
 
   const { variantId } = useParams();
 
@@ -26,6 +31,9 @@ const ProductVariantDetail = () => {
 
     currentOption,
     setCurrentOption,
+
+    //cart
+    addOptionsToCart,
   } = useVariantDetail();
 
   useEffect(() => {
@@ -170,7 +178,20 @@ const ProductVariantDetail = () => {
               <Button variant="contained" color="primary" size="large">
                 Mua ngay
               </Button>
-              <Button variant="outlined" color="primary" size="large">
+              <Button
+                onClick={() => {
+                  if (cart.cart?.cartCode && currentOption) {
+                    addOptionsToCart(cart.cart.cartCode, currentOption);
+                  } else {
+                    console.log("cart code: ", cart.cart);
+                    console.log("currnet option: ", currentOption);
+                    console.warn("Cart code hoặc option chưa có giá trị");
+                  }
+                }}
+                variant="outlined"
+                color="primary"
+                size="large"
+              >
                 Thêm vào giỏ
               </Button>
             </Stack>
@@ -237,51 +258,9 @@ const ProductVariantDetail = () => {
         <Typography variant="h1" fontWeight={600} mb={2}>
           Đánh giá sản phẩm
         </Typography>
-
-        <Stack
-          borderRadius={4}
-          width={"50%"}
-          p={2}
-          bgcolor={colors.primary[400]}
-          spacing={1}
-        >
-          {Object.entries(variant?.specs || {}).map(([key, value], index) => (
-            <Stack
-              key={key}
-              direction="row"
-              justifyContent="space-between"
-              alignItems="center"
-              sx={{
-                bgcolor:
-                  index % 2 === 0
-                    ? `${colors.primary[900]}`
-                    : `${colors.primary[400]}`, // xen kẽ trắng xám
-                px: 2,
-                py: 1,
-                borderRadius: 1,
-              }}
-            >
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ textAlign: "left", width: "40%" }}
-              >
-                {key}
-              </Typography>
-              <Typography
-                variant="body2"
-                fontWeight={500}
-                sx={{
-                  textAlign: "left",
-                  width: "60%",
-                  color: "text.primary",
-                }}
-              >
-                {String(value)}
-              </Typography>
-            </Stack>
-          ))}
-        </Stack>
+        <Typography variant="body1" color={colors.primary[700]} mb={2}>
+          Chưa có đánh giá nào
+        </Typography>
       </Box>
     </Box>
   );

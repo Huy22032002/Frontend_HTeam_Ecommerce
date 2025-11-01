@@ -10,7 +10,7 @@ export const CustomerApi = {
     try {
       console.log("Token:", token);
       const response = await axios.get<ReadableCustomer>(
-        `${backendEndpoint}/api/customer/${customerId}`,
+        `${backendEndpoint}/api/customers/${customerId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
