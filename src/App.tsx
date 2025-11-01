@@ -24,6 +24,8 @@ import CartScreen from "./screens/cart/Cartscreen";
 import CheckoutScreen from "./screens/order/CheckoutScreen";
 import CustomerLayout from "./screens/customerPage/CustomerMainLayout";
 import Info from "./screens/customerPage/info/InfoScreen";
+import CustomerOrders from "./screens/customerPage/order/OrderHistory";
+import ChangePassword from "./screens/customerPage/changePassword/ChangePassword";
 
 function AppContent() {
   const location = useLocation();
@@ -61,9 +63,8 @@ function AppContent() {
           />
           <Route path="/customer" element={<CustomerLayout />}>
             <Route path="info" element={<Info />} />
-            {/* <Route path="orders-history" element={<OrderHistory />} />
-            <Route path="voucher" element={<Voucher />} /> */}
-            {/* các route khác */}
+            <Route path="orders" element={<CustomerOrders />} />
+            <Route path="change-password" element={<ChangePassword />} />
           </Route>
           <Route path="/testCreate" element={<TestProductForm />} />
           <Route path="/cart" element={<CartScreen />} />
