@@ -1,3 +1,10 @@
+export interface ProductImage {
+  id?: number;
+  productImageUrl?: string;
+  sortOrder?: number;
+  altTag: "";
+}
+
 export interface CartItem {
   id?: number;
   optionId: number;
@@ -8,4 +15,5 @@ export interface CartItem {
 
   productName?: string;
   prductImage?: string;
+  images?: ProductImage[];
 }

@@ -20,6 +20,7 @@ import ProductListScreen from "./screens/products/ProductListScreen";
 import CategoryListScreen from "./screens/products/CategoryListScreen";
 import OrderListScreen from "./screens/transactions/OrderListScreen";
 import OrderDetailScreen from "./screens/transactions/OrderDetailScreen";
+import InvoiceDetailScreen from "./screens/transactions/InvoiceDetailScreen";
 import ShipmentListScreen from "./screens/transactions/ShipmentListScreen";
 import ReturnListScreen from "./screens/transactions/ReturnListScreen";
 import WarehouseScreen from "./screens/warehouse/WarehouseScreen";
@@ -53,6 +54,7 @@ function AdminAppContent() {
               <Route path="orders/create" element={<CreateOrderScreen />} />
               <Route path="orders/:orderId" element={<OrderDetailScreen />} />
               <Route path="invoices" element={<InvoiceListScreen />} />
+              <Route path="invoices/:invoiceId" element={<InvoiceDetailScreen />} />
               <Route path="payments" element={<PaymentListScreen />} />
               <Route path="shipments" element={<ShipmentListScreen />} />
               <Route path="returns" element={<ReturnListScreen />} />

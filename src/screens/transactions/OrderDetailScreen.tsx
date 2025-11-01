@@ -20,8 +20,10 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { useNavigate, useParams } from 'react-router-dom';
 import { OrderApi } from '../../api/order/OrderApi';
+import { InvoiceApi } from '../../api/invoice/InvoiceApi';
 import type { OrderReadableDTO } from '../../models/orders/Order';
 import { formatCurrency } from '../../utils/formatCurrency';
 
@@ -74,6 +76,23 @@ const OrderDetailScreen: React.FC = () => {
       setError(err?.response?.data?.message || '❌ Lỗi khi huỷ đơn hàng');
     } finally {
       setCanceling(false);
+    }
+  };
+
+  const handleExportInvoice = async () => {
+    if (!order || !orderId) return;
+
+    try {
+      // Gọi API backend để tạo Invoice
+      const response = await InvoiceApi.createFromOrder(orderId);
+      const newInvoice = response.data;
+
+      // Navigate đến Invoice Detail Screen
+      navigate(`/admin/invoices/${newInvoice.id}`);
+    } catch (err: any) {
+      console.error('Error creating invoice:', err);
+      const errorMsg = err?.response?.data?.message || err.message || 'Lỗi khi tạo hoá đơn';
+      alert(`❌ ${errorMsg}`);
     }
   };
 
@@ -250,6 +269,7 @@ const OrderDetailScreen: React.FC = () => {
               )}
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 <Button fullWidth variant="contained" onClick={() => navigate(-1)} sx={{ textTransform: 'none', backgroundColor: '#1976d2', py: 1.2, '&:hover': { backgroundColor: '#1565c0' } }}>← Quay Lại</Button>
+                <Button fullWidth variant="contained" color="success" startIcon={<FileDownloadIcon />} onClick={handleExportInvoice} sx={{ textTransform: 'none', py: 1.2 }}>📥 Xuất Hoá Đơn</Button>
                 {order.status !== 'CANCELLED' && <Button fullWidth variant="contained" color="error" startIcon={<DeleteIcon />} onClick={handleCancelOrder} disabled={canceling} sx={{ textTransform: 'none', py: 1.2 }}>{canceling ? 'Đang xử lý...' : '❌ Huỷ Đơn Hàng'}</Button>}
               </Box>
             </CardContent>
