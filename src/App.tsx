@@ -18,9 +18,10 @@ import LoginScreen from "./screens/login/LoginScreen";
 import SignupScreen from "./screens/signup/SignupScreen";
 import HomeScreen from "./screens/home/HomeScreen";
 import ProductsByCategory from "./screens/products/listProduct/ProductsByCategory";
-import DashboardScreen from "./screens/dashboard/DashboardScreen";
 import Footer from "./components/Footer";
 import ProductVariantDetail from "./screens/products/productDetail/ProductVariantDetail";
+import CartScreen from "./screens/cart/Cartscreen";
+import CheckoutScreen from "./screens/order/CheckoutScreen";
 
 function AppContent() {
   const location = useLocation();
@@ -37,16 +38,17 @@ function AppContent() {
           <Route path="/login" element={<LoginScreen />} />
           <Route path="/signup" element={<SignupScreen />} />
           <Route path="/" element={<HomeScreen />} />
-             <Route
+          <Route
             path="/product-category/:categoryId"
             element={<ProductsByCategory />}
           />
+          <Route path="/checkout" element={<CheckoutScreen />} />
           <Route
             path="/product/:variantId"
             element={<ProductVariantDetail />}
           />
           <Route path="/testCreate" element={<TestProductForm />} />
-        
+          <Route path="/cart" element={<CartScreen />} />
         </Routes>
         {!hideLayout && <Footer />}
       </main>

@@ -42,6 +42,41 @@ const ProductsByCategory = () => {
     }
   }, [categoryId]);
 
+  //filter
+  const [filteredVariants, setFilteredVariants] = useState(variants);
+  useEffect(() => {
+    let result = [...variants];
+
+    // 1) Lọc: variant có option còn hàng
+    result = result.filter((variant) =>
+      variant.options.some(
+        (opt) =>
+          opt.availability?.productStatus === true &&
+          (opt.availability?.quantity ?? 0) > 0
+      )
+    );
+
+    // 2) Sort
+    const getSalePrice = (variant: any) =>
+      Math.min(
+        ...variant.options
+          .filter((o) => o.availability?.productStatus)
+          .map((o) => o.availability.salePrice)
+      );
+
+    if (selectedValue === "Giá thấp -> cao") {
+      result.sort((a, b) => getSalePrice(a) - getSalePrice(b));
+    }
+
+    if (selectedValue === "Giá cao -> thấp") {
+      result.sort((a, b) => getSalePrice(b) - getSalePrice(a));
+    }
+
+    setFilteredVariants(result);
+  }, [variants, selectedValue]);
+
+  //-------------------
+
   return (
     <Box
       display="flex"
@@ -87,7 +122,7 @@ const ProductsByCategory = () => {
             />
           </Box>
           {/* list variants  */}
-          <ProductVariantList data={variants} />
+          <ProductVariantList data={filteredVariants} />
         </Box>
       </Box>
     </Box>
