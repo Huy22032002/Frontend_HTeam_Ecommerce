@@ -11,5 +11,12 @@ export interface ProductOption {
   description?: string | null;
   availability: Availability;
   price: number;
-  images?: [];
+  images?: ProductImage[];
+}
+
+export interface ProductImage {
+  id?: number;
+  productImageUrl?: string;
+  sortOrder?: number;
+  altTag: "";
 }

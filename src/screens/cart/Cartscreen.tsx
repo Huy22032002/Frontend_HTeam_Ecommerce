@@ -180,7 +180,7 @@ const CartScreen: React.FC = () => {
                 borderRadius: 5,
               }}
             >
-              Thanh toán
+              Đặt hàng
             </Button>
           </Box>
         </Stack>

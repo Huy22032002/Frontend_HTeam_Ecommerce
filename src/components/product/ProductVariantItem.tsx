@@ -41,7 +41,11 @@ const ProductVariant = ({ data }: { data: ProductVariants }) => {
       <CardMedia
         component="img"
         className="product-img"
-        image={"/src/assets/laptop.png"}
+        image={
+          data.options?.[0]?.images?.[0]?.productImageUrl ||
+          data.options?.[0]?.image?.[0]?.productImageUrl ||
+          "/src/assets/laptop.png"
+        }
         alt="product image"
         sx={{
           width: "100%",

@@ -21,7 +21,7 @@ import ProductsByCategory from "./screens/products/listProduct/ProductsByCategor
 import Footer from "./components/Footer";
 import ProductVariantDetail from "./screens/products/productDetail/ProductVariantDetail";
 import CartScreen from "./screens/cart/Cartscreen";
-import Cart from "./components/button/Cart";
+import CheckoutScreen from "./screens/order/CheckoutScreen";
 
 function AppContent() {
   const location = useLocation();
@@ -42,6 +42,7 @@ function AppContent() {
             path="/product-category/:categoryId"
             element={<ProductsByCategory />}
           />
+          <Route path="/checkout" element={<CheckoutScreen />} />
           <Route
             path="/product/:variantId"
             element={<ProductVariantDetail />}
