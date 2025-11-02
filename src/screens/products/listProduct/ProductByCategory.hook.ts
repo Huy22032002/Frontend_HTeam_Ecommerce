@@ -11,9 +11,11 @@ const useProductByCategory = () => {
   const [variants, setVariants] = useState<ProductVariants[]>([]);
   const [categoryName, setCategoryName] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const getListManufacturerByCategory = async (categoryId: number) => {
     try {
+      setIsLoading(true);
       const data = await ManufacturerApi.getAllByCategoryId(categoryId);
       if (Array.isArray(data)) {
         setManufacturers(data);
@@ -26,6 +28,7 @@ const useProductByCategory = () => {
 
   const getListProductByCategoryId = async (categoryId: number) => {
     try {
+      setIsLoading(true);
       const data = await ProductApi.getAllByCategoryId(categoryId);
 
       if (data?.content && Array.isArray(data.content)) {
@@ -45,6 +48,8 @@ const useProductByCategory = () => {
     } catch (err) {
       console.error(err);
       setError("Failed to fetch products");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -52,6 +57,7 @@ const useProductByCategory = () => {
     manufacturers,
     variants,
     error,
+    isLoading,
     getListManufacturerByCategory,
     getListProductByCategoryId,
     //category

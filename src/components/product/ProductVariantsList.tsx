@@ -42,8 +42,9 @@ const ProductVariantList = ({
             lg: "repeat(4, 1fr)",
             xl: "repeat(5, 1fr)",
           },
-          gap: 3,
+          gap: 2,
           width: "100%",
+          alignItems: "stretch",
         }}
       >
         {data.map((item) => (
@@ -53,6 +54,8 @@ const ProductVariantList = ({
             sx={{
               display: "flex",
               justifyContent: "center",
+              width: "100%",
+              minWidth: 0, // Important for grid items
             }}
           >
             <ProductVariant data={item} />
