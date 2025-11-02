@@ -26,6 +26,7 @@ import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import SecurityIcon from "@mui/icons-material/Security";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import { CustomerLogApi } from "../../../api/customer/CustomerLogApi";
 
 const ProductVariantDetail = () => {
   const theme = useTheme();
@@ -52,6 +53,24 @@ const ProductVariantDetail = () => {
 
   useEffect(() => {
     if (variantId) getProductVariant(Number(variantId));
+
+    // Log product view to backend
+    console.log("VariantId from URL:", variantId);
+    
+    if (variantId) {
+      console.log("Logging product view - variantId:", variantId);
+      CustomerLogApi.logProductView(Number(variantId)).then(success => {
+        if (success) {
+          console.log("✅ Product view logged successfully");
+        } else {
+          console.warn("⚠️ Failed to log product view");
+        }
+      }).catch(err => {
+        console.error("❌ Failed to log product view:", err);
+      });
+    } else {
+      console.warn("⚠️ Cannot log product view - missing sessionId or variantId", {variantId });
+    }
   }, [variantId]);
 
   const handleAddToCart = async () => {
