@@ -22,10 +22,16 @@ const ProductVariant = ({ data }: { data: ProductVariants }) => {
       sx={{
         borderRadius: 3,
         bgcolor: colors.primary[400],
-        width: 250,
         padding: 2,
         display: "flex",
         flexDirection: "column",
+        height: "100%",
+        width: "100%",
+        transition: "all 0.3s ease",
+        "&:hover": {
+          boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
+          transform: "translateY(-8px)",
+        },
         "&:hover .product-img": {
           transform: "scale(1.05)",
           transition: "transform 0.3s ease",
@@ -41,17 +47,19 @@ const ProductVariant = ({ data }: { data: ProductVariants }) => {
       <CardMedia
         component="img"
         className="product-img"
-        image={
-          data.options?.[0]?.images?.[0]?.productImageUrl ||
-          data.options?.[0]?.image?.[0]?.productImageUrl ||
+        src={
+          (data.options?.[0]?.images?.[0]?.productImageUrl ||
+            data.options?.[0]?.image?.[0]?.productImageUrl) ??
           "/src/assets/laptop.png"
         }
         alt="product image"
         sx={{
           width: "100%",
           height: 160,
-          objectFit: "cover", // cắt ảnh để không méo, giữ tỉ lệ
+          objectFit: "contain",
           borderRadius: "8px",
+          p: 1,
+          bgcolor: "#ffffff",
         }}
       />
 

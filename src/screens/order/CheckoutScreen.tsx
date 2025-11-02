@@ -162,7 +162,7 @@ export default function CheckoutScreen() {
         
         // Chuyển hướng sau 2 giây
         setTimeout(() => {
-          navigate("/orders", { replace: true });
+          navigate("/order-history", { replace: true });
         }, 2000);
       }
     } catch (err: any) {
