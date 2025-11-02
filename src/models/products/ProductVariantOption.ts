@@ -12,6 +12,7 @@ export interface ProductOption {
   availability: Availability;
   price: number;
   images?: ProductImage[];
+  image?: ProductImage[];
 }
 
 export interface ProductImage {

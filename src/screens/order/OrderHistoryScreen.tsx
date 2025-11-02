@@ -1,0 +1,399 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  CircularProgress,
+  Alert,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import type { RootState } from "../../store/store";
+import { useOrderHistory } from "../../hooks/useOrderHistory";
+import { formatCurrency } from "../../utils/formatCurrency";
+import type { OrderReadableDTO } from "../../models/orders/Order";
+
+const OrderHistoryScreen = () => {
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const { orders, isLoading, error } = useOrderHistory();
+
+  // Dialog state
+  const [selectedOrder, setSelectedOrder] = useState<OrderReadableDTO | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+
+  const customer = useSelector(
+    (state: RootState) => state.customerAuth?.customer
+  );
+
+  // Nếu chưa đăng nhập, redirect đến login
+  if (!customer?.id) {
+    return (
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Alert severity="warning">
+          Vui lòng đăng nhập để xem lịch sử đơn hàng
+        </Alert>
+        <Button
+          variant="contained"
+          onClick={() => navigate("/login")}
+          sx={{ mt: 2 }}
+        >
+          Đến trang đăng nhập
+        </Button>
+      </Box>
+    );
+  }
+
+  const handleViewDetails = (order: OrderReadableDTO) => {
+    setSelectedOrder(order);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedOrder(null);
+  };
+
+  const getStatusColor = (
+    status: string
+  ): "default" | "primary" | "secondary" | "error" | "warning" | "info" | "success" => {
+    switch (status) {
+      case "PROCESSING":
+        return "warning";
+      case "PAID":
+        return "info";
+      case "SHIPPED":
+        return "primary";
+      case "CANCELLED":
+        return "error";
+      default:
+        return "default";
+    }
+  };
+
+  const getStatusLabel = (status: string): string => {
+    switch (status) {
+      case "PROCESSING":
+        return "Đang xử lý";
+      case "PAID":
+        return "Đã thanh toán";
+      case "SHIPPED":
+        return "Đã gửi";
+      case "CANCELLED":
+        return "Đã hủy";
+      default:
+        return status;
+    }
+  };
+
+  return (
+    <Box sx={{ bgcolor: "#f8f9fa", minHeight: "100vh", py: 4 }}>
+      <Box sx={{ px: { xs: 2, sm: 4, md: 6, lg: 20 }, maxWidth: "1400px", mx: "auto" }}>
+        {/* Header */}
+        <Box sx={{ mb: 4, display: "flex", alignItems: "center", gap: 2 }}>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate("/")}
+            sx={{ textTransform: "none" }}
+          >
+            Quay lại
+          </Button>
+          <Typography variant="h4" fontWeight="bold">
+            📦 Lịch sử đơn hàng
+          </Typography>
+        </Box>
+
+        {/* Error Alert */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
+
+        {/* Loading State */}
+        {isLoading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <>
+            {/* Empty State */}
+            {orders.length === 0 ? (
+              <Card sx={{ textAlign: "center", py: 8, borderRadius: 2 }}>
+                <CardContent>
+                  <Typography variant="h6" color="textSecondary" gutterBottom>
+                    📭 Bạn chưa có đơn hàng nào
+                  </Typography>
+                  <Typography color="textSecondary" sx={{ mb: 3 }}>
+                    Hãy bắt đầu mua sắm ngay để tạo đơn hàng đầu tiên của bạn
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    onClick={() => navigate("/")}
+                    sx={{
+                      bgcolor: "#00CFFF",
+                      textTransform: "none",
+                      fontWeight: 600,
+                      "&:hover": { bgcolor: "#00B8D4" },
+                    }}
+                  >
+                    ➜ Tiếp tục mua sắm
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              /* Orders Table */
+              <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+                <Table sx={{ minWidth: 700 }}>
+                  <TableHead
+                    sx={{
+                      bgcolor: theme.palette.mode === "dark" ? "#1e1e1e" : "#f5f5f5",
+                    }}
+                  >
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: "bold" }}>Mã đơn hàng</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>Ngày tạo</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }} align="right">
+                        Tổng tiền
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }} align="center">
+                        Trạng thái
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }} align="center">
+                        Hành động
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {orders.map((order) => (
+                      <TableRow
+                        key={order.id}
+                        sx={{
+                          "&:hover": {
+                            bgcolor: theme.palette.mode === "dark" ? "#2a2a2a" : "#f9f9f9",
+                          },
+                        }}
+                      >
+                        <TableCell
+                          sx={{
+                            fontWeight: 600,
+                            color: theme.palette.mode === "dark" ? "#00CFFF" : "#1976d2",
+                            cursor: "pointer",
+                            "&:hover": { textDecoration: "underline" },
+                          }}
+                          onClick={() => handleViewDetails(order)}
+                        >
+                          {order.orderCode}
+                        </TableCell>
+                        <TableCell>
+                          {new Date(order.createdAt).toLocaleDateString("vi-VN", {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600 }}>
+                          {formatCurrency(order.total)}
+                        </TableCell>
+                        <TableCell align="center">
+                          <Chip
+                            label={getStatusLabel(order.status)}
+                            color={getStatusColor(order.status)}
+                            variant="filled"
+                            size="small"
+                          />
+                        </TableCell>
+                        <TableCell align="center">
+                          <Button
+                            size="small"
+                            startIcon={<VisibilityIcon />}
+                            onClick={() => handleViewDetails(order)}
+                            sx={{
+                              textTransform: "none",
+                              color: theme.palette.mode === "dark" ? "#00CFFF" : "#1976d2",
+                            }}
+                          >
+                            Xem chi tiết
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+          </>
+        )}
+
+        {/* Order Details Dialog */}
+        <Dialog
+          open={openDialog}
+          onClose={handleCloseDialog}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 2,
+            },
+          }}
+        >
+          {selectedOrder && (
+            <>
+              <DialogTitle sx={{ fontWeight: "bold", pb: 1 }}>
+                Chi tiết đơn hàng {selectedOrder.orderCode}
+              </DialogTitle>
+              <DialogContent sx={{ py: 2 }}>
+                <Stack spacing={2}>
+                  {/* Order Info */}
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                      Thông tin đơn hàng
+                    </Typography>
+                    <Stack spacing={1} sx={{ pl: 2 }}>
+                      <Box display="flex" justifyContent="space-between">
+                        <Typography variant="body2" color="textSecondary">
+                          Mã đơn:
+                        </Typography>
+                        <Typography variant="body2" fontWeight={600}>
+                          {selectedOrder.orderCode}
+                        </Typography>
+                      </Box>
+                      <Box display="flex" justifyContent="space-between">
+                        <Typography variant="body2" color="textSecondary">
+                          Ngày tạo:
+                        </Typography>
+                        <Typography variant="body2" fontWeight={600}>
+                          {new Date(selectedOrder.createdAt).toLocaleDateString("vi-VN")}
+                        </Typography>
+                      </Box>
+                      <Box display="flex" justifyContent="space-between">
+                        <Typography variant="body2" color="textSecondary">
+                          Trạng thái:
+                        </Typography>
+                        <Chip
+                          label={getStatusLabel(selectedOrder.status)}
+                          color={getStatusColor(selectedOrder.status)}
+                          size="small"
+                        />
+                      </Box>
+                    </Stack>
+                  </Box>
+
+                  {/* Shipping Address */}
+                  {selectedOrder.shippingAddress && (
+                    <Box>
+                      <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                        Địa chỉ giao hàng
+                      </Typography>
+                      <Typography variant="body2" sx={{ pl: 2 }}>
+                        {selectedOrder.shippingAddress}
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {/* Items */}
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                      Sản phẩm ({selectedOrder.items?.length || 0})
+                    </Typography>
+                    <Stack spacing={1} sx={{ pl: 2, maxHeight: 200, overflowY: "auto" }}>
+                      {selectedOrder.items?.map((item, index) => (
+                        <Box
+                          key={index}
+                          display="flex"
+                          justifyContent="space-between"
+                          sx={{
+                            pb: 1,
+                            borderBottom:
+                              index !== (selectedOrder.items?.length || 0) - 1
+                                ? "1px solid #eee"
+                                : "none",
+                          }}
+                        >
+                          <Box flex={1}>
+                            <Typography variant="body2" fontWeight={600}>
+                              SKU: {item.sku}
+                            </Typography>
+                            <Typography variant="caption" color="textSecondary">
+                              Số lượng: {item.quantity}
+                            </Typography>
+                          </Box>
+                          <Typography variant="body2" fontWeight={600}>
+                            {formatCurrency(item.price * item.quantity)}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Stack>
+                  </Box>
+
+                  {/* Notes */}
+                  {selectedOrder.notes && (
+                    <Box>
+                      <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                        Ghi chú
+                      </Typography>
+                      <Typography variant="body2" sx={{ pl: 2 }}>
+                        {selectedOrder.notes}
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {/* Total */}
+                  <Box
+                    sx={{
+                      p: 2,
+                      bgcolor: theme.palette.mode === "dark" ? "#1e1e1e" : "#f5f5f5",
+                      borderRadius: 1,
+                    }}
+                  >
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                      <Typography variant="subtitle1" fontWeight="bold">
+                        Tổng cộng:
+                      </Typography>
+                      <Typography
+                        variant="h6"
+                        fontWeight="bold"
+                        sx={{
+                          color: theme.palette.mode === "dark" ? "#00CFFF" : "#1976d2",
+                        }}
+                      >
+                        {formatCurrency(selectedOrder.total)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Stack>
+              </DialogContent>
+              <DialogActions sx={{ p: 2 }}>
+                <Button onClick={handleCloseDialog} sx={{ textTransform: "none" }}>
+                  Đóng
+                </Button>
+              </DialogActions>
+            </>
+          )}
+        </Dialog>
+      </Box>
+    </Box>
+  );
+};
+
+export default OrderHistoryScreen;

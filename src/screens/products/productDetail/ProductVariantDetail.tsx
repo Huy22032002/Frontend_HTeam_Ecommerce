@@ -26,6 +26,7 @@ import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import SecurityIcon from "@mui/icons-material/Security";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import { CustomerLogApi } from "../../../api/customer/CustomerLogApi";
 
 const ProductVariantDetail = () => {
   const theme = useTheme();
@@ -41,7 +42,7 @@ const ProductVariantDetail = () => {
   const {
     variant,
     getProductVariant,
-
+    recommendedProducts,
     currentOption,
     setCurrentOption,
 
@@ -52,6 +53,24 @@ const ProductVariantDetail = () => {
 
   useEffect(() => {
     if (variantId) getProductVariant(Number(variantId));
+
+    // Log product view to backend
+    console.log("VariantId from URL:", variantId);
+    
+    if (variantId) {
+      console.log("Logging product view - variantId:", variantId);
+      CustomerLogApi.logProductView(Number(variantId)).then(success => {
+        if (success) {
+          console.log("Product view logged successfully");
+        } else {
+          console.warn("Failed to log product view");
+        }
+      }).catch(err => {
+        console.error("Failed to log product view:", err);
+      });
+    } else {
+      console.warn("Cannot log product view - missing sessionId or variantId", {variantId });
+    }
   }, [variantId]);
 
   const handleAddToCart = async () => {
@@ -382,6 +401,103 @@ const ProductVariantDetail = () => {
             </Box>
           </CardContent>
         </Card>
+
+        {/* Recommended Products Section */}
+        {recommendedProducts && recommendedProducts.length > 0 && (
+          <Card sx={{ mt: 6, borderRadius: 2 }}>
+            <CardContent>
+              <Typography variant="h5" fontWeight="bold" mb={3}>
+                💡 Sản phẩm khuyến nghị
+              </Typography>
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
+                sx={{ overflowX: "auto", pb: 1 }}
+              >
+                {recommendedProducts.map((product) => (
+                  <Card
+                    key={product.id}
+                    onClick={() => {
+                      window.location.href = `/product/${product.id}`;
+                    }}
+                    sx={{
+                      flex: "0 0 auto",
+                      width: { xs: "100%", sm: "calc(50% - 8px)", md: "calc(20% - 8px)" },
+                      cursor: "pointer",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        transform: "translateY(-8px)",
+                        boxShadow: "0 12px 24px rgba(0,0,0,0.15)",
+                      },
+                    }}
+                  >
+                    <CardMedia
+                      component="img"
+                      height="200"
+                      src={product.options?.[0]?.images?.[0]?.productImageUrl ?? "/src/assets/laptop.png"}
+                      alt={product.name}
+                      sx={{
+                        objectFit: "contain",
+                        p: 1,
+                        bgcolor: colors.primary[400],
+                      }}
+                    />
+                    <CardContent sx={{ p: 2 }}>
+                      <Typography
+                        variant="body2"
+                        fontWeight={600}
+                        sx={{
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          mb: 1,
+                        }}
+                      >
+                        {product.name}
+                      </Typography>
+                      <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                        <Typography
+                          variant="body2"
+                          fontWeight="bold"
+                          color="#FF6B6B"
+                        >
+                          {product.options?.[0]?.availability?.salePrice?.toLocaleString()}₫
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            textDecoration: "line-through",
+                            color: "#999",
+                          }}
+                        >
+                          {product.options?.[0]?.availability?.regularPrice?.toLocaleString()}₫
+                        </Typography>
+                      </Stack>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        fullWidth
+                        sx={{
+                          textTransform: "none",
+                          fontSize: 12,
+                          borderColor: colors.primary[100],
+                          color: colors.primary[100],
+                          "&:hover": {
+                            bgcolor: colors.primary[500],
+                          },
+                        }}
+                      >
+                        Xem chi tiết
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </Stack>
+            </CardContent>
+          </Card>
+        )}
       </Container>
     </Box>
   );
