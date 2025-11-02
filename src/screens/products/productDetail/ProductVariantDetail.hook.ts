@@ -15,6 +15,7 @@ const useVariantDetail = () => {
   const currentCart = useSelector((state: RootState) => state.cart.cart);
 
   const [variant, setVariant] = useState<ProductVariants | null>(null);
+  const [recommendedProducts, setRecommendedProducts] = useState<ProductVariants[]>([]);
   const [currentOption, setCurrentOption] = useState<ProductOption | null>(
     null
   );
@@ -25,7 +26,16 @@ const useVariantDetail = () => {
     if (data) {
       setVariant(data);
       setCurrentOption(data.options?.[0]);
+      
+      // Set recommended products từ response
+      if (data.recommendedProducts && Array.isArray(data.recommendedProducts)) {
+        setRecommendedProducts(data.recommendedProducts);
+      } else {
+        setRecommendedProducts([]);
+      }
+      
       console.log("cur option: ", data.options?.[0]);
+      console.log("recommended products: ", data.recommendedProducts);
     }
   };
 
@@ -109,6 +119,8 @@ const useVariantDetail = () => {
     //option
     currentOption,
     setCurrentOption,
+    //recommendations
+    recommendedProducts,
     //cart
     addOptionsToCart,
     isLoading,
