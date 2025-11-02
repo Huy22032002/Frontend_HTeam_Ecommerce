@@ -54,4 +54,8 @@ export const OrderApi = {
   // Khách hàng tạo dơn hàng
   createByCustomer: (order: Partial<Order>) =>
     axios.post(`${import.meta.env.VITE_BASE_URL}/api/customers/orders`, order, { headers: getAuthHeader() }),
+
+  // Lấy lịch sử đơn hàng của customer theo id
+  getByCustomerId: (customerId: string, page: number = 0, size: number = 20) =>
+    axios.get(`${import.meta.env.VITE_BASE_URL}/api/customers/${customerId}/orders?page=${page}&size=${size}`, { headers: getAuthHeader() }),
 };

@@ -22,10 +22,7 @@ import Footer from "./components/Footer";
 import ProductVariantDetail from "./screens/products/productDetail/ProductVariantDetail";
 import CartScreen from "./screens/cart/Cartscreen";
 import CheckoutScreen from "./screens/order/CheckoutScreen";
-import CustomerLayout from "./screens/customerPage/CustomerMainLayout";
-import Info from "./screens/customerPage/info/InfoScreen";
-import CustomerOrders from "./screens/customerPage/order/OrderHistory";
-import ChangePassword from "./screens/customerPage/changePassword/ChangePassword";
+import OrderHistoryScreen from "./screens/order/OrderHistoryScreen";
 
 function AppContent() {
   const location = useLocation();
@@ -57,15 +54,11 @@ function AppContent() {
             element={<ProductsByCategory />}
           />
           <Route path="/checkout" element={<CheckoutScreen />} />
+          <Route path="/order-history" element={<OrderHistoryScreen />} />
           <Route
             path="/product/:variantId"
             element={<ProductVariantDetail />}
           />
-          <Route path="/customer" element={<CustomerLayout />}>
-            <Route path="info" element={<Info />} />
-            <Route path="orders" element={<CustomerOrders />} />
-            <Route path="change-password" element={<ChangePassword />} />
-          </Route>
           <Route path="/testCreate" element={<TestProductForm />} />
           <Route path="/cart" element={<CartScreen />} />
         </Routes>

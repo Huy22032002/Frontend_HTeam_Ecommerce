@@ -1,4 +1,4 @@
-import { Box, Grid, Typography, useTheme } from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import type { ProductVariants } from "../../models/products/ProductVariant";
 import { tokens } from "../../theme/theme";
 import ProductVariant from "./ProductVariantItem";
@@ -7,7 +7,6 @@ interface ProductVariantListProps {
   data: ProductVariants[];
   title?: string;
   showTitle?: boolean;
-  columns?: number;
   onItemClick?: (item: ProductVariants) => void; // callback khi click item
 }
 
@@ -15,7 +14,6 @@ const ProductVariantList = ({
   data,
   title,
   showTitle,
-  columns = 5,
   onItemClick,
 }: ProductVariantListProps) => {
   const theme = useTheme();
@@ -33,18 +31,34 @@ const ProductVariantList = ({
         </Typography>
       )}
 
-      {/* list products */}
-      <Grid container spacing={2} justifyContent="center">
+      {/* list products - CSS Grid */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "repeat(1, 1fr)",
+            sm: "repeat(2, 1fr)",
+            md: "repeat(3, 1fr)",
+            lg: "repeat(4, 1fr)",
+            xl: "repeat(5, 1fr)",
+          },
+          gap: 3,
+          width: "100%",
+        }}
+      >
         {data.map((item) => (
-          <Grid
+          <Box
             key={item.id}
-            sx={{ gridColumn: { xs: '1 / -1', sm: '1 / span 6', md: `1 / span ${Math.round(12 / columns)}` } }}
             onClick={() => onItemClick && onItemClick(item)}
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+            }}
           >
             <ProductVariant data={item} />
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
     </Box>
   );
 };

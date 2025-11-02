@@ -14,7 +14,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../../store/store";
 import type { CartItem } from "../../models/cart/CartItem";
@@ -33,17 +33,24 @@ interface CartPopupProps {
 const CartPopup: React.FC<CartPopupProps> = ({ open, onClose, cartItems }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const location = useLocation();
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const cart = useSelector((state: RootState) => state.cart.cart);
 
-  if (!open) return null;
+  // Ẩn CartPopup khi ở trên CartScreen
+  const isOnCartScreen = location.pathname === "/cart";
+  
+  if (!open || isOnCartScreen) return null;
 
   const hasItems = cartItems.length > 0;
 
-  const handleQuantityChange = async (item: CartItem, type: "inc" | "dec") => {
+  const handleQuantityChange = async (item: CartItem, type: "inc" | "dec", e: React.MouseEvent) => {
+    // Ngăn event propagation để không trigger navigate
+    e.stopPropagation();
+    
     if (!cart?.cartCode) return;
 
     const res = await CartApi.updateCartItemQuantity(
@@ -58,7 +65,10 @@ const CartPopup: React.FC<CartPopupProps> = ({ open, onClose, cartItems }) => {
     }
   };
 
-  const handleRemove = async (item: CartItem) => {
+  const handleRemove = async (item: CartItem, e: React.MouseEvent) => {
+    // Ngăn event propagation để không trigger navigate
+    e.stopPropagation();
+    
     if (!cart?.cartCode) return;
 
     const res = await CartApi.deleteCartItem(cart.cartCode, item.id!);
@@ -190,7 +200,7 @@ const CartPopup: React.FC<CartPopupProps> = ({ open, onClose, cartItems }) => {
               <Stack direction="row" spacing={0.5} alignItems="center">
                 <IconButton
                   size="small"
-                  onClick={() => handleQuantityChange(item, "dec")}
+                  onClick={(e) => handleQuantityChange(item, "dec", e)}
                 >
                   <RemoveIcon fontSize="small" />
                 </IconButton>
@@ -200,14 +210,14 @@ const CartPopup: React.FC<CartPopupProps> = ({ open, onClose, cartItems }) => {
                 </Typography>
 
                 <IconButton
-                  onClick={() => handleQuantityChange(item, "inc")}
+                  onClick={(e) => handleQuantityChange(item, "inc", e)}
                   size="small"
                 >
                   <AddIcon fontSize="small" />
                 </IconButton>
 
                 <IconButton
-                  onClick={() => handleRemove(item)}
+                  onClick={(e) => handleRemove(item, e)}
                   size="small"
                   color="error"
                 >
