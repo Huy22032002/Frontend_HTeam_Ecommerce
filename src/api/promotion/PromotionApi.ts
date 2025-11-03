@@ -12,6 +12,28 @@ export interface PromotionFilters {
   size?: number;
 }
 
+export interface CreatePromotionDTO {
+  code: string;
+  description: string;
+  discountPercentage?: number;
+  discountAmount?: number;
+  validFrom: string;
+  validTo: string;
+  isActive: boolean;
+  applicableProductOptionIds?: number[];
+}
+
+export interface UpdatePromotionDTO {
+  id: number;
+  description: string;
+  discountPercentage?: number;
+  discountAmount?: number;
+  validFrom: string;
+  validTo: string;
+  isActive: boolean;
+  applicableProductOptionIds?: number[];
+}
+
 export const PromotionApi = {
   // Lấy khuyến mãi active theo SKU sản phẩm (công khai - không cần token)
   getByProductSku: (sku: string) =>
@@ -34,8 +56,16 @@ export const PromotionApi = {
     axios.get(`${API_BASE}/admins/promotions/active?active=${active}`, { headers: getAuthHeader() }),
 
   // Tạo khuyến mãi mới (admin)
-  create: (data: any) =>
-    axios.post(`${API_BASE}/admins/promotions`, data, { headers: getAuthHeader() }),
+  create: (data: CreatePromotionDTO) => {
+    console.log('[PromotionApi.create] Sending data:', data);
+    return axios.post(`${API_BASE}/admins/promotions`, data, { headers: getAuthHeader() });
+  },
+
+  // Cập nhật khuyến mãi (admin)
+  update: (id: number, data: UpdatePromotionDTO) => {
+    console.log('[PromotionApi.update] Sending data:', data);
+    return axios.put(`${API_BASE}/admins/promotions/${id}`, data, { headers: getAuthHeader() });
+  },
 
   // Xóa khuyến mãi (admin)
   delete: (id: number) =>
@@ -43,5 +73,13 @@ export const PromotionApi = {
 
   // Cập nhật trạng thái active (admin)
   setActive: (id: number, active: boolean) =>
-    axios.post(`${API_BASE}/admins/promotions/set-active`, { id, active }, { headers: getAuthHeader() }),
+    axios.post(`${API_BASE}/admins/promotions/${id}/set-active?active=${active}`, {}, { headers: getAuthHeader() }),
+
+  // Thêm sản phẩm vào danh sách áp dụng khuyến mãi (admin)
+  addProductOption: (promotionId: number, productOptionId: number) =>
+    axios.post(`${API_BASE}/admins/promotions/${promotionId}/add-product/${productOptionId}`, {}, { headers: getAuthHeader() }),
+
+  // Xóa sản phẩm khỏi danh sách áp dụng khuyến mãi (admin)
+  removeProductOption: (promotionId: number, productOptionId: number) =>
+    axios.delete(`${API_BASE}/admins/promotions/${promotionId}/remove-product/${productOptionId}`, { headers: getAuthHeader() }),
 };

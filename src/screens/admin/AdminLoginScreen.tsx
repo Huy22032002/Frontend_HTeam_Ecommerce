@@ -56,7 +56,7 @@ const AdminLoginScreen = () => {
     };
 
     return (
-        <AuthLayout screenName="admin-login">
+        <AuthLayout screenName="login">
             <Box
                 component="form"
                 onSubmit={handleSubmit}

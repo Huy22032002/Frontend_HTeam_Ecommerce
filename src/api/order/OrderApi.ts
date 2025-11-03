@@ -58,4 +58,8 @@ export const OrderApi = {
   // Lấy lịch sử đơn hàng của customer theo id
   getByCustomerId: (customerId: string, page: number = 0, size: number = 20) =>
     axios.get(`${import.meta.env.VITE_BASE_URL}/api/customers/${customerId}/orders?page=${page}&size=${size}`, { headers: getAuthHeader() }),
+
+  // Huỷ đơn hàng của customer
+  cancelByCustomer: (orderId: string | number) =>
+    axios.delete(`${import.meta.env.VITE_BASE_URL}/api/customers/orders/${orderId}`, { headers: getAuthHeader() }),
 };

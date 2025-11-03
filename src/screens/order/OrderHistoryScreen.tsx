@@ -26,9 +26,11 @@ import {
 import { useTheme } from "@mui/material/styles";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CancelIcon from "@mui/icons-material/Cancel";
 import type { RootState } from "../../store/store";
 import { useOrderHistory } from "../../hooks/useOrderHistory";
 import { formatCurrency } from "../../utils/formatCurrency";
+import { OrderApi } from "../../api/order/OrderApi";
 import type { OrderReadableDTO } from "../../models/orders/Order";
 
 const OrderHistoryScreen = () => {
@@ -39,6 +41,7 @@ const OrderHistoryScreen = () => {
   // Dialog state
   const [selectedOrder, setSelectedOrder] = useState<OrderReadableDTO | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
 
   const customer = useSelector(
     (state: RootState) => state.customerAuth?.customer
@@ -71,6 +74,35 @@ const OrderHistoryScreen = () => {
     setOpenDialog(false);
     setSelectedOrder(null);
   };
+
+  const handleCancelOrder = async () => {
+    if (!selectedOrder) return;
+
+    // Kiểm tra trạng thái - chỉ cho phép huỷ khi PROCESSING hoặc PAID
+    if (!['PROCESSING', 'PAID'].includes(selectedOrder.status)) {
+      alert('Chỉ có thể hủy đơn hàng ở trạng thái "Đang xử lý" hoặc "Đã thanh toán"');
+      return;
+    }
+
+    setCancelLoading(true);
+    try {
+      const response = await OrderApi.cancelByCustomer(selectedOrder.id);
+      if (response.status === 200) {
+        alert('Hủy đơn hàng thành công');
+        setOpenDialog(false);
+        // Refresh lịch sử đơn hàng
+        window.location.reload();
+      }
+    } catch (error: any) {
+      console.error('Lỗi khi hủy đơn hàng:', error);
+      const errorMessage = error?.response?.data?.message || 'Hủy đơn hàng thất bại';
+      alert(errorMessage);
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
+  const canCancelOrder = selectedOrder && ['PROCESSING', 'PAID'].includes(selectedOrder.status);
 
   const getStatusColor = (
     status: string
@@ -383,7 +415,19 @@ const OrderHistoryScreen = () => {
                   </Box>
                 </Stack>
               </DialogContent>
-              <DialogActions sx={{ p: 2 }}>
+              <DialogActions sx={{ p: 2, gap: 1 }}>
+                {canCancelOrder && (
+                  <Button
+                    onClick={handleCancelOrder}
+                    disabled={cancelLoading}
+                    variant="contained"
+                    color="error"
+                    startIcon={<CancelIcon />}
+                    sx={{ textTransform: "none" }}
+                  >
+                    {cancelLoading ? "Đang hủy..." : "Hủy đơn hàng"}
+                  </Button>
+                )}
                 <Button onClick={handleCloseDialog} sx={{ textTransform: "none" }}>
                   Đóng
                 </Button>

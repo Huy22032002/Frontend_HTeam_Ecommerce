@@ -1,11 +1,6 @@
 import { useEffect, useState, useRef } from "react";
-import { fetchDashboardKPIs, fetchRecentOrders, fetchRecentUsers, fetchActivity } from "../../api/dashboard/DashboardApi";
-import type { KPI } from "../../models/dashboard/KPI";
-import type { Order } from "../../models/dashboard/Order";
-import type { UserSummary } from "../../models/dashboard/UserSummary";
-import type { ActivityItem } from "../../models/dashboard/ActivityItem";
+import { DashboardApi, type DashboardKPIDTO, type RecentOrderDTO, type NewCustomerDTO, type MonthlyRevenueDTO } from "../../api/dashboard/DashboardApi";
 
-// Add timeout to API calls to prevent infinite loading
 const withTimeout = (promise: Promise<any>, timeoutMs: number = 8000) => {
   return Promise.race([
     promise,
@@ -16,52 +11,54 @@ const withTimeout = (promise: Promise<any>, timeoutMs: number = 8000) => {
 };
 
 export const useDashboard = () => {
-  const [kpis, setKpis] = useState<KPI[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [users, setUsers] = useState<UserSummary[]>([]);
-  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [kpis, setKpis] = useState<DashboardKPIDTO[]>([]);
+  const [recentOrders, setRecentOrders] = useState<RecentOrderDTO[]>([]);
+  const [newCustomers, setNewCustomers] = useState<NewCustomerDTO[]>([]);
+  const [monthlyRevenue, setMonthlyRevenue] = useState<MonthlyRevenueDTO[]>([]);
+  const [orderStatusDistribution, setOrderStatusDistribution] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Use ref to prevent double-loading in StrictMode
   const hasLoadedRef = useRef(false);
 
-  // Load dashboard data
   const loadData = async () => {
     try {
       setLoading(true);
       setError(null);
       console.log("📊 Loading dashboard data...");
-      
-      // Load KPIs first (critical path)
-      const kpiRes = await withTimeout(fetchDashboardKPIs(), 8000);
-      console.log("✅ KPIs loaded:", kpiRes.length, "items");
-      setKpis(kpiRes);
-      
-      // Then load other data in parallel
+
+      // Load KPIs (critical path)
+      const kpiRes = await withTimeout(DashboardApi.getKPIs(), 8000);
+      console.log("✅ KPIs loaded:", kpiRes.data.length, "items");
+      setKpis(kpiRes.data || []);
+
+      // Load other data in parallel
       try {
-        const [orderRes, userRes, actRes] = await Promise.all([
-          withTimeout(fetchRecentOrders(), 8000).catch(e => {
+        const [ordersRes, customersRes, revenueRes, statusRes] = await Promise.all([
+          withTimeout(DashboardApi.getRecentOrders(), 8000).catch(e => {
             console.warn("⚠️ Orders failed:", e.message);
-            return [];
+            return { data: [] };
           }),
-          withTimeout(fetchRecentUsers(), 8000).catch(e => {
-            console.warn("⚠️ Users failed:", e.message);
-            return [];
+          withTimeout(DashboardApi.getNewCustomers(), 8000).catch(e => {
+            console.warn("⚠️ Customers failed:", e.message);
+            return { data: [] };
           }),
-          withTimeout(fetchActivity(), 8000).catch(e => {
-            console.warn("⚠️ Activities failed:", e.message);
-            return [];
+          withTimeout(DashboardApi.getMonthlyRevenue(), 8000).catch(e => {
+            console.warn("⚠️ Monthly revenue failed:", e.message);
+            return { data: [] };
+          }),
+          withTimeout(DashboardApi.getOrderStatusDistribution(), 8000).catch(e => {
+            console.warn("⚠️ Status distribution failed:", e.message);
+            return { data: {} };
           }),
         ]);
-        
-        console.log("✅ Dashboard data loaded - Orders:", orderRes.length, "Users:", userRes.length, "Activities:", actRes.length);
-        setOrders(orderRes || []);
-        setUsers(userRes || []);
-        setActivities(actRes || []);
+
+        console.log("✅ Dashboard data loaded");
+        setRecentOrders(ordersRes.data || []);
+        setNewCustomers(customersRes.data || []);
+        setMonthlyRevenue(revenueRes.data || []);
+        setOrderStatusDistribution(statusRes.data || {});
       } catch (e: any) {
-        console.warn("⚠️ Some dashboard data failed to load:", e.message);
-        // Still continue even if secondary data fails
+        console.warn("⚠️ Some dashboard data failed:", e.message);
       }
     } catch (e: any) {
       console.error("❌ Error loading dashboard:", e);
@@ -71,23 +68,29 @@ export const useDashboard = () => {
     }
   };
 
-  // Reload all data
   const reload = async () => {
     hasLoadedRef.current = false;
     await loadData();
   };
 
   useEffect(() => {
-    // Prevent double-loading in React StrictMode (development only)
     if (hasLoadedRef.current) {
       console.log("🔄 Skipping duplicate load due to StrictMode");
       return;
     }
     hasLoadedRef.current = true;
-    
     loadData();
   }, []);
 
-  return { kpis, orders, users, activities, loading, error, reload };
+  return { 
+    kpis, 
+    recentOrders, 
+    newCustomers, 
+    monthlyRevenue,
+    orderStatusDistribution,
+    loading, 
+    error, 
+    reload 
+  };
 };
 
