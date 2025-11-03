@@ -1,11 +1,43 @@
 export interface PromotionReadableDTO {
   id: number;
-  promotionCode: string;
-  promotionName: string;
-  type: string;
-  value: number;
-  status: string;
-  startDate: string;
-  endDate: string;
-  appliedCount?: number;
+  code: string;
+  description: string;
+  discountPercentage?: number;
+  discountAmount?: number;
+  validFrom: string;
+  validTo: string;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  applicableProductOptions?: ProductOptionDTO[];
+}
+
+export interface ProductOptionDTO {
+  id: number;
+  sku: string;
+  code: string;
+  name: string;
+  value: string;
+}
+
+export interface CreatePromotionRequest {
+  code: string;
+  description: string;
+  discountPercentage?: number;
+  discountAmount?: number;
+  validFrom: string;
+  validTo: string;
+  isActive: boolean;
+  applicableProductOptionIds?: number[];
+}
+
+export interface UpdatePromotionRequest {
+  id: number;
+  description: string;
+  discountPercentage?: number;
+  discountAmount?: number;
+  validFrom: string;
+  validTo: string;
+  isActive: boolean;
+  applicableProductOptionIds?: number[];
 }

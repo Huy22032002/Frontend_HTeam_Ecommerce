@@ -13,10 +13,10 @@ export const ProductApi = {
     axios.get(`${API_BASE}/admins/products?page=${page}&size=${size}`, {
       headers: getAuthHeader(),
     }),
-  getAllByCategoryId: async (categoryId: number) => {
+  getAllByCategoryId: async (categoryId: number, page = 0, size = 20) => {
     try {
       const response = await axios.get(`${API_BASE}/public/products`, {
-        params: { categoryId },
+        params: { categoryId, page, size },
       });
       if (response.data) {
         console.log("product:", response.data);

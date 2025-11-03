@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import {
   Box,
@@ -29,10 +29,14 @@ import { VIETNAM_PROVINCES, getDistrictsByProvince } from "../../utils/vietnamAd
 
 export default function CheckoutScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Redux state
   const cart = useSelector((state: RootState) => state.cart.cart);
   const customer = useSelector((state: RootState) => state.customerAuth?.customer);
+
+  // Lấy sản phẩm từ "Mua ngay"
+  const directProduct = (location.state as any)?.directProduct;
 
   // Form state
   const [formData, setFormData] = useState({
@@ -105,7 +109,8 @@ export default function CheckoutScreen() {
       setError("Vui lòng nhập số nhà, đường phố");
       return false;
     }
-    if (!cart?.items || cart.items.length === 0) {
+    // Kiểm tra giỏ hàng hoặc sản phẩm mua ngay
+    if (!directProduct && (!cart?.items || cart.items.length === 0)) {
       setError("Giỏ hàng trống");
       return false;
     }
@@ -135,14 +140,31 @@ export default function CheckoutScreen() {
         .filter(Boolean)
         .join(', ');
 
-      // Chuyển đổi cart items thành order items
-      const items = (cart?.items || []).map(item => ({
-        variantId: item.optionId,
-        productVariantOptionId: item.optionId,
-        sku: item.sku,
-        quantity: item.quantity,
-        price: item.currentPrice,
-      }));
+      // Chuyển đổi cart items thành order items hoặc sử dụng sản phẩm từ "Mua ngay"
+      let items;
+      let totalAmount;
+
+      if (directProduct) {
+        // Từ "Mua ngay" - không gửi customerCartCode
+        items = [{
+          variantId: directProduct.optionId,
+          productVariantOptionId: directProduct.optionId,
+          sku: directProduct.sku,
+          quantity: directProduct.quantity,
+          price: directProduct.currentPrice,
+        }];
+        totalAmount = directProduct.currentPrice * directProduct.quantity;
+      } else {
+        // Từ giỏ hàng
+        items = (cart?.items || []).map(item => ({
+          variantId: item.optionId,
+          productVariantOptionId: item.optionId,
+          sku: item.sku,
+          quantity: item.quantity,
+          price: item.currentPrice,
+        }));
+        totalAmount = subtotal;
+      }
 
       const orderRequest: CreateOrderRequest = {
         customerId: customer.id,
@@ -151,8 +173,8 @@ export default function CheckoutScreen() {
         notes: formData.notes || "",
         shippingAddress: fullAddress,
         receiverPhoneNumber: formData.receiverPhoneNumber,
-        totalAmount: subtotal,
-        customerCartCode: cart?.cartCode || "",
+        totalAmount,
+        ...(directProduct ? {} : { customerCartCode: cart?.cartCode || "" }),
       };
 
       const response = await OrderApi.createByCustomer(orderRequest as any);
@@ -178,11 +200,12 @@ export default function CheckoutScreen() {
   };
 
   // Tính tổng tiền
-  const subtotal =
-    cart?.items?.reduce(
-      (sum, item) => sum + item.currentPrice * item.quantity,
-      0
-    ) || 0;
+  const subtotal = directProduct 
+    ? directProduct.currentPrice * directProduct.quantity
+    : (cart?.items?.reduce(
+        (sum, item) => sum + item.currentPrice * item.quantity,
+        0
+      ) || 0);
 
   return (
     <Box sx={{ bgcolor: "#f8f9fa", minHeight: "100vh", py: 4 }}>
@@ -409,31 +432,55 @@ export default function CheckoutScreen() {
 
               {/* Cart Items Preview */}
               <Box sx={{ mb: 2, maxHeight: 300, overflowY: "auto" }}>
-                {(cart?.items || []).map((item, index) => (
+                {directProduct ? (
                   <Box
-                    key={index}
                     sx={{
                       display: "flex",
                       justifyContent: "space-between",
                       mb: 1.5,
                       pb: 1.5,
                       borderBottom: "1px solid #eee",
-                      "&:last-child": { borderBottom: "none" },
                     }}
                   >
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="body2" fontWeight={500}>
-                        {item.productName}
+                        {directProduct.name}
                       </Typography>
                       <Typography variant="caption" color="textSecondary">
-                        x{item.quantity}
+                        x{directProduct.quantity}
                       </Typography>
                     </Box>
                     <Typography variant="body2" fontWeight={500} sx={{ ml: 1, whiteSpace: "nowrap" }}>
-                      {formatCurrency(item.currentPrice * item.quantity)}
+                      {formatCurrency(directProduct.currentPrice * directProduct.quantity)}
                     </Typography>
                   </Box>
-                ))}
+                ) : (
+                  (cart?.items || []).map((item, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        mb: 1.5,
+                        pb: 1.5,
+                        borderBottom: "1px solid #eee",
+                        "&:last-child": { borderBottom: "none" },
+                      }}
+                    >
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="body2" fontWeight={500}>
+                          {item.productName}
+                        </Typography>
+                        <Typography variant="caption" color="textSecondary">
+                          x{item.quantity}
+                        </Typography>
+                      </Box>
+                      <Typography variant="body2" fontWeight={500} sx={{ ml: 1, whiteSpace: "nowrap" }}>
+                        {formatCurrency(item.currentPrice * item.quantity)}
+                      </Typography>
+                    </Box>
+                  ))
+                )}
               </Box>
 
               <Divider sx={{ my: 2 }} />

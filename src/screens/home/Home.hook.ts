@@ -24,11 +24,39 @@ const useHome = () => {
   const [suggestProducts, setSuggestProducts] = useState<ProductVariants | []>(
     []
   );
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [allProducts, setAllProducts] = useState<ProductVariants[]>([]);
+  const PRODUCTS_PER_PAGE = 20;
 
-  const getAllSuggestProducts = async () => {
-    const data = await VariantsApi.getAll(0, 5);
+  const getAllSuggestProducts = async (page: number = 0) => {
+    const data = await VariantsApi.getAll(page, PRODUCTS_PER_PAGE);
 
-    setSuggestProducts(data.content);
+    if (data?.content) {
+      setSuggestProducts(data.content);
+      setAllProducts(data.content);
+    }
+    if (data?.totalPages) {
+      setTotalPages(data.totalPages);
+    }
+    setCurrentPage(page + 1);
+  };
+
+  // Search products by name (locally)
+  const searchProductsByName = (searchTerm: string) => {
+    if (!searchTerm.trim()) {
+      // Reset to first page of suggested products
+      getAllSuggestProducts(0);
+      return;
+    }
+
+    const filtered = allProducts.filter((product) =>
+      product.name?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    setSuggestProducts(filtered as never);
+    setCurrentPage(1);
+    setTotalPages(1);
   };
 
   const listTopSearch = [
@@ -48,6 +76,10 @@ const useHome = () => {
     //suggest products
     getAllSuggestProducts,
     suggestProducts,
+    currentPage,
+    totalPages,
+    setCurrentPage,
+    searchProductsByName,
   };
 };
 

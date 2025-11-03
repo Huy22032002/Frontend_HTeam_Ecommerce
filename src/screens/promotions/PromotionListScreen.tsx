@@ -1,105 +1,134 @@
-import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip, Button, Box, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Select, MenuItem, FormControlLabel, Switch } from '@mui/material';
+import {
+  Typography,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Chip,
+  Button,
+  Box,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
+  TableContainer,
+  Paper,
+  IconButton,
+  Tooltip,
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useState } from 'react';
 import { usePromotions } from '../../hooks/usePromotions';
 import { PromotionApi } from '../../api/promotion/PromotionApi';
+import { PromotionFormDialog } from '../../components/promotion/PromotionFormDialog';
+import type { PromotionReadableDTO } from '../../models/promotions/Promotion';
 
 const PromotionListScreen = () => {
-  const { promotions, loading, error } = usePromotions();
-  const [openDialog, setOpenDialog] = useState(false);
-  const [editingPromotion, setEditingPromotion] = useState<any>(null);
-  const [formData, setFormData] = useState({
-    promotionCode: '',
-    promotionName: '',
-    type: 'PERCENTAGE',
-    value: 0,
-    startDate: '',
-    endDate: '',
-    isActive: true,
-  });
+  const { promotions, loading, error, refetch } = usePromotions();
+  const [selectedPromotion, setSelectedPromotion] = useState<PromotionReadableDTO | null>(null);
+  const [openForm, setOpenForm] = useState(false);
+  const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
+  const [openDetails, setOpenDetails] = useState(false);
+  const [loadingAction, setLoadingAction] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const handleOpenDialog = (promotion?: any) => {
-    if (promotion) {
-      setEditingPromotion(promotion);
-      setFormData(promotion);
-    } else {
-      setEditingPromotion(null);
-      setFormData({
-        promotionCode: '',
-        promotionName: '',
-        type: 'PERCENTAGE',
-        value: 0,
-        startDate: '',
-        endDate: '',
-        isActive: true,
-      });
-    }
-    setOpenDialog(true);
+  // TODO: Load all product options from ProductOptionApi when available
+
+  const handleOpenForm = (promotion?: PromotionReadableDTO) => {
+    setSelectedPromotion(promotion || null);
+    setOpenForm(true);
   };
 
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setEditingPromotion(null);
+  const handleCloseForm = () => {
+    setOpenForm(false);
+    setSelectedPromotion(null);
   };
 
-  const handleInputChange = (e: any) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'value' ? parseFloat(value) : value,
-    }));
+  const handleDelete = (id: number) => {
+    setDeleteTargetId(id);
+    setOpenDeleteConfirm(true);
   };
 
-  const handleSwitchChange = (e: any) => {
-    setFormData(prev => ({
-      ...prev,
-      isActive: e.target.checked,
-    }));
-  };
+  const handleConfirmDelete = async () => {
+    if (deleteTargetId === null) return;
 
-  const handleSave = async () => {
+    setLoadingAction(true);
     try {
-      if (editingPromotion) {
-        // Update existing promotion
-        await PromotionApi.create(formData);
-      } else {
-        // Create new promotion
-        await PromotionApi.create(formData);
-      }
-      handleCloseDialog();
-      window.location.reload();
-    } catch (err) {
-      console.error('Error saving promotion:', err);
-      alert('Lỗi khi lưu khuyến mãi');
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (window.confirm('Bạn có chắc muốn xóa khuyến mãi này?')) {
-      try {
-        await PromotionApi.delete(id);
-        window.location.reload();
-      } catch (err) {
-        console.error('Error deleting promotion:', err);
-        alert('Lỗi khi xóa khuyến mãi');
-      }
+      await PromotionApi.delete(deleteTargetId);
+      setMessage({ type: 'success', text: 'Xóa khuyến mãi thành công' });
+      setOpenDeleteConfirm(false);
+      setDeleteTargetId(null);
+      setTimeout(() => {
+        refetch();
+      }, 1500);
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.errorMessage || 'Lỗi khi xóa khuyến mãi';
+      setMessage({ type: 'error', text: errorMsg });
+    } finally {
+      setLoadingAction(false);
     }
   };
 
   const handleToggleActive = async (id: number, isActive: boolean) => {
+    setLoadingAction(true);
     try {
       await PromotionApi.setActive(id, !isActive);
-      window.location.reload();
-    } catch (err) {
-      console.error('Error updating promotion status:', err);
-      alert('Lỗi khi cập nhật trạng thái');
+      setMessage({ type: 'success', text: 'Cập nhật trạng thái thành công' });
+      setTimeout(() => {
+        refetch();
+      }, 1500);
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.errorMessage || 'Lỗi khi cập nhật trạng thái';
+      setMessage({ type: 'error', text: errorMsg });
+    } finally {
+      setLoadingAction(false);
     }
+  };
+
+  const handleViewDetails = (promotion: PromotionReadableDTO) => {
+    setSelectedPromotion(promotion);
+    setOpenDetails(true);
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '-';
+    try {
+      return new Date(dateString).toLocaleString('vi-VN');
+    } catch {
+      return dateString;
+    }
+  };
+
+  const formatCurrency = (value?: number) => {
+    if (!value) return '-';
+    return value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
   };
 
   return (
     <Box>
+      {message && (
+        <Alert
+          severity={message.type}
+          onClose={() => setMessage(null)}
+          sx={{ mb: 2 }}
+        >
+          {message.text}
+        </Alert>
+      )}
+
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-        <Typography variant="h4" fontWeight={600}>Khuyến mãi</Typography>
-        <Button variant="contained" size="small" onClick={() => handleOpenDialog()}>
+        <Typography variant="h4" fontWeight={600}>Quản lý khuyến mãi</Typography>
+        <Button
+          variant="contained"
+          size="small"
+          onClick={() => handleOpenForm()}
+        >
           + Thêm khuyến mãi
         </Button>
       </Box>
@@ -109,137 +138,176 @@ const PromotionListScreen = () => {
           <CircularProgress />
         </Box>
       ) : error ? (
-        <Typography color="error">Lỗi: {String(error)}</Typography>
+        <Alert severity="error">
+          Lỗi: {error.response?.data?.errorMessage || String(error)}
+        </Alert>
       ) : promotions.length === 0 ? (
-        <Typography>Không có khuyến mãi nào</Typography>
+        <Alert severity="info">Không có khuyến mãi nào</Alert>
       ) : (
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Mã</TableCell>
-              <TableCell>Tên chương trình</TableCell>
-              <TableCell>Loại</TableCell>
-              <TableCell>Giá trị</TableCell>
-              <TableCell>Trạng thái</TableCell>
-              <TableCell>Ngày bắt đầu</TableCell>
-              <TableCell>Ngày kết thúc</TableCell>
-              <TableCell>Hành động</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {promotions.map((p: any) => (
-              <TableRow key={p.id} hover>
-                <TableCell>{p.promotionCode}</TableCell>
-                <TableCell>{p.promotionName}</TableCell>
-                <TableCell>{p.type === 'PERCENTAGE' ? 'Phần trăm' : p.type === 'FIXED_AMOUNT' ? 'Tiền cố định' : 'Quà tặng'}</TableCell>
-                <TableCell>{p.type === 'PERCENTAGE' ? `${p.value}%` : `${p.value?.toLocaleString()}₫`}</TableCell>
-                <TableCell>
-                  <Chip 
-                    size="small" 
-                    color={p.isActive ? 'success' : 'default'} 
-                    label={p.isActive ? 'Đang chạy' : 'Ngừng'} 
-                    onClick={() => handleToggleActive(p.id, p.isActive)}
-                    style={{ cursor: 'pointer' }}
-                  />
-                </TableCell>
-                <TableCell>{new Date(p.startDate).toLocaleDateString('vi-VN')}</TableCell>
-                <TableCell>{new Date(p.endDate).toLocaleDateString('vi-VN')}</TableCell>
-                <TableCell>
-                  <Button 
-                    size="small" 
-                    color="primary" 
-                    onClick={() => handleOpenDialog(p)}
-                  >
-                    Sửa
-                  </Button>
-                  <Button 
-                    size="small" 
-                    color="error" 
-                    onClick={() => handleDelete(p.id)}
-                  >
-                    Xóa
-                  </Button>
-                </TableCell>
+        <TableContainer component={Paper}>
+          <Table size="small">
+            <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
+              <TableRow>
+                <TableCell><strong>Mã</strong></TableCell>
+                <TableCell><strong>Tên chương trình</strong></TableCell>
+                <TableCell align="right"><strong>Giảm giá</strong></TableCell>
+                <TableCell><strong>Ngày bắt đầu</strong></TableCell>
+                <TableCell><strong>Ngày kết thúc</strong></TableCell>
+                <TableCell><strong>Trạng thái</strong></TableCell>
+                <TableCell align="center"><strong>Hành động</strong></TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {promotions.map((p: PromotionReadableDTO) => (
+                <TableRow key={p.id} hover>
+                  <TableCell>{p.code}</TableCell>
+                  <TableCell>{p.description}</TableCell>
+                  <TableCell align="right">
+                    {p.discountPercentage ? `${p.discountPercentage}%` : formatCurrency(p.discountAmount)}
+                  </TableCell>
+                  <TableCell>{formatDate(p.validFrom)}</TableCell>
+                  <TableCell>{formatDate(p.validTo)}</TableCell>
+                  <TableCell>
+                    <Chip
+                      size="small"
+                      color={p.isActive ? 'success' : 'default'}
+                      label={p.isActive ? 'Đang chạy' : 'Ngừng'}
+                      onClick={() => handleToggleActive(p.id, p.isActive)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <Tooltip title="Chi tiết">
+                      <IconButton
+                        size="small"
+                        color="info"
+                        onClick={() => handleViewDetails(p)}
+                      >
+                        <VisibilityIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Sửa">
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={() => handleOpenForm(p)}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Xóa">
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => handleDelete(p.id)}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
 
-      {/* Dialog thêm/sửa khuyến mãi */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          {editingPromotion ? 'Sửa khuyến mãi' : 'Thêm khuyến mãi mới'}
-        </DialogTitle>
+      {/* Form Dialog */}
+      <PromotionFormDialog
+        open={openForm}
+        onClose={handleCloseForm}
+        onSuccess={refetch}
+        promotion={selectedPromotion}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={openDeleteConfirm} onClose={() => setOpenDeleteConfirm(false)}>
+        <DialogTitle>Xác nhận xóa</DialogTitle>
         <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
-            <TextField
-              label="Mã khuyến mãi"
-              name="promotionCode"
-              value={formData.promotionCode}
-              onChange={handleInputChange}
-              fullWidth
-              disabled={!!editingPromotion}
-            />
-            <TextField
-              label="Tên chương trình"
-              name="promotionName"
-              value={formData.promotionName}
-              onChange={handleInputChange}
-              fullWidth
-            />
-            <Select
-              name="type"
-              value={formData.type}
-              onChange={handleInputChange}
-              fullWidth
-            >
-              <MenuItem value="PERCENTAGE">Phần trăm (%)</MenuItem>
-              <MenuItem value="FIXED_AMOUNT">Tiền cố định (₫)</MenuItem>
-              <MenuItem value="GIFT">Quà tặng</MenuItem>
-            </Select>
-            <TextField
-              label="Giá trị"
-              name="value"
-              type="number"
-              value={formData.value}
-              onChange={handleInputChange}
-              fullWidth
-            />
-            <TextField
-              label="Ngày bắt đầu"
-              name="startDate"
-              type="datetime-local"
-              value={formData.startDate}
-              onChange={handleInputChange}
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-            />
-            <TextField
-              label="Ngày kết thúc"
-              name="endDate"
-              type="datetime-local"
-              value={formData.endDate}
-              onChange={handleInputChange}
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={formData.isActive}
-                  onChange={handleSwitchChange}
-                />
-              }
-              label="Kích hoạt"
-            />
-          </Box>
+          <Typography>
+            Bạn chắc chắn muốn xóa khuyến mãi này? Hành động này không thể hoàn tác.
+          </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Hủy</Button>
-          <Button onClick={handleSave} variant="contained">
-            {editingPromotion ? 'Cập nhật' : 'Thêm'}
+          <Button
+            onClick={() => setOpenDeleteConfirm(false)}
+            disabled={loadingAction}
+          >
+            Hủy
           </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            color="error"
+            variant="contained"
+            disabled={loadingAction}
+          >
+            {loadingAction ? <CircularProgress size={24} /> : 'Xóa'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Details Dialog */}
+      <Dialog open={openDetails} onClose={() => setOpenDetails(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Chi tiết khuyến mãi</DialogTitle>
+        <DialogContent>
+          {selectedPromotion && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, pt: 2 }}>
+              <Box>
+                <Typography variant="subtitle2" color="textSecondary">Mã khuyến mãi</Typography>
+                <Typography variant="body1">{selectedPromotion.code}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" color="textSecondary">Tên chương trình</Typography>
+                <Typography variant="body1">{selectedPromotion.description}</Typography>
+              </Box>
+              {selectedPromotion.discountPercentage && (
+                <Box>
+                  <Typography variant="subtitle2" color="textSecondary">Phần trăm giảm giá</Typography>
+                  <Typography variant="body1">{selectedPromotion.discountPercentage}%</Typography>
+                </Box>
+              )}
+              {selectedPromotion.discountAmount && (
+                <Box>
+                  <Typography variant="subtitle2" color="textSecondary">Số tiền giảm giá</Typography>
+                  <Typography variant="body1">{formatCurrency(selectedPromotion.discountAmount)}</Typography>
+                </Box>
+              )}
+              <Box>
+                <Typography variant="subtitle2" color="textSecondary">Ngày bắt đầu</Typography>
+                <Typography variant="body1">{formatDate(selectedPromotion.validFrom)}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" color="textSecondary">Ngày kết thúc</Typography>
+                <Typography variant="body1">{formatDate(selectedPromotion.validTo)}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" color="textSecondary">Trạng thái</Typography>
+                <Chip
+                  size="small"
+                  color={selectedPromotion.isActive ? 'success' : 'default'}
+                  label={selectedPromotion.isActive ? 'Đang chạy' : 'Ngừng'}
+                />
+              </Box>
+              {selectedPromotion.applicableProductOptions && selectedPromotion.applicableProductOptions.length > 0 && (
+                <Box>
+                  <Typography variant="subtitle2" color="textSecondary">Sản phẩm áp dụng</Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                    {selectedPromotion.applicableProductOptions.map((p) => (
+                      <Chip
+                        key={p.id}
+                        label={`${p.code} - ${p.name}`}
+                        size="small"
+                        variant="outlined"
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              )}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDetails(false)}>Đóng</Button>
         </DialogActions>
       </Dialog>
     </Box>

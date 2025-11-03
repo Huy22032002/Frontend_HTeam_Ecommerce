@@ -11,6 +11,9 @@ const useProductByCategory = () => {
   const [variants, setVariants] = useState<ProductVariants[]>([]);
   const [categoryName, setCategoryName] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const PRODUCTS_PER_PAGE = 20;
 
   const getListManufacturerByCategory = async (categoryId: number) => {
     try {
@@ -24,9 +27,9 @@ const useProductByCategory = () => {
     }
   };
 
-  const getListProductByCategoryId = async (categoryId: number) => {
+  const getListProductByCategoryId = async (categoryId: number, page: number = 0) => {
     try {
-      const data = await ProductApi.getAllByCategoryId(categoryId);
+      const data = await ProductApi.getAllByCategoryId(categoryId, page, PRODUCTS_PER_PAGE);
 
       if (data?.content && Array.isArray(data.content)) {
         //category
@@ -41,6 +44,10 @@ const useProductByCategory = () => {
           }))
         );
         setVariants(allVariants);
+        if (data.totalPages) {
+          setTotalPages(data.totalPages);
+        }
+        setCurrentPage(page + 1);
       }
     } catch (err) {
       console.error(err);
@@ -56,6 +63,9 @@ const useProductByCategory = () => {
     getListProductByCategoryId,
     //category
     categoryName,
+    currentPage,
+    totalPages,
+    setCurrentPage,
   };
 };
 
