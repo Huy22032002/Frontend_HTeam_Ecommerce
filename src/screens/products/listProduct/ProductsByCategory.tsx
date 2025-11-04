@@ -46,17 +46,76 @@ const ProductsByCategory = () => {
 
   //filter
   const [filteredVariants, setFilteredVariants] = useState(variants);
+  const [filters, setFilters] = useState<{
+    minPrice?: number;
+    maxPrice?: number;
+    available?: boolean;
+    hasSalePrice?: boolean;
+    manufacturers?: string[];
+  }>({});
+
+  const handleFilterChange = (newFilters: typeof filters) => {
+    setFilters(newFilters);
+  };
+
   useEffect(() => {
     let result = [...variants];
 
-    // 1) Lọc: variant có option còn hàng
-    result = result.filter((variant) =>
-      variant.options.some(
-        (opt) =>
-          opt.availability?.productStatus === true &&
-          (opt.availability?.quantity ?? 0) > 0
-      )
-    );
+    // Apply filter: price range
+    if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+      result = result.filter((variant) => {
+        const prices = variant.options
+          .filter((o) => o.availability?.productStatus)
+          .map((o) => o.availability?.salePrice || o.availability?.regularPrice || 0);
+        if (prices.length === 0) return false;
+        const minOptionPrice = Math.min(...prices);
+        const maxOptionPrice = Math.max(...prices);
+        
+        if (filters.minPrice !== undefined && maxOptionPrice < filters.minPrice) return false;
+        if (filters.maxPrice !== undefined && minOptionPrice > filters.maxPrice) return false;
+        return true;
+      });
+    }
+
+    // Apply filter: available only
+    if (filters.available) {
+      result = result.filter((variant) =>
+        variant.options.some(
+          (opt) =>
+            opt.availability?.productStatus === true &&
+            (opt.availability?.quantity ?? 0) > 0
+        )
+      );
+    }
+
+    // Apply filter: has sale price
+    if (filters.hasSalePrice) {
+      result = result.filter((variant) =>
+        variant.options.some(
+          (opt) => opt.availability?.salePrice !== null && opt.availability?.salePrice !== undefined
+        )
+      );
+    }
+
+    // Apply filter: manufacturers
+    if (filters.manufacturers && filters.manufacturers.length > 0) {
+      result = result.filter((variant) =>
+        filters.manufacturers?.some((mfr) =>
+          variant.manufacturerName === mfr
+        )
+      );
+    }
+
+    // 1) Lọc: variant có option còn hàng (default)
+    if (!filters.available) {
+      result = result.filter((variant) =>
+        variant.options.some(
+          (opt) =>
+            opt.availability?.productStatus === true &&
+            (opt.availability?.quantity ?? 0) > 0
+        )
+      );
+    }
 
     // 2) Sort
     const getSalePrice = (variant: any) =>
@@ -75,7 +134,7 @@ const ProductsByCategory = () => {
     }
 
     setFilteredVariants(result);
-  }, [variants, selectedValue]);
+  }, [variants, selectedValue, filters]);
 
   //-------------------
 
@@ -101,7 +160,7 @@ const ProductsByCategory = () => {
 
       <Box display="flex" flexDirection="row" sx={{ width: "100%", gap: 2 }}>
         {/* left : sideBarFilter */}
-        <FilterSideBar />
+        <FilterSideBar onFilterChange={handleFilterChange} />
         {/* right: filter + list products */}
         <Box sx={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
           {/* filter */}

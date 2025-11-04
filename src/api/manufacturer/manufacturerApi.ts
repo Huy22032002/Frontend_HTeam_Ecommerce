@@ -20,4 +20,16 @@ export const ManufacturerApi = {
       return null;
     }
   },
+
+  getAll: async (): Promise<Manufacturer[] | null> => {
+    try {
+      const response = await axios.get(
+        `${backendEndpoint}/api/public/manufacturers/all`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch manufacturers:", error);
+      return null;
+    }
+  },
 };

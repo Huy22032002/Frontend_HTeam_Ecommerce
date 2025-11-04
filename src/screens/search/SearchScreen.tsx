@@ -37,6 +37,8 @@ const SearchScreen = () => {
     minPrice?: number;
     maxPrice?: number;
     available?: boolean;
+    hasSalePrice?: boolean;
+    manufacturers?: string[];
   }>({});
 
   // Fetch search results
@@ -52,12 +54,14 @@ const SearchScreen = () => {
       const currentFilters = filterOptions || filters;
       
       // Use filter search if filters are applied, otherwise use simple search
-      if (currentFilters.minPrice || currentFilters.maxPrice || currentFilters.available) {
+      if (currentFilters.minPrice || currentFilters.maxPrice || currentFilters.available || currentFilters.hasSalePrice || (currentFilters.manufacturers && currentFilters.manufacturers.length > 0)) {
         const response = await VariantsApi.searchWithFilters({
           name: term,
           minPrice: currentFilters.minPrice,
           maxPrice: currentFilters.maxPrice,
           available: currentFilters.available,
+          hasSalePrice: currentFilters.hasSalePrice,
+          manufacturers: currentFilters.manufacturers,
           page,
           size: resultsPerPage,
         });
@@ -117,53 +121,82 @@ const SearchScreen = () => {
   return (
     <Box sx={{ bgcolor: colors.greenAccent[700], minHeight: "100vh", py: 4 }}>
       <Container maxWidth="lg">
-        {/* Search Bar */}
-        <Card sx={{ borderRadius: 2, mb: 6, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
-          <CardContent sx={{ p: 4 }}>
-            <Typography variant="h4" fontWeight="bold" mb={3}>
-              🔍 Tìm sản phẩm
-            </Typography>
-            <TextField
-              fullWidth
-              placeholder="Nhập tên sản phẩm để tìm kiếm..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              autoFocus
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    {isSearching ? (
-                      <CircularProgress size={20} />
-                    ) : (
-                      <SearchIcon sx={{ color: colors.grey[100] }} />
-                    )}
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
+        {/* Results Section with Sidebar Separate */}
+        <Box sx={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 4 }}>
+          {/* Sidebar Filter - Left Column */}
+          {searchTerm.trim() ? (
+            <Box>
+              <Box
+                sx={{
+                  p: 2,
                   bgcolor: colors.primary[400],
-                  borderRadius: 1,
-                  fontSize: 16,
-                },
-                "& .MuiOutlinedInput-input::placeholder": {
-                  opacity: 0.7,
-                },
-              }}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Results Section */}
-        {searchTerm.trim() && (
-          <Box sx={{ display: "flex", gap: 3 }}>
-            {/* Sidebar Filter */}
-            <Box sx={{ width: 250, flexShrink: 0 }}>
+                  borderRadius: 2,
+                  mb: 2,
+                }}
+              >
+                <TextField
+                  fullWidth
+                  placeholder="Tìm kiếm..."
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  size="small"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon sx={{ color: colors.grey[100] }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      bgcolor: "white",
+                      borderRadius: 1,
+                      fontSize: 14,
+                    },
+                  }}
+                />
+              </Box>
               <FilterSideBar onFilterChange={handleFilterChange} />
             </Box>
+          ) : (
+            <Box>
+              <Box
+                sx={{
+                  p: 2,
+                  bgcolor: colors.primary[400],
+                  borderRadius: 2,
+                  mb: 2,
+                }}
+              >
+                <TextField
+                  fullWidth
+                  placeholder="Tìm kiếm..."
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  autoFocus
+                  size="small"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon sx={{ color: colors.grey[100] }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      bgcolor: "white",
+                      borderRadius: 1,
+                      fontSize: 14,
+                    },
+                  }}
+                />
+              </Box>
+            </Box>
+          )}
 
-            {/* Results */}
-            <Box sx={{ flex: 1, minWidth: 0 }}>
+          {/* Main Content - Right Column */}
+          <Box>
+            {searchTerm.trim() && (
               <Card sx={{ borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", overflow: "hidden" }}>
                 <CardContent sx={{ p: 4, overflow: "hidden" }}>
                   <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
@@ -213,18 +246,18 @@ const SearchScreen = () => {
                   )}
                 </CardContent>
               </Card>
-            </Box>
-          </Box>
-        )}
+            )}
 
-        {/* Empty State */}
-        {!searchTerm.trim() && (
-          <Box sx={{ textAlign: "center", py: 8 }}>
-            <Typography variant="h6" color="textSecondary">
-              Hãy nhập từ khóa để tìm kiếm sản phẩm
-            </Typography>
+            {/* Empty State */}
+            {!searchTerm.trim() && (
+              <Box sx={{ textAlign: "center", py: 8 }}>
+                <Typography variant="h6" color="textSecondary">
+                  Hãy nhập từ khóa để tìm kiếm sản phẩm
+                </Typography>
+              </Box>
+            )}
           </Box>
-        )}
+        </Box>
       </Container>
     </Box>
   );

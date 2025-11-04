@@ -9,4 +9,7 @@ export interface ProductVariants {
   specs: Record<string, any>; 
   stock: number;
   options: ProductOption[];
+  productName?: string;
+  manufacturerName?: string;
+  categories?: string[];
 }

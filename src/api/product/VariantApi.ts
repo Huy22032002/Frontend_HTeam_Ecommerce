@@ -81,6 +81,8 @@ export const VariantsApi = {
     minPrice?: number;
     maxPrice?: number;
     available?: boolean;
+    hasSalePrice?: boolean;
+    manufacturers?: string[];
     page?: number;
     size?: number;
   }) => {
@@ -92,6 +94,8 @@ export const VariantsApi = {
           minPrice: filters.minPrice,
           maxPrice: filters.maxPrice,
           available: filters.available,
+          hasSalePrice: filters.hasSalePrice || false,
+          manufacturers: filters.manufacturers || [],
           page: filters.page || 0,
           size: filters.size || 20,
         }
