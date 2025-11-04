@@ -1,5 +1,6 @@
-import axios from "axios";
+import axios, { type AxiosResponse } from "axios";
 import type { Category } from "../../models/catalogs/Category";
+import { Category } from "@mui/icons-material";
 
 const API_BASE = import.meta.env.VITE_BASE_URL + "/api";
 
@@ -14,8 +15,8 @@ export const CategoryApi = {
     axios.get(`${API_BASE}/public/categories?page=${page}&size=${size}`),
 
   // Lấy danh sách danh mục không phân trang - public
-  getAllNoPaging: () =>
-    axios.get(`${API_BASE}/public/categories`),
+  getAllNoPaging: (): Promise<Category[]> =>
+    axios.get(`${API_BASE}/public/categories`).then((res) => res.data),
 
   // Lấy chi tiết danh mục theo id
   getById: (id: string) =>

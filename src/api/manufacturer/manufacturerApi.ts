@@ -16,8 +16,19 @@ export const ManufacturerApi = {
       );
       return response.data;
     } catch (error) {
-      console.error("Failed to fetch customer:", error);
+      console.error("Failed to fetch  manufacturer :", error);
       return null;
+    }
+  },
+  getAll: async (): Promise<Manufacturer[]> => {
+    try {
+      const response = await axios.get(
+        `${backendEndpoint}/api/public/manufacturers`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch all manufacturers", error);
+      return [];
     }
   },
 };

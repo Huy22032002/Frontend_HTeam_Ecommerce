@@ -23,7 +23,6 @@ import ProductVariantDetail from "./screens/products/productDetail/ProductVarian
 import CartScreen from "./screens/cart/Cartscreen";
 import CheckoutScreen from "./screens/order/CheckoutScreen";
 import OrderHistoryScreen from "./screens/order/OrderHistoryScreen";
-
 function AppContent() {
   const location = useLocation();
   const hideLayout =

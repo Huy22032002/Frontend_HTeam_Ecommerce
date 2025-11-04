@@ -16,6 +16,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { useProducts } from "../../hooks/useProducts";
 import type { Product } from "../../models/products/Product";
 import type { ProductVariants } from "../../models/products/ProductVariant";
+import { useNavigate } from "react-router-dom";
 
 const getStatus = (p: Product) => {
   if (p.available === false) return "OUT";
@@ -26,6 +27,8 @@ const ProductListScreen = () => {
   const { products, loading, error } = useProducts();
   // State để theo dõi sản phẩm nào đang mở variants
   const [openRow, setOpenRow] = React.useState<number | null>(null);
+
+  const navigate = useNavigate();
 
   return (
     <Box>
@@ -38,8 +41,12 @@ const ProductListScreen = () => {
         <Typography variant="h4" fontWeight={600}>
           Danh sách sản phẩm
         </Typography>
-        <Button variant="contained" size="small">
-          + Thêm
+        <Button
+          onClick={() => navigate("/admin/create-product")}
+          variant="contained"
+          size="small"
+        >
+          + Thêm sản phẩm mới
         </Button>
       </Box>
       {loading ? (
@@ -77,9 +84,7 @@ const ProductListScreen = () => {
                   </TableCell>
                   <TableCell>{p.id}</TableCell>
                   <TableCell>{p.productName}</TableCell>
-                  <TableCell>
-                    {p.categories?.join(", ") || "N/A"}
-                  </TableCell>
+                  <TableCell>{p.categories?.join(", ") || "N/A"}</TableCell>
                   <TableCell>{p.manufacturerName || "N/A"}</TableCell>
                   <TableCell>
                     <Chip
@@ -101,14 +106,14 @@ const ProductListScreen = () => {
                     >
                       <Box margin={1}>
                         <Typography variant="subtitle1" gutterBottom>
-                          Biến thể (Variants):
+                          Biến thể sản phẩm:
                         </Typography>
                         <Table size="small">
                           <TableHead>
                             <TableRow>
-                              <TableCell>SKU</TableCell>
-                              <TableCell>Mặc định</TableCell>
-                              <TableCell>Options</TableCell>
+                              <TableCell>Tên biến thể</TableCell>
+                              <TableCell>Mã sản phẩm</TableCell>
+                              <TableCell>Màu sắc</TableCell>
                             </TableRow>
                           </TableHead>
                           <TableBody>
@@ -116,9 +121,6 @@ const ProductListScreen = () => {
                               <TableRow key={v.id}>
                                 <TableCell>{v.name}</TableCell>
                                 <TableCell>{v.code}</TableCell>
-                                <TableCell>
-                                  {v.defaultSelection ? "✔" : ""}
-                                </TableCell>
                                 <TableCell>
                                   {(v.options || []).map(
                                     (opt: any, idx: number) => (
