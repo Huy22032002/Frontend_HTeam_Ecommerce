@@ -153,33 +153,25 @@ export default function CheckoutScreen() {
         .filter(Boolean)
         .join(", ");
 
-<<<<<<< HEAD
-      // Chuyển đổi cart items thành order items
-      const items = (cart?.items || []).map((item) => ({
-        variantId: item.optionId,
-        productVariantOptionId: item.optionId,
-        sku: item.sku,
-        quantity: item.quantity,
-        price: item.currentPrice,
-      }));
-=======
       // Chuyển đổi cart items thành order items hoặc sử dụng sản phẩm từ "Mua ngay"
       let items;
       let totalAmount;
 
       if (directProduct) {
         // Từ "Mua ngay" - không gửi customerCartCode
-        items = [{
-          variantId: directProduct.optionId,
-          productVariantOptionId: directProduct.optionId,
-          sku: directProduct.sku,
-          quantity: directProduct.quantity,
-          price: directProduct.currentPrice,
-        }];
+        items = [
+          {
+            variantId: directProduct.optionId,
+            productVariantOptionId: directProduct.optionId,
+            sku: directProduct.sku,
+            quantity: directProduct.quantity,
+            price: directProduct.currentPrice,
+          },
+        ];
         totalAmount = directProduct.currentPrice * directProduct.quantity;
       } else {
         // Từ giỏ hàng
-        items = (cart?.items || []).map(item => ({
+        items = (cart?.items || []).map((item) => ({
           variantId: item.optionId,
           productVariantOptionId: item.optionId,
           sku: item.sku,
@@ -188,7 +180,6 @@ export default function CheckoutScreen() {
         }));
         totalAmount = subtotal;
       }
->>>>>>> origin/dev
 
       const orderRequest: CreateOrderRequest = {
         customerId: customer.id,
@@ -224,12 +215,12 @@ export default function CheckoutScreen() {
   };
 
   // Tính tổng tiền
-  const subtotal = directProduct 
+  const subtotal = directProduct
     ? directProduct.currentPrice * directProduct.quantity
-    : (cart?.items?.reduce(
+    : cart?.items?.reduce(
         (sum, item) => sum + item.currentPrice * item.quantity,
         0
-      ) || 0);
+      ) || 0;
 
   return (
     <Box sx={{ bgcolor: "#f8f9fa", minHeight: "100vh", py: 4 }}>
@@ -517,17 +508,14 @@ export default function CheckoutScreen() {
                         x{directProduct.quantity}
                       </Typography>
                     </Box>
-<<<<<<< HEAD
                     <Typography
                       variant="body2"
                       fontWeight={500}
                       sx={{ ml: 1, whiteSpace: "nowrap" }}
                     >
-                      {formatCurrency(item.currentPrice * item.quantity)}
-=======
-                    <Typography variant="body2" fontWeight={500} sx={{ ml: 1, whiteSpace: "nowrap" }}>
-                      {formatCurrency(directProduct.currentPrice * directProduct.quantity)}
->>>>>>> origin/dev
+                      {formatCurrency(
+                        directProduct.currentPrice * directProduct.quantity
+                      )}
                     </Typography>
                   </Box>
                 ) : (
@@ -551,7 +539,11 @@ export default function CheckoutScreen() {
                           x{item.quantity}
                         </Typography>
                       </Box>
-                      <Typography variant="body2" fontWeight={500} sx={{ ml: 1, whiteSpace: "nowrap" }}>
+                      <Typography
+                        variant="body2"
+                        fontWeight={500}
+                        sx={{ ml: 1, whiteSpace: "nowrap" }}
+                      >
                         {formatCurrency(item.currentPrice * item.quantity)}
                       </Typography>
                     </Box>
