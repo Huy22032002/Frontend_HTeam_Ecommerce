@@ -153,76 +153,6 @@ const ProductVariantListScreen = () => {
     setExpandedRows(newExpanded);
   };
 
-  // Apply filters to variants
-  const applyFilters = (variantsList: ProductVariant[]) => {
-    let filtered = variantsList;
-
-    // Filter by min price
-    if (filters.minPrice !== undefined) {
-      filtered = filtered.filter((variant) => {
-        const minOptionPrice = Math.min(
-          ...(variant.options?.map(
-            (opt) => opt.availability?.regularPrice || Number.MAX_VALUE
-          ) || [Number.MAX_VALUE])
-        );
-        return minOptionPrice >= filters.minPrice!;
-      });
-    }
-
-    // Filter by max price
-    if (filters.maxPrice !== undefined) {
-      filtered = filtered.filter((variant) => {
-        const minOptionPrice = Math.min(
-          ...(variant.options?.map(
-            (opt) => opt.availability?.regularPrice || Number.MAX_VALUE
-          ) || [Number.MAX_VALUE])
-        );
-        return minOptionPrice <= filters.maxPrice!;
-      });
-    }
-
-    // Filter by in stock only
-    if (filters.inStockOnly) {
-      filtered = filtered.filter((variant) =>
-        variant.options?.some((opt) => (opt.availability?.quantity || 0) > 0)
-      );
-    }
-
-    // Filter by status
-    if (filters.status && filters.status !== "all") {
-      filtered = filtered.filter((variant) =>
-        variant.options?.some(
-          (opt) =>
-            (filters.status === "available" && opt.availability?.productStatus) ||
-            (filters.status === "unavailable" && !opt.availability?.productStatus)
-        )
-      );
-    }
-
-    // Sort
-    if (filters.sortBy) {
-      filtered.sort((a, b) => {
-        let compareValue = 0;
-        if (filters.sortBy === "name") {
-          compareValue = a.name.localeCompare(b.name);
-        } else if (filters.sortBy === "price") {
-          const minPriceA = Math.min(
-            ...(a.options?.map((opt) => opt.availability?.regularPrice || 0) ||
-              [0])
-          );
-          const minPriceB = Math.min(
-            ...(b.options?.map((opt) => opt.availability?.regularPrice || 0) ||
-              [0])
-          );
-          compareValue = minPriceA - minPriceB;
-        }
-        return filters.sortOrder === "desc" ? -compareValue : compareValue;
-      });
-    }
-
-    return filtered;
-  };
-
   // Open edit variant dialog
   const handleEditVariant = (variant: ProductVariant) => {
     setEditDialog({
@@ -430,20 +360,23 @@ const ProductVariantListScreen = () => {
     try {
       let response;
 
-      if (searchTerm.trim()) {
-        response = await VariantsApi.searchWithFilters({
-          name: searchTerm,
-          page,
-          size: pageSize,
-        });
-      } else {
-        response = await VariantsApi.getAll(page, pageSize);
-      }
+      // Use searchWithFilters to include both search term and filters
+      response = await VariantsApi.searchWithFilters({
+        name: searchTerm,
+        minPrice: filters.minPrice,
+        maxPrice: filters.maxPrice,
+        available: filters.inStockOnly,
+        manufacturers: undefined,
+        categories: undefined,
+        sortBy: filters.sortBy,
+        sortOrder: filters.sortOrder,
+        page,
+        size: pageSize,
+      });
 
       if (response && response.content) {
         let processedVariants = processVariants(response.content);
-        // Apply client-side filters
-        processedVariants = applyFilters(processedVariants);
+        // Note: Filters are already applied by API, but we can apply additional client-side filters if needed
         setVariants(processedVariants);
         setTotalItems(response.totalElements || 0);
       } else {

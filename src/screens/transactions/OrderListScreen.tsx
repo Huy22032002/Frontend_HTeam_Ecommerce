@@ -141,7 +141,7 @@ const OrderListScreen = () => {
                     </MenuItem>
                   </Menu>
                 </TableCell>
-                <TableCell>{o.id}</TableCell>
+                <TableCell>DH-{o.id}</TableCell>
                 <TableCell>{o.customerName}</TableCell>
                 <TableCell align="right">{(o.total || 0).toLocaleString()}₫</TableCell>
                 <TableCell><Chip size="small" color={o.status === 'PAID' ? 'success' : o.status === 'PENDING' ? 'warning' : 'default'} label={o.status} /></TableCell>
