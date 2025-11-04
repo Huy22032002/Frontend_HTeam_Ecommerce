@@ -66,6 +66,8 @@ const ProductsByCategory = () => {
     hasSalePrice?: boolean;
     manufacturers?: string[];
     categories?: string[];
+    sortBy?: string;
+    sortOrder?: string;
   }>({});
 
   const handleFilterChange = async (newFilters: typeof filters) => {
@@ -83,7 +85,7 @@ const ProductsByCategory = () => {
     // Note: API đã xử lý filtering (price, availability, sale price, manufacturers)
     // Ở đây chỉ cần:
     // 1) Lọc mặc định: variant có option còn hàng (nếu không có filter nào được apply)
-    // 2) Sort theo giá
+    // 2) Sort theo sortBy từ FilterSideBar hoặc selectedValue (Autocomplete cũ)
 
     const hasAnyFilter = Object.values(filters).some(value => {
       if (Array.isArray(value)) return value.length > 0;
@@ -101,24 +103,38 @@ const ProductsByCategory = () => {
       );
     }
 
-    // Sort
-    const getSalePrice = (variant: any) =>
-      Math.min(
-        ...variant.options
-          .filter((o: any) => o.availability?.productStatus)
-          .map((o: any) => o.availability.salePrice)
-      );
+    // Helper: lấy giá min
+    const getSalePrice = (variant: any) => {
+      if (!variant.options || variant.options.length === 0) return 0;
+      const prices = variant.options
+        .filter((o: any) => o.availability?.productStatus)
+        .map((o: any) => {
+          const price = o.availability?.salePrice;
+          return price && price > 0 ? price : (o.availability?.regularPrice || 0);
+        });
+      return prices.length > 0 ? Math.min(...prices) : 0;
+    };
 
-    if (selectedValue === "Giá thấp -> cao") {
+    // Sort theo FilterSideBar (prioritized)
+    if (filters.sortBy === "price") {
+      result.sort((a, b) => {
+        const priceA = getSalePrice(a);
+        const priceB = getSalePrice(b);
+        return filters.sortOrder === "asc" ? priceA - priceB : priceB - priceA;
+      });
+    }
+
+    // Fallback: Sort theo Autocomplete (cách cũ, compatibility)
+    if (selectedValue === "Giá thấp -> cao" && filters.sortBy !== "price") {
       result.sort((a, b) => getSalePrice(a) - getSalePrice(b));
     }
 
-    if (selectedValue === "Giá cao -> thấp") {
+    if (selectedValue === "Giá cao -> thấp" && filters.sortBy !== "price") {
       result.sort((a, b) => getSalePrice(b) - getSalePrice(a));
     }
 
     setFilteredVariants(result);
-  }, [variants, selectedValue]);
+  }, [variants, selectedValue, filters.sortBy, filters.sortOrder]);
 
   //-------------------
 
@@ -170,7 +186,10 @@ const ProductsByCategory = () => {
           </Box>
           {/* list variants  */}
           <Box sx={{ overflow: "hidden" }}>
-            <ProductVariantList data={filteredVariants} />
+            <ProductVariantList 
+              data={filteredVariants}
+              maxColumns={{ xs: 1, sm: 2, md: 2, lg: 4, xl: 4 }}
+            />
           </Box>
           {/* Pagination */}
           {totalPages > 1 && (

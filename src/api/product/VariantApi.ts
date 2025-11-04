@@ -84,6 +84,8 @@ export const VariantsApi = {
     hasSalePrice?: boolean;
     manufacturers?: string[];
     categories?: string[];
+    sortBy?: string;
+    sortOrder?: string;
     page?: number;
     size?: number;
   }) => {
@@ -98,6 +100,8 @@ export const VariantsApi = {
           hasSalePrice: filters.hasSalePrice || false,
           manufacturers: filters.manufacturers || [],
           categories: filters.categories || [],
+          sortBy: filters.sortBy || "newest",
+          sortOrder: filters.sortOrder || "desc",
           page: filters.page || 0,
           size: filters.size || 20,
         }

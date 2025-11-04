@@ -5,6 +5,8 @@ import {
   Typography,
   useTheme,
   Button,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { tokens } from "../../theme/theme";
@@ -21,6 +23,8 @@ interface FilterSideBarProps {
     hasSalePrice?: boolean;
     manufacturers?: string[];
     categories?: string[];
+    sortBy?: string;
+    sortOrder?: string;
   }) => void;
   hideCategories?: boolean;
 }
@@ -48,6 +52,8 @@ const FilterSideBar = ({ onFilterChange, hideCategories }: FilterSideBarProps) =
   const [manufacturers, setManufacturers] = useState<Manufacturer[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [sortBy, setSortBy] = useState("newest");
+  const [sortOrder, setSortOrder] = useState("desc");
 
   // Fetch manufacturers on component mount
   useEffect(() => {
@@ -119,6 +125,8 @@ const FilterSideBar = ({ onFilterChange, hideCategories }: FilterSideBarProps) =
       hasSalePrice: hasSalePrice || undefined,
       manufacturers: selectedManufacturers.length > 0 ? selectedManufacturers : undefined,
       categories: selectedCategories.length > 0 ? selectedCategories : undefined,
+      sortBy: sortBy || "newest",
+      sortOrder: sortOrder || "desc",
     });
   };
 
@@ -128,6 +136,8 @@ const FilterSideBar = ({ onFilterChange, hideCategories }: FilterSideBarProps) =
     setHasSalePrice(false);
     setSelectedManufacturers([]);
     setSelectedCategories([]);
+    setSortBy("newest");
+    setSortOrder("desc");
     onFilterChange?.({
       minPrice: undefined,
       maxPrice: undefined,
@@ -135,6 +145,8 @@ const FilterSideBar = ({ onFilterChange, hideCategories }: FilterSideBarProps) =
       hasSalePrice: undefined,
       manufacturers: undefined,
       categories: undefined,
+      sortBy: "newest",
+      sortOrder: "desc",
     });
   };
 
@@ -185,6 +197,34 @@ const FilterSideBar = ({ onFilterChange, hideCategories }: FilterSideBarProps) =
           />
         ))}
       </Box>
+
+      {/* Sắp xếp */}
+      <Typography fontWeight="bold" variant="h5" sx={{ mt: 2 }}>
+        Sắp xếp
+      </Typography>
+      <Select
+        fullWidth
+        size="small"
+        value={sortBy}
+        onChange={(e) => setSortBy(e.target.value)}
+        sx={{ mb: 1 }}
+      >
+        <MenuItem value="newest">Mới nhất</MenuItem>
+        <MenuItem value="price">Theo giá</MenuItem>
+        <MenuItem value="rating">Theo rating</MenuItem>
+        <MenuItem value="sold">Bán chạy nhất</MenuItem>
+      </Select>
+
+      <Select
+        fullWidth
+        size="small"
+        value={sortOrder}
+        onChange={(e) => setSortOrder(e.target.value)}
+        sx={{ mb: 2 }}
+      >
+        <MenuItem value="asc">Tăng dần</MenuItem>
+        <MenuItem value="desc">Giảm dần</MenuItem>
+      </Select>
 
       {/* Tình trạng */}
       <Typography fontWeight="bold" variant="h5" sx={{ mt: 2 }}>

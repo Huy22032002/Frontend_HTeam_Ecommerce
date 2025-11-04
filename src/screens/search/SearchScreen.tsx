@@ -40,6 +40,8 @@ const SearchScreen = () => {
     hasSalePrice?: boolean;
     manufacturers?: string[];
     categories?: string[];
+    sortBy?: string;
+    sortOrder?: string;
   }>({});
 
   // Fetch search results
@@ -58,10 +60,28 @@ const SearchScreen = () => {
         hasSalePrice: currentFilters.hasSalePrice,
         manufacturers: currentFilters.manufacturers,
         categories: currentFilters.categories,
+        sortBy: currentFilters.sortBy || "newest",
+        sortOrder: currentFilters.sortOrder || "desc",
         page,
         size: resultsPerPage,
       });
-      setSearchResults(response?.content || []);
+      
+      let results = response?.content || [];
+      
+      // Sort client-side dựa trên sortBy từ filters
+      const sortBy = currentFilters.sortBy || "newest";
+      const sortOrder = currentFilters.sortOrder || "desc";
+      
+      if (sortBy === "price") {
+        // Sort theo giá (min price)
+        results = results.sort((a: any, b: any) => {
+          const priceA = getMinPrice(a);
+          const priceB = getMinPrice(b);
+          return sortOrder === "asc" ? priceA - priceB : priceB - priceA;
+        });
+      }
+      
+      setSearchResults(results);
       setTotalResults(response?.totalItems || 0);
     } catch (error) {
       console.error("Search error:", error);
@@ -69,6 +89,20 @@ const SearchScreen = () => {
     } finally {
       setIsSearching(false);
     }
+  };
+
+  // Helper function để lấy giá tối thiểu của product
+  const getMinPrice = (variant: any): number => {
+    if (!variant.options || variant.options.length === 0) return 0;
+    
+    const prices = variant.options
+      .filter((opt: any) => opt.availability)
+      .map((opt: any) => {
+        const price = opt.availability.salePrice;
+        return price && price > 0 ? price : (opt.availability.regularPrice || 0);
+      });
+    
+    return prices.length > 0 ? Math.min(...prices) : 0;
   };
 
   // Handle filter change
@@ -147,9 +181,9 @@ const SearchScreen = () => {
           </Box>
 
           {/* Main Content - Right Column */}
-          <Box>
-            <Card sx={{ borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", overflow: "hidden" }}>
-              <CardContent sx={{ p: 4, overflow: "hidden" }}>
+          <Box sx={{ minWidth: 0 }}>
+            <Card sx={{ borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", overflow: "visible" }}>
+              <CardContent sx={{ p: 4, overflow: "visible", minWidth: 0 }}>
                 {searchTerm.trim() && (
                   <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
                     <Typography variant="h4" fontWeight="bold">
@@ -173,7 +207,12 @@ const SearchScreen = () => {
                     <Typography variant="body2" color="textSecondary" mb={3}>
                       Tìm thấy {totalResults} sản phẩm
                     </Typography>
-                    <ProductVariantList data={searchResults as ProductVariants[]} />
+                    <Box sx={{ minWidth: 0 }}>
+                      <ProductVariantList 
+                        data={searchResults as ProductVariants[]}
+                        maxColumns={{ xs: 1, sm: 2, md: 2, lg: 4, xl: 4 }}
+                      />
+                    </Box>
 
                     {/* Pagination */}
                     {totalPages > 1 && (

@@ -63,6 +63,8 @@ const useProductByCategory = () => {
     hasSalePrice?: boolean;
     manufacturers?: string[];
     categories?: string[];
+    sortBy?: string;
+    sortOrder?: string;
     page?: number;
   }) => {
     try {
@@ -74,6 +76,8 @@ const useProductByCategory = () => {
         hasSalePrice: filters.hasSalePrice,
         manufacturers: filters.manufacturers,
         categories: filters.categories,
+        sortBy: filters.sortBy || "newest",
+        sortOrder: filters.sortOrder || "desc",
         page: filters.page || 0,
         size: PRODUCTS_PER_PAGE,
       });
