@@ -67,28 +67,16 @@ const ProductsByCategory = () => {
   useEffect(() => {
     let result = [...variants];
 
-    // Note: API đã xử lý filtering (price, availability, sale price, manufacturers)
-    // Ở đây chỉ cần:
-    // 1) Lọc mặc định: variant có option còn hàng (nếu không có filter nào được apply)
-    // 2) Sort theo giá
+    // 1) Lọc: variant có option còn hàng (default)
+    result = result.filter((variant) =>
+      variant.options.some(
+        (opt) =>
+          opt.availability?.productStatus === true &&
+          (opt.availability?.quantity ?? 0) > 0
+      )
+    );
 
-    const hasAnyFilter = Object.values(filters).some(value => {
-      if (Array.isArray(value)) return value.length > 0;
-      return value !== undefined && value !== null;
-    });
-
-    // Default filter: chỉ hiển thị sản phẩm còn hàng (khi không có filter nào)
-    if (!hasAnyFilter) {
-      result = result.filter((variant) =>
-        variant.options.some(
-          (opt) =>
-            opt.availability?.productStatus === true &&
-            (opt.availability?.quantity ?? 0) > 0
-        )
-      );
-    }
-
-    // Sort
+    // 2) Sort
     const getSalePrice = (variant: any) =>
       Math.min(
         ...variant.options

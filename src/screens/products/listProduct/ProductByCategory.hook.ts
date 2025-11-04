@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ManufacturerApi } from "../../../api/manufacturer/manufacturerApi";
 import { ProductApi } from "../../../api/product/ProductApi";
+import { VariantsApi } from "../../../api/product/VariantApi";
 import type { Manufacturer } from "../../../models/manufacturer/Manufacturer";
 import type { Product } from "../../../models/products/Product";
 import type { ProductVariants } from "../../../models/products/ProductVariant";
@@ -55,12 +56,45 @@ const useProductByCategory = () => {
     }
   };
 
+  const getListProductWithFilters = async (filters: {
+    minPrice?: number;
+    maxPrice?: number;
+    available?: boolean;
+    hasSalePrice?: boolean;
+    manufacturers?: string[];
+    page?: number;
+  }) => {
+    try {
+      const results = await VariantsApi.searchWithFilters({
+        name: "",
+        minPrice: filters.minPrice,
+        maxPrice: filters.maxPrice,
+        available: filters.available,
+        hasSalePrice: filters.hasSalePrice,
+        manufacturers: filters.manufacturers,
+        page: filters.page || 0,
+        size: PRODUCTS_PER_PAGE,
+      });
+
+      if (Array.isArray(results)) {
+        setVariants(results);
+        setCurrentPage((filters.page || 0) + 1);
+        // Note: For pagination, we'd need total count from API
+        setTotalPages(Math.ceil(results.length / PRODUCTS_PER_PAGE) || 1);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to fetch filtered products");
+    }
+  };
+
   return {
     manufacturers,
     variants,
     error,
     getListManufacturerByCategory,
     getListProductByCategoryId,
+    getListProductWithFilters,
     //category
     categoryName,
     currentPage,
