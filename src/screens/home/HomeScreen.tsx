@@ -7,9 +7,12 @@ import {
   Card,
   CardContent,
   Chip,
+  Pagination,
+  TextField,
+  InputAdornment,
 } from "@mui/material";
 import CategoryItem from "../../components/categories/CategoryItem";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { tokens } from "../../theme/theme";
 //hooks
 import useHome from "./Home.hook";
@@ -20,10 +23,12 @@ import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import SecurityIcon from "@mui/icons-material/Security";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import SearchIcon from "@mui/icons-material/Search";
 
 const HomeScreen = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const {
     //categories
@@ -34,6 +39,9 @@ const HomeScreen = () => {
     //products
     suggestProducts,
     getAllSuggestProducts,
+    currentPage,
+    totalPages,
+    searchProductsByName,
   } = useHome();
 
   useEffect(() => {
@@ -201,17 +209,67 @@ const HomeScreen = () => {
           </CardContent>
         </Card>
 
+        {/* Search Section */}
+        <Card sx={{ borderRadius: 2, mb: 6, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+          <CardContent sx={{ p: 4 }}>
+            <Typography variant="h4" fontWeight="bold" mb={3}>
+              🔎 Tìm sản phẩm
+            </Typography>
+            <TextField
+              fullWidth
+              placeholder="Nhập tên sản phẩm để tìm kiếm..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                searchProductsByName(e.target.value);
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon sx={{ color: colors.grey[100] }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  bgcolor: colors.primary[400],
+                  borderRadius: 1,
+                  fontSize: 16,
+                },
+                "& .MuiOutlinedInput-input::placeholder": {
+                  opacity: 0.7,
+                },
+              }}
+            />
+          </CardContent>
+        </Card>
+
         {/* Suggested Products Section */}
         {suggestProducts && Array.isArray(suggestProducts) && suggestProducts.length > 0 && (
           <Box>
             <Card sx={{ borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
               <CardContent sx={{ p: 4 }}>
                 <Typography variant="h4" fontWeight="bold" mb={3}>
-                  💡 Sản phẩm gợi ý cho bạn
+                  💡 Các sản phẩm nổi bật
                 </Typography>
                 <ProductVariantList
                   data={suggestProducts as ProductVariants[]}
                 />
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+                    <Pagination
+                      count={totalPages}
+                      page={currentPage}
+                      onChange={(_event, page) => {
+                        getAllSuggestProducts(page - 1);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                      color="primary"
+                      size="large"
+                    />
+                  </Box>
+                )}
               </CardContent>
             </Card>
           </Box>

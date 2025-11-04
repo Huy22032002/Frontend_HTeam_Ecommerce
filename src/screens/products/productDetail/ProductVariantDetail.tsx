@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import useVariantDetail from "./ProductVariantDetail.hook";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from 'react-router-dom';
 import { tokens } from "../../../theme/theme";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../store/store";
@@ -31,6 +31,7 @@ import { CustomerLogApi } from "../../../api/customer/CustomerLogApi";
 const ProductVariantDetail = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const navigate = useNavigate();
   const [imageIndex, setImageIndex] = useState(0);
   const [addedSuccess, setAddedSuccess] = useState(false);
 
@@ -78,6 +79,24 @@ const ProductVariantDetail = () => {
       await addOptionsToCart(cart.cart?.cartCode, currentOption);
       setAddedSuccess(true);
       setTimeout(() => setAddedSuccess(false), 3000);
+    }
+  };
+
+  const handleBuyNow = async () => {
+    if (currentOption) {
+      // Chuyển đến checkout với thông tin sản phẩm (không thêm giỏ hàng)
+      navigate('/checkout', {
+        state: {
+          directProduct: {
+            optionId: currentOption.id,
+            sku: currentOption.sku,
+            quantity: 1,
+            currentPrice: currentOption.availability?.salePrice || 0,
+            name: variant?.name,
+            images: currentOption.images,
+          },
+        },
+      });
     }
   };
 
@@ -326,9 +345,11 @@ const ProductVariantDetail = () => {
             {/* Action Buttons */}
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <Button
+                onClick={handleBuyNow}
                 variant="contained"
                 size="large"
                 fullWidth
+                disabled={isLoading || !currentOption}
                 sx={{
                   bgcolor: "#FF6B6B",
                   py: 1.5,
@@ -340,7 +361,16 @@ const ProductVariantDetail = () => {
                   },
                 }}
               >
-                🛍️ Mua ngay
+                {isLoading ? (
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <CircularProgress size={20} />
+                    <span>Đang xử lý...</span>
+                  </Stack>
+                ) : (
+                  <>
+                    🛍️ Mua ngay
+                  </>
+                )}
               </Button>
               <Button
                 onClick={handleAddToCart}

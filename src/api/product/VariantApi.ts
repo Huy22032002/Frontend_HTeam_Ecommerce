@@ -3,7 +3,7 @@ import axios from "axios";
 const API_BASE = import.meta.env.VITE_BASE_URL;
 
 export const VariantsApi = {
-  getAll: async (page: number, size: 5) => {
+  getAll: async (page: number, size: number = 5) => {
     try {
       const response = await axios.get(
         `${API_BASE}/api/public/products/variants`,

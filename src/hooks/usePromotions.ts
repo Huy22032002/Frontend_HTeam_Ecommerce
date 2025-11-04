@@ -7,23 +7,31 @@ export function usePromotions(initialFilters: PromotionFilters = {}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<any>(null);
 
-  useEffect(() => {
+  const refetch = async () => {
     setLoading(true);
-    PromotionApi.getAll(initialFilters)
-      .then(res => {
-        if (res.data && res.data.content) {
-          setPromotions(res.data.content);
-        } else if (Array.isArray(res.data)) {
-          setPromotions(res.data);
-        } else {
-          setPromotions([]);
-        }
-      })
-      .catch(setError)
-      .finally(() => setLoading(false));
-  }, []);
+    try {
+      const res = await PromotionApi.getAll(initialFilters);
+      if (res.data && res.data.content) {
+        setPromotions(res.data.content);
+      } else if (Array.isArray(res.data)) {
+        setPromotions(res.data);
+      } else {
+        setPromotions([]);
+      }
+      setError(null);
+    } catch (err) {
+      setError(err);
+      setPromotions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  return { promotions, loading, error };
+  useEffect(() => {
+    refetch();
+  }, [initialFilters.page, initialFilters.size]);
+
+  return { promotions, loading, error, refetch };
 }
 
 // Hook lấy khuyến mãi theo trạng thái active
@@ -43,8 +51,12 @@ export function usePromotionsByActive(active: boolean) {
         } else {
           setPromotions([]);
         }
+        setError(null);
       })
-      .catch(setError)
+      .catch(err => {
+        setError(err);
+        setPromotions([]);
+      })
       .finally(() => setLoading(false));
   }, [active]);
 
@@ -73,8 +85,12 @@ export function usePromotionsByProductSku(sku: string) {
         } else {
           setPromotions([]);
         }
+        setError(null);
       })
-      .catch(setError)
+      .catch(err => {
+        setError(err);
+        setPromotions([]);
+      })
       .finally(() => setLoading(false));
   }, [sku]);
 

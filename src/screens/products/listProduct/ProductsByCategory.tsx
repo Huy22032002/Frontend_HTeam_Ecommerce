@@ -4,6 +4,7 @@ import {
   Autocomplete,
   TextField,
   useTheme,
+  Pagination,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import useProductByCategory from "./ProductByCategory.hook";
@@ -33,12 +34,14 @@ const ProductsByCategory = () => {
     getListProductByCategoryId,
     //category
     categoryName,
+    currentPage,
+    totalPages,
   } = useProductByCategory();
 
   useEffect(() => {
     if (categoryId) {
       getListManufacturerByCategory(Number(categoryId));
-      getListProductByCategoryId(Number(categoryId));
+      getListProductByCategoryId(Number(categoryId), 0);
     }
   }, [categoryId]);
 
@@ -60,8 +63,8 @@ const ProductsByCategory = () => {
     const getSalePrice = (variant: any) =>
       Math.min(
         ...variant.options
-          .filter((o) => o.availability?.productStatus)
-          .map((o) => o.availability.salePrice)
+          .filter((o: any) => o.availability?.productStatus)
+          .map((o: any) => o.availability.salePrice)
       );
 
     if (selectedValue === "Giá thấp -> cao") {
@@ -123,6 +126,21 @@ const ProductsByCategory = () => {
           </Box>
           {/* list variants  */}
           <ProductVariantList data={filteredVariants} />
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+              <Pagination
+                count={totalPages}
+                page={currentPage}
+                onChange={(_event, page) => {
+                  getListProductByCategoryId(Number(categoryId), page - 1);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                color="primary"
+                size="large"
+              />
+            </Box>
+          )}
         </Box>
       </Box>
     </Box>
