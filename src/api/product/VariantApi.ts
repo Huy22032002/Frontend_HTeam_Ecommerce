@@ -83,6 +83,7 @@ export const VariantsApi = {
     available?: boolean;
     hasSalePrice?: boolean;
     manufacturers?: string[];
+    categories?: string[];
     page?: number;
     size?: number;
   }) => {
@@ -96,6 +97,7 @@ export const VariantsApi = {
           available: filters.available,
           hasSalePrice: filters.hasSalePrice || false,
           manufacturers: filters.manufacturers || [],
+          categories: filters.categories || [],
           page: filters.page || 0,
           size: filters.size || 20,
         }

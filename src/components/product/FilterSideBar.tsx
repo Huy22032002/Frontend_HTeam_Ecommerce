@@ -9,7 +9,9 @@ import {
 import { useState, useEffect } from "react";
 import { tokens } from "../../theme/theme";
 import { ManufacturerApi } from "../../api/manufacturer/manufacturerApi";
+import { CategoryApi } from "../../api/catalog/CategoryApi";
 import type { Manufacturer } from "../../models/manufacturer/Manufacturer";
+import type { Category } from "../../models/catalogs/Category";
 
 interface FilterSideBarProps {
   onFilterChange?: (filters: {
@@ -18,6 +20,7 @@ interface FilterSideBarProps {
     available?: boolean;
     hasSalePrice?: boolean;
     manufacturers?: string[];
+    categories?: string[];
   }) => void;
 }
 
@@ -42,6 +45,8 @@ const FilterSideBar = ({ onFilterChange }: FilterSideBarProps) => {
   const [hasSalePrice, setHasSalePrice] = useState(false);
   const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>([]);
   const [manufacturers, setManufacturers] = useState<Manufacturer[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
 
   // Fetch manufacturers on component mount
   useEffect(() => {
@@ -52,6 +57,21 @@ const FilterSideBar = ({ onFilterChange }: FilterSideBarProps) => {
       }
     };
     fetchManufacturers();
+  }, []);
+
+  // Fetch categories on component mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await CategoryApi.getAll();
+        if (data && Array.isArray(data)) {
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    };
+    fetchCategories();
   }, []);
 
   const handlePriceChange = (min: number, max: number) => {
@@ -77,6 +97,14 @@ const FilterSideBar = ({ onFilterChange }: FilterSideBarProps) => {
     );
   };
 
+  const handleCategoryChange = (categoryName: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(categoryName)
+        ? prev.filter((c) => c !== categoryName)
+        : [...prev, categoryName]
+    );
+  };
+
   const handleApplyFilters = () => {
     onFilterChange?.({
       minPrice: selectedPrice.min,
@@ -84,6 +112,7 @@ const FilterSideBar = ({ onFilterChange }: FilterSideBarProps) => {
       available: availableOnly || undefined,
       hasSalePrice: hasSalePrice || undefined,
       manufacturers: selectedManufacturers.length > 0 ? selectedManufacturers : undefined,
+      categories: selectedCategories.length > 0 ? selectedCategories : undefined,
     });
   };
 
@@ -92,12 +121,14 @@ const FilterSideBar = ({ onFilterChange }: FilterSideBarProps) => {
     setAvailableOnly(false);
     setHasSalePrice(false);
     setSelectedManufacturers([]);
+    setSelectedCategories([]);
     onFilterChange?.({
       minPrice: undefined,
       maxPrice: undefined,
       available: undefined,
       hasSalePrice: undefined,
       manufacturers: undefined,
+      categories: undefined,
     });
   };
 
@@ -231,6 +262,43 @@ const FilterSideBar = ({ onFilterChange }: FilterSideBarProps) => {
               />
             }
             label={manufacturer.name}
+            sx={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              alignItems: "center",
+              "& .MuiFormControlLabel-label": {
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              },
+            }}
+          />
+        ))}
+      </Box>
+
+      {/* Danh Mục */}
+      <Typography fontWeight="bold" variant="h5" sx={{ mt: 2 }}>
+        Danh Mục
+      </Typography>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(2, 1fr)",
+          gap: 0.5,
+        }}
+      >
+        {categories.map((category: any) => (
+          <FormControlLabel
+            key={category.id}
+            control={
+              <Checkbox
+                size="small"
+                checked={selectedCategories.includes(category.name)}
+                onChange={() => handleCategoryChange(category.name)}
+              />
+            }
+            label={category.name}
             sx={{
               whiteSpace: "nowrap",
               overflow: "hidden",

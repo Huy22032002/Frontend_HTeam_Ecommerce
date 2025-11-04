@@ -42,8 +42,20 @@ const ProductsByCategory = () => {
     if (categoryId) {
       getListManufacturerByCategory(Number(categoryId));
       getListProductByCategoryId(Number(categoryId), 0);
+      // Tự động set category filter với category name
+      // Note: Lấy category name từ categoryName state sau khi load
     }
   }, [categoryId]);
+
+  // Tự động áp dụng category filter khi categoryName được load
+  useEffect(() => {
+    if (categoryName && !filters.categories?.includes(categoryName)) {
+      const newFilters = { ...filters, categories: [categoryName] };
+      setFilters(newFilters);
+      // Gọi API với category filter mặc định
+      handleFilterChange(newFilters);
+    }
+  }, [categoryName]);
 
   //filter
   const [filteredVariants, setFilteredVariants] = useState(variants);
@@ -53,6 +65,7 @@ const ProductsByCategory = () => {
     available?: boolean;
     hasSalePrice?: boolean;
     manufacturers?: string[];
+    categories?: string[];
   }>({});
 
   const handleFilterChange = async (newFilters: typeof filters) => {
