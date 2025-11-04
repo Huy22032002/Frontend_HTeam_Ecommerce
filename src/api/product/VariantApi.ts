@@ -102,14 +102,14 @@ export const VariantsApi = {
           size: filters.size || 20,
         }
       );
-      if (Array.isArray(response.data)) {
+      if (response.data) {
         console.log("filtered search results:", response.data);
         return response.data;
       }
-      return [];
+      return { content: [], totalPages: 0, totalItems: 0, currentPage: 1 };
     } catch (error) {
       console.error("Failed to search products with filters:", error);
-      return [];
+      return { content: [], totalPages: 0, totalItems: 0, currentPage: 1 };
     }
   },
 };

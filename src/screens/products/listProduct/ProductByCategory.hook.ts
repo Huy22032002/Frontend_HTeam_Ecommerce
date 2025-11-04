@@ -62,25 +62,26 @@ const useProductByCategory = () => {
     available?: boolean;
     hasSalePrice?: boolean;
     manufacturers?: string[];
+    categories?: string[];
     page?: number;
   }) => {
     try {
-      const results = await VariantsApi.searchWithFilters({
+      const response = await VariantsApi.searchWithFilters({
         name: "",
         minPrice: filters.minPrice,
         maxPrice: filters.maxPrice,
         available: filters.available,
         hasSalePrice: filters.hasSalePrice,
         manufacturers: filters.manufacturers,
+        categories: filters.categories,
         page: filters.page || 0,
         size: PRODUCTS_PER_PAGE,
       });
 
-      if (Array.isArray(results)) {
-        setVariants(results);
+      if (response && response.content && Array.isArray(response.content)) {
+        setVariants(response.content);
         setCurrentPage((filters.page || 0) + 1);
-        // Note: For pagination, we'd need total count from API
-        setTotalPages(Math.ceil(results.length / PRODUCTS_PER_PAGE) || 1);
+        setTotalPages(response.totalPages || 1);
       }
     } catch (err) {
       console.error(err);

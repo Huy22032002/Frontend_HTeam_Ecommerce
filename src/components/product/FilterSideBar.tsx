@@ -22,9 +22,10 @@ interface FilterSideBarProps {
     manufacturers?: string[];
     categories?: string[];
   }) => void;
+  hideCategories?: boolean;
 }
 
-const FilterSideBar = ({ onFilterChange }: FilterSideBarProps) => {
+const FilterSideBar = ({ onFilterChange, hideCategories }: FilterSideBarProps) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
@@ -63,9 +64,14 @@ const FilterSideBar = ({ onFilterChange }: FilterSideBarProps) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const data = await CategoryApi.getAll();
-        if (data && Array.isArray(data)) {
-          setCategories(data);
+        const response = await CategoryApi.getAll();
+        if (response.data) {
+          // API trả về { content: [...], totalPages: ... }
+          const categoryList = response.data.content || response.data;
+          if (Array.isArray(categoryList)) {
+            setCategories(categoryList);
+            console.log("Loaded categories:", categoryList);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch categories:", error);
@@ -278,41 +284,45 @@ const FilterSideBar = ({ onFilterChange }: FilterSideBarProps) => {
       </Box>
 
       {/* Danh Mục */}
-      <Typography fontWeight="bold" variant="h5" sx={{ mt: 2 }}>
-        Danh Mục
-      </Typography>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
-          gap: 0.5,
-        }}
-      >
-        {categories.map((category: any) => (
-          <FormControlLabel
-            key={category.id}
-            control={
-              <Checkbox
-                size="small"
-                checked={selectedCategories.includes(category.name)}
-                onChange={() => handleCategoryChange(category.name)}
-              />
-            }
-            label={category.name}
+      {!hideCategories && (
+        <>
+          <Typography fontWeight="bold" variant="h5" sx={{ mt: 2 }}>
+            Danh Mục
+          </Typography>
+          <Box
             sx={{
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              alignItems: "center",
-              "& .MuiFormControlLabel-label": {
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              },
+              display: "grid",
+              gridTemplateColumns: "repeat(2, 1fr)",
+              gap: 0.5,
             }}
-          />
-        ))}
-      </Box>
+          >
+            {categories.map((category: any) => (
+              <FormControlLabel
+                key={category.id}
+                control={
+                  <Checkbox
+                    size="small"
+                    checked={selectedCategories.includes(category.name)}
+                    onChange={() => handleCategoryChange(category.name)}
+                  />
+                }
+                label={category.name}
+                sx={{
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  alignItems: "center",
+                  "& .MuiFormControlLabel-label": {
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  },
+                }}
+              />
+            ))}
+          </Box>
+        </>
+      )}
 
       {/* Nút áp dụng / Xóa bộ lọc */}
       <Box sx={{ display: "flex", gap: 1, mt: 3 }}>

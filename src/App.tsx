@@ -41,6 +41,7 @@ function AppContent() {
           <Route path="/signup" element={<SignupScreen />} />
           <Route path="/" element={<HomeScreen />} />
           <Route path="/search" element={<SearchScreen />} />
+          <Route path="/all-products" element={<SearchScreen />} />
           <Route
             path="/product-category/:categoryId"
             element={<ProductsByCategory />}

@@ -343,9 +343,25 @@ const HomeScreen = () => {
           <Box>
             <Card sx={{ borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", overflow: "hidden" }}>
               <CardContent sx={{ p: 4, overflow: "hidden" }}>
-                <Typography variant="h4" fontWeight="bold" mb={3}>
-                  💡 Các sản phẩm nổi bật
-                </Typography>
+                <Stack direction="row" alignItems="center" justifyContent="space-between" mb={3}>
+                  <Typography variant="h4" fontWeight="bold">
+                    💡 Các sản phẩm nổi bật
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    onClick={() => navigate("/all-products")}
+                    sx={{
+                      bgcolor: "primary.main",
+                      textTransform: "none",
+                      fontWeight: 600,
+                      "&:hover": {
+                        bgcolor: "primary.dark",
+                      },
+                    }}
+                  >
+                    Xem toàn bộ sản phẩm
+                  </Button>
+                </Stack>
                 <ProductVariantList
                   data={suggestProducts as ProductVariants[]}
                 />

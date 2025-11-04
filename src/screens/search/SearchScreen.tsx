@@ -39,39 +39,30 @@ const SearchScreen = () => {
     available?: boolean;
     hasSalePrice?: boolean;
     manufacturers?: string[];
+    categories?: string[];
   }>({});
 
   // Fetch search results
   const performSearch = async (term: string, page: number = 0, filterOptions?: typeof filters) => {
-    if (!term.trim()) {
-      setSearchResults([]);
-      setTotalResults(0);
-      return;
-    }
-
     setIsSearching(true);
     try {
       const currentFilters = filterOptions || filters;
       
-      // Use filter search if filters are applied, otherwise use simple search
-      if (currentFilters.minPrice || currentFilters.maxPrice || currentFilters.available || currentFilters.hasSalePrice || (currentFilters.manufacturers && currentFilters.manufacturers.length > 0)) {
-        const response = await VariantsApi.searchWithFilters({
-          name: term,
-          minPrice: currentFilters.minPrice,
-          maxPrice: currentFilters.maxPrice,
-          available: currentFilters.available,
-          hasSalePrice: currentFilters.hasSalePrice,
-          manufacturers: currentFilters.manufacturers,
-          page,
-          size: resultsPerPage,
-        });
-        setSearchResults(response || []);
-        setTotalResults(response?.length || 0);
-      } else {
-        const response = await VariantsApi.search(term, page, resultsPerPage);
-        setSearchResults(response || []);
-        setTotalResults(response?.length || 0);
-      }
+      // Luôn sử dụng API filter (dù search term rỗng)
+      // Khi không có search term, API sẽ trả về tất cả sản phẩm
+      const response = await VariantsApi.searchWithFilters({
+        name: term || "",
+        minPrice: currentFilters.minPrice,
+        maxPrice: currentFilters.maxPrice,
+        available: currentFilters.available,
+        hasSalePrice: currentFilters.hasSalePrice,
+        manufacturers: currentFilters.manufacturers,
+        categories: currentFilters.categories,
+        page,
+        size: resultsPerPage,
+      });
+      setSearchResults(response?.content || []);
+      setTotalResults(response?.totalItems || 0);
     } catch (error) {
       console.error("Search error:", error);
       setSearchResults([]);
@@ -89,11 +80,8 @@ const SearchScreen = () => {
 
   // Load results when component mounts or query changes
   useEffect(() => {
-    if (queryTerm) {
-      setSearchTerm(queryTerm);
-      setCurrentPage(1);
-      performSearch(queryTerm, 0);
-    }
+    setCurrentPage(1);
+    performSearch(queryTerm || "", 0);
   }, [queryTerm]);
 
   // Handle search input change
@@ -124,138 +112,106 @@ const SearchScreen = () => {
         {/* Results Section with Sidebar Separate */}
         <Box sx={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 4 }}>
           {/* Sidebar Filter - Left Column */}
-          {searchTerm.trim() ? (
-            <Box>
-              <Box
-                sx={{
-                  p: 2,
-                  bgcolor: colors.primary[400],
-                  borderRadius: 2,
-                  mb: 2,
+          <Box>
+            <Box
+              sx={{
+                p: 2,
+                bgcolor: colors.primary[400],
+                borderRadius: 2,
+                mb: 2,
+              }}
+            >
+              <TextField
+                fullWidth
+                placeholder="Tìm kiếm..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                size="small"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: colors.grey[100] }} />
+                    </InputAdornment>
+                  ),
                 }}
-              >
-                <TextField
-                  fullWidth
-                  placeholder="Tìm kiếm..."
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  size="small"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon sx={{ color: colors.grey[100] }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      bgcolor: "white",
-                      borderRadius: 1,
-                      fontSize: 14,
-                    },
-                  }}
-                />
-              </Box>
-              <FilterSideBar onFilterChange={handleFilterChange} />
-            </Box>
-          ) : (
-            <Box>
-              <Box
                 sx={{
-                  p: 2,
-                  bgcolor: colors.primary[400],
-                  borderRadius: 2,
-                  mb: 2,
+                  "& .MuiOutlinedInput-root": {
+                    bgcolor: "white",
+                    borderRadius: 1,
+                    fontSize: 14,
+                  },
                 }}
-              >
-                <TextField
-                  fullWidth
-                  placeholder="Tìm kiếm..."
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  autoFocus
-                  size="small"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon sx={{ color: colors.grey[100] }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      bgcolor: "white",
-                      borderRadius: 1,
-                      fontSize: 14,
-                    },
-                  }}
-                />
-              </Box>
+              />
             </Box>
-          )}
+            <FilterSideBar onFilterChange={handleFilterChange} hideCategories={false} />
+          </Box>
 
           {/* Main Content - Right Column */}
           <Box>
-            {searchTerm.trim() && (
-              <Card sx={{ borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", overflow: "hidden" }}>
-                <CardContent sx={{ p: 4, overflow: "hidden" }}>
+            <Card sx={{ borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", overflow: "hidden" }}>
+              <CardContent sx={{ p: 4, overflow: "hidden" }}>
+                {searchTerm.trim() && (
                   <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
                     <Typography variant="h4" fontWeight="bold">
                       Kết quả tìm kiếm cho "{searchTerm}"
                     </Typography>
                     {isSearching && <CircularProgress size={24} />}
                   </Box>
+                )}
 
-                  {isSearching ? (
-                    <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-                      <CircularProgress />
-                    </Box>
-                  ) : searchResults.length > 0 ? (
-                    <>
-                      <Typography variant="body2" color="textSecondary" mb={3}>
-                        Tìm thấy {totalResults} sản phẩm
+                {isSearching ? (
+                  <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : searchResults.length > 0 ? (
+                  <>
+                    {!searchTerm.trim() && (
+                      <Typography variant="h4" fontWeight="bold" mb={3}>
+                        Tất cả sản phẩm
                       </Typography>
-                      <ProductVariantList data={searchResults as ProductVariants[]} />
+                    )}
+                    <Typography variant="body2" color="textSecondary" mb={3}>
+                      Tìm thấy {totalResults} sản phẩm
+                    </Typography>
+                    <ProductVariantList data={searchResults as ProductVariants[]} />
 
-                      {/* Pagination */}
-                      {totalPages > 1 && (
-                        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-                          <Pagination
-                            count={totalPages}
-                            page={currentPage}
-                            onChange={handlePageChange}
-                            color="primary"
-                            size="large"
-                          />
-                        </Box>
-                      )}
-                    </>
-                  ) : (
-                    <Box sx={{ textAlign: "center", py: 4 }}>
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+                        <Pagination
+                          count={totalPages}
+                          page={currentPage}
+                          onChange={handlePageChange}
+                          color="primary"
+                          size="large"
+                        />
+                      </Box>
+                    )}
+                  </>
+                ) : (
+                  <Box sx={{ textAlign: "center", py: 4 }}>
+                    {searchTerm.trim() ? (
+                      <>
+                        <Typography variant="body1" color="textSecondary">
+                          Không tìm thấy sản phẩm nào phù hợp với "{searchTerm}"
+                        </Typography>
+                        <Button
+                          onClick={() => navigate("/")}
+                          variant="outlined"
+                          sx={{ mt: 2 }}
+                        >
+                          Quay lại trang chủ
+                        </Button>
+                      </>
+                    ) : (
                       <Typography variant="body1" color="textSecondary">
-                        Không tìm thấy sản phẩm nào phù hợp với "{searchTerm}"
+                        Không có sản phẩm nào
                       </Typography>
-                      <Button
-                        onClick={() => navigate("/")}
-                        variant="outlined"
-                        sx={{ mt: 2 }}
-                      >
-                        Quay lại trang chủ
-                      </Button>
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Empty State */}
-            {!searchTerm.trim() && (
-              <Box sx={{ textAlign: "center", py: 8 }}>
-                <Typography variant="h6" color="textSecondary">
-                  Hãy nhập từ khóa để tìm kiếm sản phẩm
-                </Typography>
-              </Box>
-            )}
+                    )}
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
           </Box>
         </Box>
       </Container>

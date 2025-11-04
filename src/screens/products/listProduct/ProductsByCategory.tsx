@@ -144,7 +144,7 @@ const ProductsByCategory = () => {
 
       <Box display="flex" flexDirection="row" sx={{ width: "100%", gap: 2 }}>
         {/* left : sideBarFilter */}
-        <FilterSideBar onFilterChange={handleFilterChange} />
+        <FilterSideBar onFilterChange={handleFilterChange} hideCategories={true} />
         {/* right: filter + list products */}
         <Box sx={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
           {/* filter */}
