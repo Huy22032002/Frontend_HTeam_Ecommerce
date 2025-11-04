@@ -34,6 +34,7 @@ export default function CheckoutScreen() {
   // Redux state
   const cart = useSelector((state: RootState) => state.cart.cart);
   const customer = useSelector((state: RootState) => state.customerAuth?.customer);
+  const itemPromotionsRedux = useSelector((state: RootState) => state.cart.itemPromotions);
 
   // Lấy sản phẩm từ "Mua ngay"
   const directProduct = (location.state as any)?.directProduct;
@@ -163,7 +164,7 @@ export default function CheckoutScreen() {
           quantity: item.quantity,
           price: item.currentPrice,
         }));
-        totalAmount = subtotal;
+        totalAmount = finalTotal; // Use final total after discount
       }
 
       const orderRequest: CreateOrderRequest = {
@@ -206,6 +207,28 @@ export default function CheckoutScreen() {
         (sum, item) => sum + item.currentPrice * item.quantity,
         0
       ) || 0);
+
+  // Calculate discount from promotions
+  const calculateTotalDiscount = () => {
+    let totalDiscount = 0;
+    if (!directProduct && cart?.items) {
+      cart.items.forEach((item) => {
+        const promotion = itemPromotionsRedux[item.id!];
+        if (promotion) {
+          const itemTotal = item.currentPrice * item.quantity;
+          if (promotion.discountPercentage) {
+            totalDiscount += (itemTotal * promotion.discountPercentage) / 100;
+          } else if (promotion.discountAmount) {
+            totalDiscount += promotion.discountAmount;
+          }
+        }
+      });
+    }
+    return totalDiscount;
+  };
+
+  const discount = calculateTotalDiscount();
+  const finalTotal = subtotal - discount;
 
   return (
     <Box sx={{ bgcolor: "#f8f9fa", minHeight: "100vh", py: 4 }}>
@@ -496,6 +519,17 @@ export default function CheckoutScreen() {
                   </Typography>
                 </Box>
 
+                {discount > 0 && (
+                  <Box display="flex" justifyContent="space-between" sx={{ color: "#d32f2f" }}>
+                    <Typography variant="body2" color="inherit">
+                      Giảm giá
+                    </Typography>
+                    <Typography variant="body2" fontWeight={500} color="inherit">
+                      -{formatCurrency(discount)}
+                    </Typography>
+                  </Box>
+                )}
+
                 <Box display="flex" justifyContent="space-between">
                   <Typography variant="body2" color="textSecondary">
                     Phí vận chuyển
@@ -514,17 +548,17 @@ export default function CheckoutScreen() {
                 justifyContent="space-between"
                 sx={{
                   p: 2,
-                  bgcolor: "#e3f2fd",
+                  bgcolor: discount > 0 ? "#fff3e0" : "#e3f2fd",
                   borderRadius: 1,
-                  border: "2px solid #1976d2",
+                  border: discount > 0 ? "2px solid #f57c00" : "2px solid #1976d2",
                   mb: 2,
                 }}
               >
-                <Typography fontWeight="bold" color="#1565c0">
+                <Typography fontWeight="bold" color={discount > 0 ? "#e65100" : "#1565c0"}>
                   Tổng cộng
                 </Typography>
-                <Typography variant="h6" fontWeight="bold" color="#1565c0">
-                  {formatCurrency(subtotal)}
+                <Typography variant="h6" fontWeight="bold" color={discount > 0 ? "#e65100" : "#1565c0"}>
+                  {formatCurrency(finalTotal)}
                 </Typography>
               </Box>
 
