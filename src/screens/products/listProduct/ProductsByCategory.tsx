@@ -24,7 +24,6 @@ const ProductsByCategory = () => {
   const options = ["Nổi bật nhất", "Giá thấp -> cao", "Giá cao -> thấp"];
   const [selectedValue, setSelectedValue] = useState(options[0]);
 
-  //--------------------------------------
   const {
     //manufacturer
     getListManufacturerByCategory,

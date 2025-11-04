@@ -34,4 +34,47 @@ export const VariantsApi = {
       return null;
     }
   },
+  getRecommendations: async (limit: number = 10) => {
+    try {
+      const response = await axios.get(
+        `${API_BASE}/api/public/recommendations`,
+        {
+          params: { limit },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (response.data) {
+        console.log("recommendations:", response.data);
+        return response.data;
+      }
+    } catch (error) {
+      console.error("Failed to fetch recommendations:", error);
+      return [];
+    }
+  },
+  search: async (searchTerm: string, page: number = 0, size: number = 10) => {
+    try {
+      const response = await axios.get(
+        `${API_BASE}/api/public/search`,
+        {
+          params: {
+            productName: searchTerm,
+            page,
+            size,
+          },
+        }
+      );
+      if (Array.isArray(response.data)) {
+        console.log("search results:", response.data);
+        return response.data;
+      }
+      return [];
+    } catch (error) {
+      console.error("Failed to search products:", error);
+      return [];
+    }
+  },
 };
+

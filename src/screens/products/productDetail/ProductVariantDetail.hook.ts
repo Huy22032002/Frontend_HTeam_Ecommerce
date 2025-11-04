@@ -27,15 +27,18 @@ const useVariantDetail = () => {
       setVariant(data);
       setCurrentOption(data.options?.[0]);
       
-      // Set recommended products từ response
+      // Set recommended products từ response, lọc ra sản phẩm hiện tại
       if (data.recommendedProducts && Array.isArray(data.recommendedProducts)) {
-        setRecommendedProducts(data.recommendedProducts);
+        const filtered = data.recommendedProducts.filter(
+          (product: ProductVariants) => product.id !== data.id
+        );
+        setRecommendedProducts(filtered);
       } else {
         setRecommendedProducts([]);
       }
       
       console.log("cur option: ", data.options?.[0]);
-      console.log("recommended products: ", data.recommendedProducts);
+      console.log("recommended products (filtered): ", data.recommendedProducts);
     }
   };
 

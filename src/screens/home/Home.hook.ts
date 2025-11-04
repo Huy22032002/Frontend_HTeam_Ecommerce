@@ -42,6 +42,48 @@ const useHome = () => {
     setCurrentPage(page + 1);
   };
 
+  // Recommendations for logged-in customers
+  const [recommendedProducts, setRecommendedProducts] = useState<ProductVariants[]>([]);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
+
+  const getRecommendations = async (limit: number = 10) => {
+    setIsLoadingRecommendations(true);
+    try {
+      const data = await VariantsApi.getRecommendations(limit);
+      if (Array.isArray(data)) {
+        setRecommendedProducts(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch recommendations:", error);
+      setRecommendedProducts([]);
+    } finally {
+      setIsLoadingRecommendations(false);
+    }
+  };
+
+  // Real-time search
+  const [searchResults, setSearchResults] = useState<ProductVariants[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  const searchProducts = async (searchTerm: string) => {
+    if (!searchTerm.trim()) {
+      // Reset to suggested products
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const results = await VariantsApi.search(searchTerm, 0, 20);
+      setSearchResults(Array.isArray(results) ? results : []);
+    } catch (error) {
+      console.error("Search error:", error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   // Search products by name (locally)
   const searchProductsByName = (searchTerm: string) => {
     if (!searchTerm.trim()) {
@@ -80,7 +122,16 @@ const useHome = () => {
     totalPages,
     setCurrentPage,
     searchProductsByName,
+    //recommendations
+    recommendedProducts,
+    getRecommendations,
+    isLoadingRecommendations,
+    //real-time search
+    searchResults,
+    isSearching,
+    searchProducts,
   };
 };
 
 export default useHome;
+

@@ -10,6 +10,8 @@ import {
   Pagination,
   TextField,
   InputAdornment,
+  CircularProgress,
+  Button,
 } from "@mui/material";
 import CategoryItem from "../../components/categories/CategoryItem";
 import { useEffect, useState } from "react";
@@ -29,6 +31,7 @@ const HomeScreen = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const {
     //categories
@@ -41,12 +44,28 @@ const HomeScreen = () => {
     getAllSuggestProducts,
     currentPage,
     totalPages,
-    searchProductsByName,
+    //recommendations
+    recommendedProducts,
+    getRecommendations,
+    isLoadingRecommendations,
+    //real-time search
+    searchResults,
+    isSearching,
+    searchProducts,
   } = useHome();
 
   useEffect(() => {
     getAllCategories();
     getAllSuggestProducts();
+    
+    // Kiểm tra xem customer có đăng nhập không
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsLoggedIn(true);
+      getRecommendations(10);
+    } else {
+      setIsLoggedIn(false);
+    }
   }, []);
 
   return (
@@ -176,6 +195,34 @@ const HomeScreen = () => {
           </CardContent>
         </Card>
 
+        {/* Recommendations Section for Logged-in Customers */}
+        {!searchTerm.trim() && isLoggedIn && (recommendedProducts.length > 0 || isLoadingRecommendations) && (
+          <Card sx={{ borderRadius: 2, mb: 6, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+            <CardContent sx={{ p: 4 }}>
+              <Stack direction="row" alignItems="center" spacing={1} mb={3}>
+                <Box sx={{ fontSize: 28 }}>⭐</Box>
+                <Typography variant="h4" fontWeight="bold">
+                  Gợi ý dành cho bạn
+                </Typography>
+              </Stack>
+              
+              {isLoadingRecommendations ? (
+                <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                  <CircularProgress />
+                </Box>
+              ) : recommendedProducts.length > 0 ? (
+                <ProductVariantList
+                  data={recommendedProducts as ProductVariants[]}
+                />
+              ) : (
+                <Typography variant="body1" color="textSecondary" sx={{ py: 2 }}>
+                  Không có gợi ý nào. Hãy duyệt thêm sản phẩm để nhận gợi ý!
+                </Typography>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Top Searches Section */}
         <Card sx={{ borderRadius: 2, mb: 6, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
           <CardContent sx={{ p: 4 }}>
@@ -220,13 +267,18 @@ const HomeScreen = () => {
               placeholder="Nhập tên sản phẩm để tìm kiếm..."
               value={searchTerm}
               onChange={(e) => {
-                setSearchTerm(e.target.value);
-                searchProductsByName(e.target.value);
+                const term = e.target.value;
+                setSearchTerm(term);
+                searchProducts(term);
               }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon sx={{ color: colors.grey[100] }} />
+                    {isSearching ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      <SearchIcon sx={{ color: colors.grey[100] }} />
+                    )}
                   </InputAdornment>
                 ),
               }}
@@ -244,8 +296,52 @@ const HomeScreen = () => {
           </CardContent>
         </Card>
 
+        {/* Search Results Section */}
+        {searchTerm.trim() && (
+          <Box mb={6}>
+            <Card sx={{ borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+              <CardContent sx={{ p: 4 }}>
+                <Stack direction="row" alignItems="center" spacing={1} mb={3}>
+                  <Typography variant="h4" fontWeight="bold">
+                    🔍 Kết quả tìm kiếm cho "{searchTerm}"
+                  </Typography>
+                  {isSearching && <CircularProgress size={24} />}
+                </Stack>
+                
+                {isSearching ? (
+                  <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : searchResults.length > 0 ? (
+                  <>
+                    <Typography variant="body2" color="textSecondary" mb={2}>
+                      Tìm thấy {searchResults.length} sản phẩm
+                    </Typography>
+                    <ProductVariantList
+                      data={searchResults as ProductVariants[]}
+                    />
+                  </>
+                ) : (
+                  <Box sx={{ textAlign: "center", py: 4 }}>
+                    <Typography variant="body1" color="textSecondary">
+                      Không tìm thấy sản phẩm nào phù hợp với "{searchTerm}"
+                    </Typography>
+                    <Button
+                      onClick={() => setSearchTerm("")}
+                      variant="outlined"
+                      sx={{ mt: 2 }}
+                    >
+                      Quay lại danh sách gốc
+                    </Button>
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
+          </Box>
+        )}
+
         {/* Suggested Products Section */}
-        {suggestProducts && Array.isArray(suggestProducts) && suggestProducts.length > 0 && (
+        {!searchTerm.trim() && suggestProducts && Array.isArray(suggestProducts) && suggestProducts.length > 0 && (
           <Box>
             <Card sx={{ borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
               <CardContent sx={{ p: 4 }}>
@@ -280,3 +376,4 @@ const HomeScreen = () => {
 };
 
 export default HomeScreen;
+
