@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import CategoryItem from "../../components/categories/CategoryItem";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { tokens } from "../../theme/theme";
 //hooks
 import useHome from "./Home.hook";
@@ -30,6 +31,7 @@ import SearchIcon from "@mui/icons-material/Search";
 const HomeScreen = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -271,7 +273,7 @@ const HomeScreen = () => {
                   key={v}
                   label={v}
                   onClick={() => {
-                    window.location.href = `/products?search=${encodeURIComponent(v)}`;
+                    navigate(`/search?q=${encodeURIComponent(v)}`);
                   }}
                   sx={{
                     bgcolor: "primary.main",

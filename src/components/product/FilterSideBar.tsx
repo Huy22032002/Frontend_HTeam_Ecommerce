@@ -4,12 +4,67 @@ import {
   FormControlLabel,
   Typography,
   useTheme,
+  Button,
 } from "@mui/material";
+import { useState } from "react";
 import { tokens } from "../../theme/theme";
 
-const FilterSideBar = () => {
+interface FilterSideBarProps {
+  onFilterChange?: (filters: {
+    minPrice?: number;
+    maxPrice?: number;
+    available?: boolean;
+  }) => void;
+}
+
+const FilterSideBar = ({ onFilterChange }: FilterSideBarProps) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+
+  // Price ranges mapping
+  const priceRanges = [
+    { label: "Dưới 1 triệu", min: 0, max: 1000000 },
+    { label: "1 - 2 triệu", min: 1000000, max: 2000000 },
+    { label: "2 - 5 triệu", min: 2000000, max: 5000000 },
+    { label: "5 - 10 triệu", min: 5000000, max: 10000000 },
+    { label: "10 - 15 triệu", min: 10000000, max: 15000000 },
+    { label: "15 - 20 triệu", min: 15000000, max: 20000000 },
+  ];
+
+  const [selectedPrice, setSelectedPrice] = useState<{
+    min?: number;
+    max?: number;
+  }>({});
+  const [availableOnly, setAvailableOnly] = useState(false);
+
+  const handlePriceChange = (min: number, max: number) => {
+    const newPrice = selectedPrice.min === min && selectedPrice.max === max 
+      ? {} 
+      : { min, max };
+    setSelectedPrice(newPrice);
+  };
+
+  const handleAvailableChange = (checked: boolean) => {
+    setAvailableOnly(checked);
+  };
+
+  const handleApplyFilters = () => {
+    onFilterChange?.({
+      minPrice: selectedPrice.min,
+      maxPrice: selectedPrice.max,
+      available: availableOnly || undefined,
+    });
+  };
+
+  const handleClearFilters = () => {
+    setSelectedPrice({});
+    setAvailableOnly(false);
+    onFilterChange?.({
+      minPrice: undefined,
+      maxPrice: undefined,
+      available: undefined,
+    });
+  };
 
   return (
     <Box
@@ -19,6 +74,8 @@ const FilterSideBar = () => {
         borderRadius: 4,
         marginTop: 2,
         background: `${colors.primary[400]}`,
+        position: "sticky",
+        top: 20,
       }}
     >
       {/* Khoảng Giá */}
@@ -32,17 +89,16 @@ const FilterSideBar = () => {
           gap: 0.5,
         }}
       >
-        {[
-          "Dưới 1 triệu",
-          "1 - 2 triệu",
-          "2 - 5 triệu",
-          "5 - 10 triệu",
-          "10 - 15 triệu",
-          "15 - 20 triệu",
-        ].map((label) => (
+        {priceRanges.map(({ label, min, max }) => (
           <FormControlLabel
             key={label}
-            control={<Checkbox size="small" />}
+            control={
+              <Checkbox
+                size="small"
+                checked={selectedPrice.min === min && selectedPrice.max === max}
+                onChange={() => handlePriceChange(min, max)}
+              />
+            }
             label={label}
             sx={{
               whiteSpace: "nowrap",
@@ -70,74 +126,52 @@ const FilterSideBar = () => {
           gap: 0.5,
         }}
       >
-        {["Mới, Sealed", "Mới, Full box", "Used"].map((label) => (
-          <FormControlLabel
-            key={label}
-            control={<Checkbox size="small" />}
-            label={label}
-            sx={{
-              "& .MuiFormControlLabel-label": {
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              },
-            }}
-          />
-        ))}
+        <FormControlLabel
+          control={
+            <Checkbox
+              size="small"
+              checked={availableOnly}
+              onChange={(e) => handleAvailableChange(e.target.checked)}
+            />
+          }
+          label="Còn hàng"
+          sx={{
+            "& .MuiFormControlLabel-label": {
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            },
+          }}
+        />
       </Box>
 
-      {/* Nguồn hàng */}
-      <Typography fontWeight="bold" variant="h5" sx={{ mt: 2 }}>
-        Nguồn hàng
-      </Typography>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
-          gap: 0.5,
-        }}
-      >
-        {["Chính hãng", "Nhập khẩu"].map((label) => (
-          <FormControlLabel
-            key={label}
-            control={<Checkbox size="small" />}
-            label={label}
-            sx={{
-              "& .MuiFormControlLabel-label": {
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              },
-            }}
-          />
-        ))}
-      </Box>
-
-      {/* Khuyến mại */}
-      <Typography fontWeight="bold" variant="h5" sx={{ mt: 2 }}>
-        Khuyến mại
-      </Typography>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
-          gap: 0.5,
-        }}
-      >
-        {["Có quà tặng"].map((label) => (
-          <FormControlLabel
-            key={label}
-            control={<Checkbox size="small" />}
-            label={label}
-            sx={{
-              "& .MuiFormControlLabel-label": {
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              },
-            }}
-          />
-        ))}
+      {/* Nút áp dụng / Xóa bộ lọc */}
+      <Box sx={{ display: "flex", gap: 1, mt: 3 }}>
+        <Button
+          variant="contained"
+          size="small"
+          fullWidth
+          onClick={handleApplyFilters}
+          sx={{
+            bgcolor: "primary.main",
+            textTransform: "none",
+            fontWeight: 600,
+          }}
+        >
+          Áp dụng
+        </Button>
+        <Button
+          variant="outlined"
+          size="small"
+          fullWidth
+          onClick={handleClearFilters}
+          sx={{
+            textTransform: "none",
+            fontWeight: 600,
+          }}
+        >
+          Xóa
+        </Button>
       </Box>
     </Box>
   );

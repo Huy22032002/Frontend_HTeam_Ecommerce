@@ -35,6 +35,12 @@ const useHome = () => {
     if (data?.content) {
       setSuggestProducts(data.content);
       setAllProducts(data.content);
+      
+      // If not logged in, use first 4 product names as top search
+      if (listTopSearch.length === 0) {
+        const topSearchKeywords = data.content.slice(0, 4).map((product: ProductVariants) => product.name);
+        setListTopSearch(topSearchKeywords);
+      }
     }
     if (data?.totalPages) {
       setTotalPages(data.totalPages);

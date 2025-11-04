@@ -76,5 +76,35 @@ export const VariantsApi = {
       return [];
     }
   },
+  searchWithFilters: async (filters: {
+    name?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    available?: boolean;
+    page?: number;
+    size?: number;
+  }) => {
+    try {
+      const response = await axios.post(
+        `${API_BASE}/api/public/search/filters`,
+        {
+          name: filters.name || "",
+          minPrice: filters.minPrice,
+          maxPrice: filters.maxPrice,
+          available: filters.available,
+          page: filters.page || 0,
+          size: filters.size || 20,
+        }
+      );
+      if (Array.isArray(response.data)) {
+        console.log("filtered search results:", response.data);
+        return response.data;
+      }
+      return [];
+    } catch (error) {
+      console.error("Failed to search products with filters:", error);
+      return [];
+    }
+  },
 };
 
