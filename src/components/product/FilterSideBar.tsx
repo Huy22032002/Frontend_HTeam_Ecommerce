@@ -7,13 +7,13 @@ import {
   Button,
   Select,
   MenuItem,
+  TextField,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { tokens } from "../../theme/theme";
 import { ManufacturerApi } from "../../api/manufacturer/manufacturerApi";
 import { CategoryApi } from "../../api/catalog/CategoryApi";
 import type { Manufacturer } from "../../models/manufacturer/Manufacturer";
-import type { Category } from "../../models/catalogs/Category";
 
 interface FilterSideBarProps {
   onFilterChange?: (filters: {
@@ -33,19 +33,9 @@ const FilterSideBar = ({ onFilterChange, hideCategories }: FilterSideBarProps) =
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
-  const priceRanges = [
-    { label: "Dưới 1 triệu", min: 0, max: 1000000 },
-    { label: "1 - 2 triệu", min: 1000000, max: 2000000 },
-    { label: "2 - 5 triệu", min: 2000000, max: 5000000 },
-    { label: "5 - 10 triệu", min: 5000000, max: 10000000 },
-    { label: "10 - 15 triệu", min: 10000000, max: 15000000 },
-    { label: "15 - 20 triệu", min: 15000000, max: 20000000 },
-  ];
-
-  const [selectedPrice, setSelectedPrice] = useState<{
-    min?: number;
-    max?: number;
-  }>({});
+  const [minPriceInput, setMinPriceInput] = useState<string>("");
+  const [maxPriceInput, setMaxPriceInput] = useState<string>("");
+  const [validationError, setValidationError] = useState<string>("");
   const [availableOnly, setAvailableOnly] = useState(false);
   const [hasSalePrice, setHasSalePrice] = useState(false);
   const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>([]);
@@ -86,13 +76,6 @@ const FilterSideBar = ({ onFilterChange, hideCategories }: FilterSideBarProps) =
     fetchCategories();
   }, []);
 
-  const handlePriceChange = (min: number, max: number) => {
-    const newPrice = selectedPrice.min === min && selectedPrice.max === max 
-      ? {} 
-      : { min, max };
-    setSelectedPrice(newPrice);
-  };
-
   const handleAvailableChange = (checked: boolean) => {
     setAvailableOnly(checked);
   };
@@ -118,9 +101,51 @@ const FilterSideBar = ({ onFilterChange, hideCategories }: FilterSideBarProps) =
   };
 
   const handleApplyFilters = () => {
+    // Clear previous errors
+    setValidationError("");
+
+    // Parse values
+    const minPrice = minPriceInput.trim() ? parseFloat(minPriceInput) : undefined;
+    const maxPrice = maxPriceInput.trim() ? parseFloat(maxPriceInput) : undefined;
+
+    // Validation rules
+    if (minPriceInput.trim() && isNaN(minPrice!)) {
+      setValidationError("❌ Giá tối thiểu phải là số hợp lệ");
+      return;
+    }
+
+    if (maxPriceInput.trim() && isNaN(maxPrice!)) {
+      setValidationError("❌ Giá tối đa phải là số hợp lệ");
+      return;
+    }
+
+    if (minPrice !== undefined && minPrice < 0) {
+      setValidationError("❌ Giá tối thiểu không thể âm");
+      return;
+    }
+
+    if (maxPrice !== undefined && maxPrice < 0) {
+      setValidationError("❌ Giá tối đa không thể âm");
+      return;
+    }
+
+    if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice) {
+      setValidationError("❌ Giá tối thiểu không thể lớn hơn giá tối đa");
+      return;
+    }
+
+    // Optional: warn if price range is too large
+    if (minPrice !== undefined && maxPrice !== undefined) {
+      const range = maxPrice - minPrice;
+      if (range > 100000000) {
+        // More than 100 million
+        setValidationError("⚠️ Khoảng giá rất lớn, kết quả có thể không chính xác");
+      }
+    }
+
     onFilterChange?.({
-      minPrice: selectedPrice.min,
-      maxPrice: selectedPrice.max,
+      minPrice,
+      maxPrice,
       available: availableOnly || undefined,
       hasSalePrice: hasSalePrice || undefined,
       manufacturers: selectedManufacturers.length > 0 ? selectedManufacturers : undefined,
@@ -131,7 +156,9 @@ const FilterSideBar = ({ onFilterChange, hideCategories }: FilterSideBarProps) =
   };
 
   const handleClearFilters = () => {
-    setSelectedPrice({});
+    setMinPriceInput("");
+    setMaxPriceInput("");
+    setValidationError("");
     setAvailableOnly(false);
     setHasSalePrice(false);
     setSelectedManufacturers([]);
@@ -167,36 +194,70 @@ const FilterSideBar = ({ onFilterChange, hideCategories }: FilterSideBarProps) =
       </Typography>
       <Box
         sx={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
-          gap: 0.5,
+          display: "flex",
+          gap: 1,
+          mb: 2,
         }}
       >
-        {priceRanges.map(({ label, min, max }) => (
-          <FormControlLabel
-            key={label}
-            control={
-              <Checkbox
-                size="small"
-                checked={selectedPrice.min === min && selectedPrice.max === max}
-                onChange={() => handlePriceChange(min, max)}
-              />
-            }
-            label={label}
-            sx={{
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              alignItems: "center",
-              "& .MuiFormControlLabel-label": {
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              },
-            }}
-          />
-        ))}
+        <TextField
+          type="number"
+          placeholder="Từ (₫)"
+          value={minPriceInput}
+          onChange={(e) => {
+            setMinPriceInput(e.target.value);
+            setValidationError(""); // Clear error on input change
+          }}
+          size="small"
+          inputProps={{
+            min: 0,
+            step: 1000,
+          }}
+          sx={{
+            flex: 1,
+            "& .MuiOutlinedInput-root": {
+              fontSize: 12,
+            },
+          }}
+        />
+        <TextField
+          type="number"
+          placeholder="Đến (₫)"
+          value={maxPriceInput}
+          onChange={(e) => {
+            setMaxPriceInput(e.target.value);
+            setValidationError(""); // Clear error on input change
+          }}
+          size="small"
+          inputProps={{
+            min: 0,
+            step: 1000,
+          }}
+          sx={{
+            flex: 1,
+            "& .MuiOutlinedInput-root": {
+              fontSize: 12,
+            },
+          }}
+        />
       </Box>
+
+      {/* Validation Error Message */}
+      {validationError && (
+        <Box
+          sx={{
+            mb: 2,
+            p: 1,
+            bgcolor: validationError.includes("⚠️") ? "#fff3cd" : "#f8d7da",
+            border: `1px solid ${validationError.includes("⚠️") ? "#ffc107" : "#f5c6cb"}`,
+            borderRadius: 1,
+            color: validationError.includes("⚠️") ? "#856404" : "#721c24",
+            fontSize: "0.85rem",
+            fontWeight: 500,
+          }}
+        >
+          {validationError}
+        </Box>
+      )}
 
       {/* Sắp xếp */}
       <Typography fontWeight="bold" variant="h5" sx={{ mt: 2 }}>
