@@ -70,6 +70,7 @@ const Topbar: React.FC = () => {
   const [openCartPopup, setOpenCartPopup] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   const openUserMenu = Boolean(userMenuAnchor);
+  const [searchInput, setSearchInput] = useState("");
   
   //get or create Cart
   const getCartByCustomerId = async () => {
@@ -124,9 +125,21 @@ const Topbar: React.FC = () => {
           display="flex"
           bgcolor={colors.primary[400]}
           borderRadius="20px"
+          component="form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (searchInput.trim()) {
+              navigate(`/search?q=${encodeURIComponent(searchInput)}`);
+            }
+          }}
         >
-          <InputBase sx={{ ml: 2, flex: 1 }} placeholder="Search" />
-          <IconButton type="button" sx={{ p: 1 }}>
+          <InputBase
+            sx={{ ml: 2, flex: 1 }}
+            placeholder="Search"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+          <IconButton type="submit" sx={{ p: 1 }}>
             <SearchIcon />
           </IconButton>
         </Box>

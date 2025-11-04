@@ -27,6 +27,8 @@ const ProductVariant = ({ data }: { data: ProductVariants }) => {
         flexDirection: "column",
         height: "100%",
         width: "100%",
+        maxWidth: "100%",
+        minWidth: 0,
         transition: "all 0.3s ease",
         "&:hover": {
           boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
@@ -70,42 +72,91 @@ const ProductVariant = ({ data }: { data: ProductVariants }) => {
             fontWeight: "bold",
             wordWrap: "break-word", // xuống dòng khi quá dài
             overflowWrap: "break-word",
+            mb: 1,
           }}
           className="product-name"
         >
           {data.name}
         </Typography>
-        <Typography sx={{ color: colors.redAccent[500] }}>
-          {formatCurrency(data.options[0].availability.regularPrice)}
-        </Typography>
-        <Typography>Voucher</Typography>
-        <Box display="flex" flexDirection="row">
-          <Typography>Màu</Typography>
-          {/* list colors */}
-          <Box display="flex" ml={1}>
-            {data.options?.map((option) => (
-              <Box
-                key={option.id}
-                sx={{
-                  width: 16,
-                  height: 16,
-                  borderRadius: "50%",
-                  bgcolor:
-                    option.value.toLowerCase() === "đen"
-                      ? "#000000"
-                      : option.value.toLowerCase() === "đỏ"
-                      ? "#ff0000"
-                      : option.value.toLowerCase() === "hồng"
-                      ? "#ff00a2ff"
-                      : "#999999", // default màu xám nếu chưa map
-                  border: "1px solid #999",
-                  mr: 0.5,
-                }}
-              />
-            ))}
-          </Box>
+
+        {/* Price Section */}
+        <Box sx={{ mb: 1.5 }}>
+          {/* Sale Price (Giá khuyến mãi) */}
+          <Typography
+            sx={{
+              color: "#FF6B6B",
+              fontWeight: "bold",
+              fontSize: "1rem",
+              mb: 0.5,
+            }}
+          >
+            {formatCurrency(data.options[0]?.availability?.salePrice || data.options[0]?.availability?.regularPrice)}
+          </Typography>
+
+          {/* Regular Price (Giá gốc) */}
+          {data.options[0]?.availability?.salePrice && 
+           data.options[0]?.availability?.salePrice !== data.options[0]?.availability?.regularPrice && (
+            <Typography
+              sx={{
+                textDecoration: "line-through",
+                color: colors.grey[500],
+                fontSize: "0.875rem",
+              }}
+            >
+              {formatCurrency(data.options[0].availability.regularPrice)}
+            </Typography>
+          )}
+
+          {/* Discount Badge */}
+          {data.options[0]?.availability?.salePrice && 
+           data.options[0]?.availability?.salePrice < data.options[0]?.availability?.regularPrice && (
+            <Typography
+              sx={{
+                color: "#FF6B6B",
+                fontSize: "0.75rem",
+                fontWeight: "600",
+                mt: 0.5,
+              }}
+            >
+              ✓ Giảm{" "}
+              {Math.round(
+                ((data.options[0].availability.regularPrice -
+                  data.options[0].availability.salePrice) /
+                  data.options[0].availability.regularPrice) *
+                  100
+              )}
+              %
+            </Typography>
+          )}
         </Box>
-        <Typography sx={{ color: colors.grey[500] }}>Thong so 9</Typography>
+
+        <Typography sx={{ fontSize: "0.875rem", mb: 1 }}>Màu</Typography>
+        {/* list colors */}
+        <Box display="flex" ml={1} mb={1}>
+          {data.options?.map((option) => (
+            <Box
+              key={option.id}
+              sx={{
+                width: 16,
+                height: 16,
+                borderRadius: "50%",
+                bgcolor:
+                  option.value.toLowerCase() === "đen"
+                    ? "#000000"
+                    : option.value.toLowerCase() === "đỏ"
+                    ? "#ff0000"
+                    : option.value.toLowerCase() === "hồng"
+                    ? "#ff00a2ff"
+                    : "#999999", // default màu xám nếu chưa map
+                border: "1px solid #999",
+                mr: 0.5,
+              }}
+            />
+          ))}
+        </Box>
+        <Typography sx={{ color: colors.grey[500], fontSize: "0.875rem" }}>
+          {data.options?.length || 0} tuỳ chọn
+        </Typography>
       </CardContent>
     </Card>
   );

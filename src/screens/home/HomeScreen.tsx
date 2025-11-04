@@ -162,8 +162,8 @@ const HomeScreen = () => {
         </Stack>
 
         {/* Highlight Categories Section */}
-        <Card sx={{ borderRadius: 2, mb: 6, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
-          <CardContent sx={{ p: 4 }}>
+        <Card sx={{ borderRadius: 2, mb: 6, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", overflow: "hidden" }}>
+          <CardContent sx={{ p: 4, overflow: "hidden" }}>
             <Stack direction="row" alignItems="center" spacing={1} mb={3}>
               <TrendingUpIcon sx={{ color: "#FF6B6B", fontSize: 28 }} />
               <Typography variant="h4" fontWeight="bold">
@@ -197,8 +197,8 @@ const HomeScreen = () => {
 
         {/* Recommendations Section for Logged-in Customers */}
         {!searchTerm.trim() && isLoggedIn && (recommendedProducts.length > 0 || isLoadingRecommendations) && (
-          <Card sx={{ borderRadius: 2, mb: 6, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
-            <CardContent sx={{ p: 4 }}>
+          <Card sx={{ borderRadius: 2, mb: 6, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", overflow: "hidden" }}>
+            <CardContent sx={{ p: 4, overflow: "hidden" }}>
               <Stack direction="row" alignItems="center" spacing={1} mb={3}>
                 <Box sx={{ fontSize: 28 }}>⭐</Box>
                 <Typography variant="h4" fontWeight="bold">
@@ -227,40 +227,7 @@ const HomeScreen = () => {
         <Card sx={{ borderRadius: 2, mb: 6, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
           <CardContent sx={{ p: 4 }}>
             <Typography variant="h4" fontWeight="bold" mb={3}>
-              🔍 Tìm kiếm nhiều nhất
-            </Typography>
-            <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
-              {listTopSearch.map((v) => (
-                <Chip
-                  key={v}
-                  label={v}
-                  onClick={() => {
-                    window.location.href = `/products?search=${encodeURIComponent(v)}`;
-                  }}
-                  sx={{
-                    bgcolor: "primary.main",
-                    color: "white",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                    fontSize: 14,
-                    py: 2.5,
-                    "&:hover": {
-                      transform: "scale(1.05)",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                    },
-                  }}
-                />
-              ))}
-            </Stack>
-          </CardContent>
-        </Card>
-
-        {/* Search Section */}
-        <Card sx={{ borderRadius: 2, mb: 6, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
-          <CardContent sx={{ p: 4 }}>
-            <Typography variant="h4" fontWeight="bold" mb={3}>
-              🔎 Tìm sản phẩm
+              🔍 Tìm sản phẩm
             </Typography>
             <TextField
               fullWidth
@@ -293,14 +260,43 @@ const HomeScreen = () => {
                 },
               }}
             />
+
+            {/* Top Searches Chips */}
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 3, mb: 2 }}>
+              Tìm kiếm nhiều nhất:
+            </Typography>
+            <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
+              {listTopSearch.map((v) => (
+                <Chip
+                  key={v}
+                  label={v}
+                  onClick={() => {
+                    window.location.href = `/products?search=${encodeURIComponent(v)}`;
+                  }}
+                  sx={{
+                    bgcolor: "primary.main",
+                    color: "white",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                    fontSize: 14,
+                    py: 2.5,
+                    "&:hover": {
+                      transform: "scale(1.05)",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                    },
+                  }}
+                />
+              ))}
+            </Stack>
           </CardContent>
         </Card>
 
         {/* Search Results Section */}
         {searchTerm.trim() && (
           <Box mb={6}>
-            <Card sx={{ borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
-              <CardContent sx={{ p: 4 }}>
+            <Card sx={{ borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", overflow: "hidden" }}>
+              <CardContent sx={{ p: 4, overflow: "hidden" }}>
                 <Stack direction="row" alignItems="center" spacing={1} mb={3}>
                   <Typography variant="h4" fontWeight="bold">
                     🔍 Kết quả tìm kiếm cho "{searchTerm}"
@@ -343,8 +339,8 @@ const HomeScreen = () => {
         {/* Suggested Products Section */}
         {!searchTerm.trim() && suggestProducts && Array.isArray(suggestProducts) && suggestProducts.length > 0 && (
           <Box>
-            <Card sx={{ borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
-              <CardContent sx={{ p: 4 }}>
+            <Card sx={{ borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", overflow: "hidden" }}>
+              <CardContent sx={{ p: 4, overflow: "hidden" }}>
                 <Typography variant="h4" fontWeight="bold" mb={3}>
                   💡 Các sản phẩm nổi bật
                 </Typography>

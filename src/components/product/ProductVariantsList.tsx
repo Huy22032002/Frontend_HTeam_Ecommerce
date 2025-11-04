@@ -44,6 +44,7 @@ const ProductVariantList = ({
           },
           gap: 3,
           width: "100%",
+          overflow: "hidden",
         }}
       >
         {data.map((item) => (
@@ -53,6 +54,8 @@ const ProductVariantList = ({
             sx={{
               display: "flex",
               justifyContent: "center",
+              width: "100%",
+              minWidth: 0,
             }}
           >
             <ProductVariant data={item} />

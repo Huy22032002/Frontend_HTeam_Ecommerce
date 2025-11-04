@@ -84,9 +84,11 @@ const ProductsByCategory = () => {
       display="flex"
       flexDirection="column"
       sx={{
-        px: 20,
+        px: { xs: 2, sm: 4, md: 8, lg: 20 },
         background: colors.greenAccent[700],
         paddingBottom: 4,
+        width: "100%",
+        overflow: "hidden",
       }}
     >
       {/* title */}
@@ -97,11 +99,11 @@ const ProductsByCategory = () => {
       {/* list manufacturers  */}
       <ManufacturerTabs items={manufacturers} />
 
-      <Box display="flex" flexDirection="row">
+      <Box display="flex" flexDirection="row" sx={{ width: "100%", gap: 2 }}>
         {/* left : sideBarFilter */}
         <FilterSideBar />
         {/* right: filter + list products */}
-        <Box>
+        <Box sx={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
           {/* filter */}
           <Box display="flex" justifyContent="flex-end" p={2} mb={2}>
             <Autocomplete
@@ -124,7 +126,9 @@ const ProductsByCategory = () => {
             />
           </Box>
           {/* list variants  */}
-          <ProductVariantList data={filteredVariants} />
+          <Box sx={{ overflow: "hidden" }}>
+            <ProductVariantList data={filteredVariants} />
+          </Box>
           {/* Pagination */}
           {totalPages > 1 && (
             <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>

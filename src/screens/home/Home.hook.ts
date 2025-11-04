@@ -45,6 +45,7 @@ const useHome = () => {
   // Recommendations for logged-in customers
   const [recommendedProducts, setRecommendedProducts] = useState<ProductVariants[]>([]);
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
+  const [listTopSearch, setListTopSearch] = useState<string[]>([]);
 
   const getRecommendations = async (limit: number = 10) => {
     setIsLoadingRecommendations(true);
@@ -52,10 +53,14 @@ const useHome = () => {
       const data = await VariantsApi.getRecommendations(limit);
       if (Array.isArray(data)) {
         setRecommendedProducts(data);
+        // Extract product names for top search
+        const topSearchKeywords = data.slice(0, 4).map((product) => product.name);
+        setListTopSearch(topSearchKeywords);
       }
     } catch (error) {
       console.error("Failed to fetch recommendations:", error);
       setRecommendedProducts([]);
+      setListTopSearch([]);
     } finally {
       setIsLoadingRecommendations(false);
     }
@@ -100,13 +105,6 @@ const useHome = () => {
     setCurrentPage(1);
     setTotalPages(1);
   };
-
-  const listTopSearch = [
-    "ThinkPad T14 Gen5",
-    "attach shark x3",
-    "xreal air 2 ultra",
-    "attack shark r1",
-  ];
 
   return {
     //categories
