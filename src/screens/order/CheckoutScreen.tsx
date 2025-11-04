@@ -20,12 +20,17 @@ import {
   Select,
   MenuItem,
   Paper,
+  Chip,
 } from "@mui/material";
 import type { RootState } from "../../store/store";
 import { OrderApi } from "../../api/order/OrderApi";
 import type { CreateOrderRequest } from "../../models/orders/CreateOrderRequest";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { VIETNAM_PROVINCES, getDistrictsByProvince } from "../../utils/vietnamAddresses";
+import { usePreviousAddresses } from "../../hooks/usePreviousAddresses";
+import HistoryIcon from "@mui/icons-material/History";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 export default function CheckoutScreen() {
   const navigate = useNavigate();
@@ -52,6 +57,10 @@ export default function CheckoutScreen() {
   const [selectedProvince, setSelectedProvince] = useState<string>('');
   const [selectedDistrict, setSelectedDistrict] = useState<string>('');
   const [streetAddress, setStreetAddress] = useState('');
+
+  // Previous addresses states
+  const { addresses: previousAddresses, loading: loadingAddresses } = usePreviousAddresses(customer?.id?.toString());
+  const [showPreviousAddresses, setShowPreviousAddresses] = useState(false);
 
   // Get districts for selected province
   const availableDistricts = selectedProvince ? getDistrictsByProvince(selectedProvince) : [];
@@ -87,6 +96,49 @@ export default function CheckoutScreen() {
       ...prev,
       paymentMethod: e.target.value as "CASH" | "TRANSFER" | "CARD" | "E_WALLET",
     }));
+  };
+
+  // Handle selecting a previous address
+  const handleSelectPreviousAddress = (address: typeof previousAddresses[0]) => {
+    setFormData(prev => ({
+      ...prev,
+      receiverPhoneNumber: address.phoneNumber,
+    }));
+
+    // Try to parse the address - it's typically: "street, district, province"
+    const parts = address.shippingAddress.split(', ');
+    
+    if (parts.length >= 3) {
+      const provinceName = parts[parts.length - 1].trim();
+      const districtName = parts[parts.length - 2].trim();
+      const street = parts.slice(0, parts.length - 2).join(', ').trim();
+
+      // Find matching province ID
+      const matchingProvince = VIETNAM_PROVINCES.find(
+        p => p.name.toUpperCase() === provinceName.toUpperCase()
+      );
+      
+      if (matchingProvince) {
+        setSelectedProvince(matchingProvince.id);
+        
+        // Find matching district
+        const districts = getDistrictsByProvince(matchingProvince.id);
+        const matchingDistrict = districts.find(
+          d => d.name.toUpperCase() === districtName.toUpperCase()
+        );
+        
+        if (matchingDistrict) {
+          setSelectedDistrict(matchingDistrict.id);
+        }
+      }
+
+      setStreetAddress(street);
+    } else {
+      // Fallback: use the whole address as street address
+      setStreetAddress(address.shippingAddress);
+    }
+
+    setShowPreviousAddresses(false);
   };
 
   const validateForm = (): boolean => {
@@ -255,9 +307,83 @@ export default function CheckoutScreen() {
           {/* Shipping Information Card */}
           <Card sx={{ mb: 3, borderRadius: 2 }}>
             <CardContent>
-              <Typography variant="h6" fontWeight="bold" mb={3}>
-                🏠 Thông tin giao hàng
-              </Typography>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                <Typography variant="h6" fontWeight="bold">
+                  🏠 Thông tin giao hàng
+                </Typography>
+                {previousAddresses.length > 0 && (
+                  <Button
+                    size="small"
+                    startIcon={showPreviousAddresses ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                    onClick={() => setShowPreviousAddresses(!showPreviousAddresses)}
+                    sx={{ textTransform: "none", fontSize: "0.85rem", color: "#1976d2" }}
+                  >
+                    <HistoryIcon sx={{ mr: 0.5, fontSize: "1rem" }} />
+                    {showPreviousAddresses ? "Ẩn" : "Xem"} địa chỉ cũ ({previousAddresses.length})
+                  </Button>
+                )}
+              </Box>
+
+              {/* Previous Addresses Section */}
+              {showPreviousAddresses && previousAddresses.length > 0 && (
+                <Box sx={{ mb: 3, p: 2, bgcolor: "#f5f5f5", borderRadius: 1, border: "1px solid #ddd" }}>
+                  <Typography variant="subtitle2" fontWeight={600} mb={2}>
+                    📋 Chọn một trong những địa chỉ đã giao hàng trước:
+                  </Typography>
+                  <Stack spacing={1.5}>
+                    {previousAddresses.map((addr) => (
+                      <Paper
+                        key={addr.id}
+                        sx={{
+                          p: 1.5,
+                          cursor: "pointer",
+                          border: "1px solid #ddd",
+                          borderRadius: 1,
+                          transition: "all 0.3s",
+                          "&:hover": {
+                            bgcolor: "#e3f2fd",
+                            borderColor: "#1976d2",
+                            boxShadow: "0 2px 8px rgba(25, 118, 210, 0.1)",
+                          },
+                        }}
+                        onClick={() => handleSelectPreviousAddress(addr)}
+                      >
+                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                          <Box sx={{ flex: 1 }}>
+                            <Typography variant="body2" fontWeight={600}>
+                              {addr.fullName || "Không rõ"}
+                            </Typography>
+                            <Typography variant="caption" color="textSecondary" sx={{ display: "block", mt: 0.5 }}>
+                              📞 {addr.phoneNumber}
+                            </Typography>
+                            <Typography variant="body2" sx={{ mt: 1, color: "#555" }}>
+                              {addr.shippingAddress}
+                            </Typography>
+                          </Box>
+                          <Chip
+                            label="Chọn"
+                            size="small"
+                            color="primary"
+                            variant="filled"
+                            sx={{ ml: 1, flexShrink: 0 }}
+                          />
+                        </Box>
+                      </Paper>
+                    ))}
+                  </Stack>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="caption" color="textSecondary">
+                    💡 Nhấp vào một địa chỉ để sử dụng lại
+                  </Typography>
+                </Box>
+              )}
+
+              {loadingAddresses && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+                  <CircularProgress size={20} />
+                  <Typography variant="caption">Đang tải lịch sử địa chỉ...</Typography>
+                </Box>
+              )}
 
               <Stack spacing={2.5}>
                 <TextField
