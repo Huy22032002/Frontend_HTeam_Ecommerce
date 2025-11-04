@@ -364,15 +364,41 @@ const OrderHistoryScreen = () => {
                         >
                           <Box flex={1}>
                             <Typography variant="body2" fontWeight={600}>
-                              SKU: {item.sku}
+                              {item.productName || item.sku}
                             </Typography>
                             <Typography variant="caption" color="textSecondary">
+                              SKU: {item.sku}
+                            </Typography>
+                            <Typography variant="caption" color="textSecondary" display="block">
                               Số lượng: {item.quantity}
                             </Typography>
+                            {item.promotionId && (
+                              <Box sx={{ mt: 0.5 }}>
+                                <Typography variant="caption" sx={{ color: "#d32f2f", fontWeight: 600 }}>
+                                  ✓ Khuyến mãi áp dụng
+                                </Typography>
+                                {item.discountAmount && (
+                                  <Typography variant="caption" display="block" sx={{ color: "#d32f2f" }}>
+                                    Giảm: {formatCurrency(item.discountAmount)}
+                                  </Typography>
+                                )}
+                              </Box>
+                            )}
                           </Box>
-                          <Typography variant="body2" fontWeight={600}>
-                            {formatCurrency(item.price * item.quantity)}
-                          </Typography>
+                          <Box>
+                            <Typography variant="body2" fontWeight={600}>
+                              {formatCurrency(item.price * item.quantity)}
+                            </Typography>
+                            {item.discountAmount && (
+                              <Typography
+                                variant="caption"
+                                display="block"
+                                sx={{ color: "#d32f2f", fontWeight: 600, textAlign: "right" }}
+                              >
+                                -{formatCurrency(item.discountAmount)}
+                              </Typography>
+                            )}
+                          </Box>
                         </Box>
                       ))}
                     </Stack>
@@ -398,20 +424,48 @@ const OrderHistoryScreen = () => {
                       borderRadius: 1,
                     }}
                   >
-                    <Box display="flex" justifyContent="space-between" alignItems="center">
-                      <Typography variant="subtitle1" fontWeight="bold">
-                        Tổng cộng:
-                      </Typography>
-                      <Typography
-                        variant="h6"
-                        fontWeight="bold"
+                    <Stack spacing={1}>
+                      <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <Typography variant="body2" color="textSecondary">
+                          Tạm tính:
+                        </Typography>
+                        <Typography variant="body2">
+                          {formatCurrency((selectedOrder.total || 0) + (selectedOrder.totalDiscount || 0))}
+                        </Typography>
+                      </Box>
+                      {selectedOrder.totalDiscount && selectedOrder.totalDiscount > 0 && (
+                        <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ color: "#d32f2f" }}>
+                          <Typography variant="body2" color="inherit">
+                            Giảm giá:
+                          </Typography>
+                          <Typography variant="body2" fontWeight={600} color="inherit">
+                            -{formatCurrency(selectedOrder.totalDiscount)}
+                          </Typography>
+                        </Box>
+                      )}
+                      <Box
+                        display="flex"
+                        justifyContent="space-between"
+                        alignItems="center"
                         sx={{
-                          color: theme.palette.mode === "dark" ? "#00CFFF" : "#1976d2",
+                          pt: 1,
+                          borderTop: "2px solid #ddd",
                         }}
                       >
-                        {formatCurrency(selectedOrder.total)}
-                      </Typography>
-                    </Box>
+                        <Typography variant="subtitle1" fontWeight="bold">
+                          Tổng cộng:
+                        </Typography>
+                        <Typography
+                          variant="h6"
+                          fontWeight="bold"
+                          sx={{
+                            color: selectedOrder.totalDiscount && selectedOrder.totalDiscount > 0 ? "#d32f2f" : "#1976d2",
+                          }}
+                        >
+                          {formatCurrency(selectedOrder.total)}
+                        </Typography>
+                      </Box>
+                    </Stack>
                   </Box>
                 </Stack>
               </DialogContent>

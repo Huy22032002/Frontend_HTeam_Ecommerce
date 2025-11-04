@@ -203,19 +203,37 @@ export default function CheckoutScreen() {
           variantId: directProduct.optionId,
           productVariantOptionId: directProduct.optionId,
           sku: directProduct.sku,
+          productName: directProduct.productName,
           quantity: directProduct.quantity,
           price: directProduct.currentPrice,
         }];
         totalAmount = directProduct.currentPrice * directProduct.quantity;
       } else {
         // Từ giỏ hàng
-        items = (cart?.items || []).map(item => ({
-          variantId: item.optionId,
-          productVariantOptionId: item.optionId,
-          sku: item.sku,
-          quantity: item.quantity,
-          price: item.currentPrice,
-        }));
+        items = (cart?.items || []).map(item => {
+          const promotion = itemPromotionsRedux[item.id!];
+          const orderItem: any = {
+            variantId: item.optionId,
+            productVariantOptionId: item.optionId,
+            sku: item.sku,
+            productName: item.productName,
+            quantity: item.quantity,
+            price: item.currentPrice,
+          };
+
+          // Add promotion info if exists
+          if (promotion) {
+            orderItem.promotionId = promotion.id;
+            const itemTotal = item.currentPrice * item.quantity;
+            if (promotion.discountPercentage) {
+              orderItem.discountAmount = (itemTotal * promotion.discountPercentage) / 100;
+            } else if (promotion.discountAmount) {
+              orderItem.discountAmount = promotion.discountAmount;
+            }
+          }
+
+          return orderItem;
+        });
         totalAmount = finalTotal; // Use final total after discount
       }
 
@@ -229,6 +247,8 @@ export default function CheckoutScreen() {
         totalAmount,
         ...(directProduct ? {} : { customerCartCode: cart?.cartCode || "" }),
       };
+
+      console.log("📤 Order request gửi lên:", JSON.stringify(orderRequest, null, 2));
 
       const response = await OrderApi.createByCustomer(orderRequest as any);
 
