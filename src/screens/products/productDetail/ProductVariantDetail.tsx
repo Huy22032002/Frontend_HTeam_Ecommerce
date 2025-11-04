@@ -487,24 +487,58 @@ const ProductVariantDetail = () => {
                       >
                         {product.name}
                       </Typography>
+                      
+                      {/* Price Section */}
                       <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                        {/* Sale Price */}
                         <Typography
                           variant="body2"
                           fontWeight="bold"
-                          color="#FF6B6B"
+                          sx={{
+                            color: "#FF6B6B",
+                          }}
                         >
-                          {product.options?.[0]?.availability?.salePrice?.toLocaleString()}₫
+                          {(product.options?.[0]?.availability?.salePrice || product.options?.[0]?.availability?.regularPrice)?.toLocaleString()}₫
                         </Typography>
+
+                        {/* Regular Price (if different from sale price) */}
+                        {product.options?.[0]?.availability?.salePrice && 
+                         product.options?.[0]?.availability?.salePrice !== product.options?.[0]?.availability?.regularPrice && (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              textDecoration: "line-through",
+                              color: "#999",
+                            }}
+                          >
+                            {product.options?.[0]?.availability?.regularPrice?.toLocaleString()}₫
+                          </Typography>
+                        )}
+                      </Stack>
+
+                      {/* Discount Badge */}
+                      {product.options?.[0]?.availability?.salePrice && 
+                       product.options?.[0]?.availability?.salePrice < product.options?.[0]?.availability?.regularPrice && (
                         <Typography
                           variant="caption"
                           sx={{
-                            textDecoration: "line-through",
-                            color: "#999",
+                            color: "#FF6B6B",
+                            fontWeight: "600",
+                            mb: 1,
+                            display: "block",
                           }}
                         >
-                          {product.options?.[0]?.availability?.regularPrice?.toLocaleString()}₫
+                          ✓ Giảm{" "}
+                          {Math.round(
+                            ((product.options?.[0]?.availability?.regularPrice -
+                              product.options?.[0]?.availability?.salePrice) /
+                              (product.options?.[0]?.availability?.regularPrice || 1)) *
+                              100
+                          )}
+                          %
                         </Typography>
-                      </Stack>
+                      )}
+
                       <Button
                         size="small"
                         variant="outlined"

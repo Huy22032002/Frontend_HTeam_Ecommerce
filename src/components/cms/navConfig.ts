@@ -16,6 +16,7 @@ export const cmsNav: CmsNavItem[] = [
     ] },
   { key: 'hanghoa', label: 'Hàng hóa', icon: '💼', children: [
       { key: 'product-list', label: 'Danh sách sản phẩm', path: '/admin/products' },
+      { key: 'product-variants', label: 'Biến thể sản phẩm', path: '/admin/product-variants' },
       { key: 'categories', label: 'Danh mục', path: '/admin/categories' },
     ] },
   { key: 'giaodich', label: 'Giao dịch', icon: '📄', children: [

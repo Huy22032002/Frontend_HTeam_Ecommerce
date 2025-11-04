@@ -23,6 +23,7 @@ import ProductVariantDetail from "./screens/products/productDetail/ProductVarian
 import CartScreen from "./screens/cart/Cartscreen";
 import CheckoutScreen from "./screens/order/CheckoutScreen";
 import OrderHistoryScreen from "./screens/order/OrderHistoryScreen";
+import SearchScreen from "./screens/search/SearchScreen";
 
 function AppContent() {
   const location = useLocation();
@@ -39,6 +40,8 @@ function AppContent() {
           <Route path="/login" element={<LoginScreen />} />
           <Route path="/signup" element={<SignupScreen />} />
           <Route path="/" element={<HomeScreen />} />
+          <Route path="/search" element={<SearchScreen />} />
+          <Route path="/all-products" element={<SearchScreen />} />
           <Route
             path="/product-category/:categoryId"
             element={<ProductsByCategory />}

@@ -42,20 +42,8 @@ const ProductsByCategory = () => {
     if (categoryId) {
       getListManufacturerByCategory(Number(categoryId));
       getListProductByCategoryId(Number(categoryId), 0);
-      // Tự động set category filter với category name
-      // Note: Lấy category name từ categoryName state sau khi load
     }
   }, [categoryId]);
-
-  // Tự động áp dụng category filter khi categoryName được load
-  useEffect(() => {
-    if (categoryName && !filters.categories?.includes(categoryName)) {
-      const newFilters = { ...filters, categories: [categoryName] };
-      setFilters(newFilters);
-      // Gọi API với category filter mặc định
-      handleFilterChange(newFilters);
-    }
-  }, [categoryName]);
 
   //filter
   const [filteredVariants, setFilteredVariants] = useState(variants);
@@ -65,9 +53,6 @@ const ProductsByCategory = () => {
     available?: boolean;
     hasSalePrice?: boolean;
     manufacturers?: string[];
-    categories?: string[];
-    sortBy?: string;
-    sortOrder?: string;
   }>({});
 
   const handleFilterChange = async (newFilters: typeof filters) => {
@@ -82,59 +67,33 @@ const ProductsByCategory = () => {
   useEffect(() => {
     let result = [...variants];
 
-    // Note: API đã xử lý filtering (price, availability, sale price, manufacturers)
-    // Ở đây chỉ cần:
-    // 1) Lọc mặc định: variant có option còn hàng (nếu không có filter nào được apply)
-    // 2) Sort theo sortBy từ FilterSideBar hoặc selectedValue (Autocomplete cũ)
+    // 1) Lọc: variant có option còn hàng (default)
+    result = result.filter((variant) =>
+      variant.options.some(
+        (opt) =>
+          opt.availability?.productStatus === true &&
+          (opt.availability?.quantity ?? 0) > 0
+      )
+    );
 
-    const hasAnyFilter = Object.values(filters).some(value => {
-      if (Array.isArray(value)) return value.length > 0;
-      return value !== undefined && value !== null;
-    });
-
-    // Default filter: chỉ hiển thị sản phẩm còn hàng (khi không có filter nào)
-    if (!hasAnyFilter) {
-      result = result.filter((variant) =>
-        variant.options.some(
-          (opt) =>
-            opt.availability?.productStatus === true &&
-            (opt.availability?.quantity ?? 0) > 0
-        )
+    // 2) Sort
+    const getSalePrice = (variant: any) =>
+      Math.min(
+        ...variant.options
+          .filter((o: any) => o.availability?.productStatus)
+          .map((o: any) => o.availability.salePrice)
       );
-    }
 
-    // Helper: lấy giá min
-    const getSalePrice = (variant: any) => {
-      if (!variant.options || variant.options.length === 0) return 0;
-      const prices = variant.options
-        .filter((o: any) => o.availability?.productStatus)
-        .map((o: any) => {
-          const price = o.availability?.salePrice;
-          return price && price > 0 ? price : (o.availability?.regularPrice || 0);
-        });
-      return prices.length > 0 ? Math.min(...prices) : 0;
-    };
-
-    // Sort theo FilterSideBar (prioritized)
-    if (filters.sortBy === "price") {
-      result.sort((a, b) => {
-        const priceA = getSalePrice(a);
-        const priceB = getSalePrice(b);
-        return filters.sortOrder === "asc" ? priceA - priceB : priceB - priceA;
-      });
-    }
-
-    // Fallback: Sort theo Autocomplete (cách cũ, compatibility)
-    if (selectedValue === "Giá thấp -> cao" && filters.sortBy !== "price") {
+    if (selectedValue === "Giá thấp -> cao") {
       result.sort((a, b) => getSalePrice(a) - getSalePrice(b));
     }
 
-    if (selectedValue === "Giá cao -> thấp" && filters.sortBy !== "price") {
+    if (selectedValue === "Giá cao -> thấp") {
       result.sort((a, b) => getSalePrice(b) - getSalePrice(a));
     }
 
     setFilteredVariants(result);
-  }, [variants, selectedValue, filters.sortBy, filters.sortOrder]);
+  }, [variants, selectedValue]);
 
   //-------------------
 
@@ -160,7 +119,7 @@ const ProductsByCategory = () => {
 
       <Box display="flex" flexDirection="row" sx={{ width: "100%", gap: 2 }}>
         {/* left : sideBarFilter */}
-        <FilterSideBar onFilterChange={handleFilterChange} hideCategories={true} />
+        <FilterSideBar onFilterChange={handleFilterChange} />
         {/* right: filter + list products */}
         <Box sx={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
           {/* filter */}
@@ -186,10 +145,7 @@ const ProductsByCategory = () => {
           </Box>
           {/* list variants  */}
           <Box sx={{ overflow: "hidden" }}>
-            <ProductVariantList 
-              data={filteredVariants}
-              maxColumns={{ xs: 1, sm: 2, md: 2, lg: 4, xl: 4 }}
-            />
+            <ProductVariantList data={filteredVariants} />
           </Box>
           {/* Pagination */}
           {totalPages > 1 && (

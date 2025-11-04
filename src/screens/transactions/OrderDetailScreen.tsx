@@ -186,6 +186,14 @@ const OrderDetailScreen: React.FC = () => {
             <CardContent sx={{ pt: 2.5 }}>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 2 }}>
                 <Box>
+                  <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>Người nhận</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: '500' }}>{order.receiverName || 'Chưa có thông tin'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>Số điện thoại</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: '500' }}>{order.receiverPhoneNumber || 'Chưa có thông tin'}</Typography>
+                </Box>
+                <Box>
                   <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>Địa chỉ giao hàng</Typography>
                   <Typography variant="body2" sx={{ fontWeight: '500' }}>{order.shippingAddress || 'Chưa có thông tin'}</Typography>
                 </Box>
@@ -211,8 +219,8 @@ const OrderDetailScreen: React.FC = () => {
                       order.items.map((item: any, index: number) => (
                         <TableRow key={index} sx={{ borderBottom: '1px solid #e0e0e0' }}>
                           <TableCell>
-                            <Typography variant="body2" sx={{ fontWeight: '600' }}>SKU: {item.sku}</Typography>
-                            <Typography variant="caption" sx={{ color: '#666' }}>Tên: {item.productName}</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: '600', mb: 0.5 }}>{item.productName || item.sku}</Typography>
+                            <Typography variant="caption" sx={{ color: '#999' }}>SKU: {item.sku}</Typography>
                           </TableCell>
                           <TableCell align="center">{item.quantity}</TableCell>
                           <TableCell align="right">{formatCurrency(item.finalPrice)}</TableCell>

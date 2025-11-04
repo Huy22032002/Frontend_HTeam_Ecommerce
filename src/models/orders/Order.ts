@@ -2,6 +2,7 @@ export interface OrderItem {
   variantId: number;
   productVariantOptionId: number;
   sku: string;
+  productName?: string;  // Tên sản phẩm
   quantity: number;
   price: number;
   promotionId?: number;
@@ -20,13 +21,17 @@ export interface Transaction {
 export interface OrderReadableDTO {
   id: number;
   orderCode: string;
+  customerId?: number;  // ID khách hàng
   customerName: string;
   total: number;
+  totalDiscount?: number;  // Tổng tiền giảm từ promotions
   status: 'PROCESSING' | 'PAID' | 'SHIPPED' | 'CANCELLED';
   createdAt: string;
   items?: OrderItem[];
   deposits?: Transaction[];
   notes?: string;
   shippingAddress?: string;
+  receiverName?: string;  // Tên người nhận từ delivery
+  receiverPhoneNumber?: string;
 }
 

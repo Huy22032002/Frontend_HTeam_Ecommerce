@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import {
   Box,
   Typography,
@@ -20,20 +20,28 @@ import {
   Select,
   MenuItem,
   Paper,
+  Chip,
 } from "@mui/material";
 import type { RootState } from "../../store/store";
+import { clearCart } from "../../store/cartSlice";
 import { OrderApi } from "../../api/order/OrderApi";
 import type { CreateOrderRequest } from "../../models/orders/CreateOrderRequest";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { VIETNAM_PROVINCES, getDistrictsByProvince } from "../../utils/vietnamAddresses";
+import { usePreviousAddresses } from "../../hooks/usePreviousAddresses";
+import HistoryIcon from "@mui/icons-material/History";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 export default function CheckoutScreen() {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
 
   // Redux state
   const cart = useSelector((state: RootState) => state.cart.cart);
   const customer = useSelector((state: RootState) => state.customerAuth?.customer);
+  const itemPromotionsRedux = useSelector((state: RootState) => state.cart.itemPromotions);
 
   // Lấy sản phẩm từ "Mua ngay"
   const directProduct = (location.state as any)?.directProduct;
@@ -51,6 +59,10 @@ export default function CheckoutScreen() {
   const [selectedProvince, setSelectedProvince] = useState<string>('');
   const [selectedDistrict, setSelectedDistrict] = useState<string>('');
   const [streetAddress, setStreetAddress] = useState('');
+
+  // Previous addresses states
+  const { addresses: previousAddresses, loading: loadingAddresses } = usePreviousAddresses(customer?.id?.toString());
+  const [showPreviousAddresses, setShowPreviousAddresses] = useState(false);
 
   // Get districts for selected province
   const availableDistricts = selectedProvince ? getDistrictsByProvince(selectedProvince) : [];
@@ -86,6 +98,49 @@ export default function CheckoutScreen() {
       ...prev,
       paymentMethod: e.target.value as "CASH" | "TRANSFER" | "CARD" | "E_WALLET",
     }));
+  };
+
+  // Handle selecting a previous address
+  const handleSelectPreviousAddress = (address: typeof previousAddresses[0]) => {
+    setFormData(prev => ({
+      ...prev,
+      receiverPhoneNumber: address.phoneNumber,
+    }));
+
+    // Try to parse the address - it's typically: "street, district, province"
+    const parts = address.shippingAddress.split(', ');
+    
+    if (parts.length >= 3) {
+      const provinceName = parts[parts.length - 1].trim();
+      const districtName = parts[parts.length - 2].trim();
+      const street = parts.slice(0, parts.length - 2).join(', ').trim();
+
+      // Find matching province ID
+      const matchingProvince = VIETNAM_PROVINCES.find(
+        p => p.name.toUpperCase() === provinceName.toUpperCase()
+      );
+      
+      if (matchingProvince) {
+        setSelectedProvince(matchingProvince.id);
+        
+        // Find matching district
+        const districts = getDistrictsByProvince(matchingProvince.id);
+        const matchingDistrict = districts.find(
+          d => d.name.toUpperCase() === districtName.toUpperCase()
+        );
+        
+        if (matchingDistrict) {
+          setSelectedDistrict(matchingDistrict.id);
+        }
+      }
+
+      setStreetAddress(street);
+    } else {
+      // Fallback: use the whole address as street address
+      setStreetAddress(address.shippingAddress);
+    }
+
+    setShowPreviousAddresses(false);
   };
 
   const validateForm = (): boolean => {
@@ -150,20 +205,38 @@ export default function CheckoutScreen() {
           variantId: directProduct.optionId,
           productVariantOptionId: directProduct.optionId,
           sku: directProduct.sku,
+          productName: directProduct.productName,
           quantity: directProduct.quantity,
           price: directProduct.currentPrice,
         }];
         totalAmount = directProduct.currentPrice * directProduct.quantity;
       } else {
         // Từ giỏ hàng
-        items = (cart?.items || []).map(item => ({
-          variantId: item.optionId,
-          productVariantOptionId: item.optionId,
-          sku: item.sku,
-          quantity: item.quantity,
-          price: item.currentPrice,
-        }));
-        totalAmount = subtotal;
+        items = (cart?.items || []).map(item => {
+          const promotion = itemPromotionsRedux[item.id!];
+          const orderItem: any = {
+            variantId: item.optionId,
+            productVariantOptionId: item.optionId,
+            sku: item.sku,
+            productName: item.productName,
+            quantity: item.quantity,
+            price: item.currentPrice,
+          };
+
+          // Add promotion info if exists
+          if (promotion) {
+            orderItem.promotionId = promotion.id;
+            const itemTotal = item.currentPrice * item.quantity;
+            if (promotion.discountPercentage) {
+              orderItem.discountAmount = (itemTotal * promotion.discountPercentage) / 100;
+            } else if (promotion.discountAmount) {
+              orderItem.discountAmount = promotion.discountAmount;
+            }
+          }
+
+          return orderItem;
+        });
+        totalAmount = finalTotal; // Use final total after discount
       }
 
       const orderRequest: CreateOrderRequest = {
@@ -172,15 +245,23 @@ export default function CheckoutScreen() {
         paymentMethod: formData.paymentMethod,
         notes: formData.notes || "",
         shippingAddress: fullAddress,
+        receiverName: formData.receiverName,
         receiverPhoneNumber: formData.receiverPhoneNumber,
         totalAmount,
         ...(directProduct ? {} : { customerCartCode: cart?.cartCode || "" }),
       };
 
+      console.log("📤 Order request gửi lên:", JSON.stringify(orderRequest, null, 2));
+
       const response = await OrderApi.createByCustomer(orderRequest as any);
 
       if (response.status === 200 || response.status === 201) {
         setSuccessMessage("✅ Tạo đơn hàng thành công!");
+        
+        // Xoá cart items từ Redux nếu checkout từ giỏ hàng
+        if (!directProduct && cart?.cartCode) {
+          dispatch(clearCart());
+        }
         
         // Chuyển hướng sau 2 giây
         setTimeout(() => {
@@ -207,6 +288,28 @@ export default function CheckoutScreen() {
         0
       ) || 0);
 
+  // Calculate discount from promotions
+  const calculateTotalDiscount = () => {
+    let totalDiscount = 0;
+    if (!directProduct && cart?.items) {
+      cart.items.forEach((item) => {
+        const promotion = itemPromotionsRedux[item.id!];
+        if (promotion) {
+          const itemTotal = item.currentPrice * item.quantity;
+          if (promotion.discountPercentage) {
+            totalDiscount += (itemTotal * promotion.discountPercentage) / 100;
+          } else if (promotion.discountAmount) {
+            totalDiscount += promotion.discountAmount;
+          }
+        }
+      });
+    }
+    return totalDiscount;
+  };
+
+  const discount = calculateTotalDiscount();
+  const finalTotal = subtotal - discount;
+
   return (
     <Box sx={{ bgcolor: "#f8f9fa", minHeight: "100vh", py: 4 }}>
       <Stack
@@ -232,9 +335,83 @@ export default function CheckoutScreen() {
           {/* Shipping Information Card */}
           <Card sx={{ mb: 3, borderRadius: 2 }}>
             <CardContent>
-              <Typography variant="h6" fontWeight="bold" mb={3}>
-                🏠 Thông tin giao hàng
-              </Typography>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                <Typography variant="h6" fontWeight="bold">
+                  🏠 Thông tin giao hàng
+                </Typography>
+                {previousAddresses.length > 0 && (
+                  <Button
+                    size="small"
+                    startIcon={showPreviousAddresses ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                    onClick={() => setShowPreviousAddresses(!showPreviousAddresses)}
+                    sx={{ textTransform: "none", fontSize: "0.85rem", color: "#1976d2" }}
+                  >
+                    <HistoryIcon sx={{ mr: 0.5, fontSize: "1rem" }} />
+                    {showPreviousAddresses ? "Ẩn" : "Xem"} địa chỉ cũ ({previousAddresses.length})
+                  </Button>
+                )}
+              </Box>
+
+              {/* Previous Addresses Section */}
+              {showPreviousAddresses && previousAddresses.length > 0 && (
+                <Box sx={{ mb: 3, p: 2, bgcolor: "#f5f5f5", borderRadius: 1, border: "1px solid #ddd" }}>
+                  <Typography variant="subtitle2" fontWeight={600} mb={2}>
+                    📋 Chọn một trong những địa chỉ đã giao hàng trước:
+                  </Typography>
+                  <Stack spacing={1.5}>
+                    {previousAddresses.map((addr) => (
+                      <Paper
+                        key={addr.id}
+                        sx={{
+                          p: 1.5,
+                          cursor: "pointer",
+                          border: "1px solid #ddd",
+                          borderRadius: 1,
+                          transition: "all 0.3s",
+                          "&:hover": {
+                            bgcolor: "#e3f2fd",
+                            borderColor: "#1976d2",
+                            boxShadow: "0 2px 8px rgba(25, 118, 210, 0.1)",
+                          },
+                        }}
+                        onClick={() => handleSelectPreviousAddress(addr)}
+                      >
+                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                          <Box sx={{ flex: 1 }}>
+                            <Typography variant="body2" fontWeight={600}>
+                              {addr.fullName || "Không rõ"}
+                            </Typography>
+                            <Typography variant="caption" color="textSecondary" sx={{ display: "block", mt: 0.5 }}>
+                              📞 {addr.phoneNumber}
+                            </Typography>
+                            <Typography variant="body2" sx={{ mt: 1, color: "#555" }}>
+                              {addr.shippingAddress}
+                            </Typography>
+                          </Box>
+                          <Chip
+                            label="Chọn"
+                            size="small"
+                            color="primary"
+                            variant="filled"
+                            sx={{ ml: 1, flexShrink: 0 }}
+                          />
+                        </Box>
+                      </Paper>
+                    ))}
+                  </Stack>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="caption" color="textSecondary">
+                    💡 Nhấp vào một địa chỉ để sử dụng lại
+                  </Typography>
+                </Box>
+              )}
+
+              {loadingAddresses && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+                  <CircularProgress size={20} />
+                  <Typography variant="caption">Đang tải lịch sử địa chỉ...</Typography>
+                </Box>
+              )}
 
               <Stack spacing={2.5}>
                 <TextField
@@ -496,6 +673,17 @@ export default function CheckoutScreen() {
                   </Typography>
                 </Box>
 
+                {discount > 0 && (
+                  <Box display="flex" justifyContent="space-between" sx={{ color: "#d32f2f" }}>
+                    <Typography variant="body2" color="inherit">
+                      Giảm giá
+                    </Typography>
+                    <Typography variant="body2" fontWeight={500} color="inherit">
+                      -{formatCurrency(discount)}
+                    </Typography>
+                  </Box>
+                )}
+
                 <Box display="flex" justifyContent="space-between">
                   <Typography variant="body2" color="textSecondary">
                     Phí vận chuyển
@@ -514,17 +702,17 @@ export default function CheckoutScreen() {
                 justifyContent="space-between"
                 sx={{
                   p: 2,
-                  bgcolor: "#e3f2fd",
+                  bgcolor: discount > 0 ? "#fff3e0" : "#e3f2fd",
                   borderRadius: 1,
-                  border: "2px solid #1976d2",
+                  border: discount > 0 ? "2px solid #f57c00" : "2px solid #1976d2",
                   mb: 2,
                 }}
               >
-                <Typography fontWeight="bold" color="#1565c0">
+                <Typography fontWeight="bold" color={discount > 0 ? "#e65100" : "#1565c0"}>
                   Tổng cộng
                 </Typography>
-                <Typography variant="h6" fontWeight="bold" color="#1565c0">
-                  {formatCurrency(subtotal)}
+                <Typography variant="h6" fontWeight="bold" color={discount > 0 ? "#e65100" : "#1565c0"}>
+                  {formatCurrency(finalTotal)}
                 </Typography>
               </Box>
 
@@ -543,7 +731,7 @@ export default function CheckoutScreen() {
                   fullWidth
                   variant="contained"
                   onClick={handleSubmitOrder}
-                  disabled={isLoading || (cart?.items?.length || 0) === 0}
+                  disabled={isLoading || ((cart?.items?.length || 0) === 0 && !directProduct)}
                   sx={{
                     bgcolor: "#00CFFF",
                     textTransform: "none",
@@ -558,7 +746,7 @@ export default function CheckoutScreen() {
                       <span>Đang xử lý...</span>
                     </Stack>
                   ) : (
-                    `✅ Xác nhận đặt hàng (${cart?.items?.length || 0} sản phẩm)`
+                    `✅ Xác nhận đặt hàng (${directProduct ? '1' : cart?.items?.length || 0} sản phẩm)`
                   )}
                 </Button>
               </Stack>
