@@ -116,5 +116,48 @@ export const VariantsApi = {
       return { content: [], totalPages: 0, totalItems: 0, currentPage: 1 };
     }
   },
+  updateVariant: async (variantId: number, data: any) => {
+    try {
+      const response = await axios.put(
+        `${API_BASE}/api/admin/products/variants/${variantId}`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (response.data) {
+        return { success: true, data: response.data };
+      }
+      return { success: false, error: "Unable to update variant", errorCode: 500 };
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.errorMessage || "Error updating variant";
+      const errorCode = error.response?.status || 500;
+      console.error("Failed to update variant:", error);
+      return { success: false, error: errorMessage, errorCode };
+    }
+  },
+  deleteVariant: async (variantId: number) => {
+    try {
+      const response = await axios.delete(
+        `${API_BASE}/api/admin/products/variants/${variantId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (response.data) {
+        return { success: true, data: response.data };
+      }
+      return { success: false, error: "Unable to delete variant", errorCode: 500 };
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.errorMessage || "Error deleting variant";
+      const errorCode = error.response?.status || 500;
+      console.error("Failed to delete variant:", error);
+      return { success: false, error: errorMessage, errorCode };
+    }
+  },
 };
 

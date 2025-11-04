@@ -21,6 +21,7 @@ export interface Transaction {
 export interface OrderReadableDTO {
   id: number;
   orderCode: string;
+  customerId?: number;  // ID khách hàng
   customerName: string;
   total: number;
   totalDiscount?: number;  // Tổng tiền giảm từ promotions
@@ -30,6 +31,7 @@ export interface OrderReadableDTO {
   deposits?: Transaction[];
   notes?: string;
   shippingAddress?: string;
+  receiverName?: string;  // Tên người nhận từ delivery
   receiverPhoneNumber?: string;
 }
 

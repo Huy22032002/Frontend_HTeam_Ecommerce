@@ -17,6 +17,7 @@ import ActivityLogScreen from "./screens/activity/ActivityLogScreen";
 import ReportsScreen from "./screens/reports/ReportsScreen";
 import UserManagementScreen from "./screens/users/UserManagementScreen";
 import ProductListScreen from "./screens/products/ProductListScreen";
+import ProductVariantListScreen from "./screens/products/ProductVariantListScreen";
 import CategoryListScreen from "./screens/products/CategoryListScreen";
 import OrderListScreen from "./screens/transactions/OrderListScreen";
 import OrderDetailScreen from "./screens/transactions/OrderDetailScreen";
@@ -49,6 +50,7 @@ function AdminAppContent() {
               <Route path="reports" element={<ReportsScreen />} />
               <Route path="users" element={<UserManagementScreen />} />
               <Route path="products" element={<ProductListScreen />} />
+              <Route path="product-variants" element={<ProductVariantListScreen />} />
               <Route path="categories" element={<CategoryListScreen />} />
               <Route path="orders" element={<OrderListScreen />} />
               <Route path="orders/create" element={<CreateOrderScreen />} />

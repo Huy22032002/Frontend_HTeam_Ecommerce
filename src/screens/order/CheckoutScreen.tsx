@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import {
   Box,
   Typography,
@@ -23,6 +23,7 @@ import {
   Chip,
 } from "@mui/material";
 import type { RootState } from "../../store/store";
+import { clearCart } from "../../store/cartSlice";
 import { OrderApi } from "../../api/order/OrderApi";
 import type { CreateOrderRequest } from "../../models/orders/CreateOrderRequest";
 import { formatCurrency } from "../../utils/formatCurrency";
@@ -35,6 +36,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 export default function CheckoutScreen() {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
 
   // Redux state
   const cart = useSelector((state: RootState) => state.cart.cart);
@@ -243,6 +245,7 @@ export default function CheckoutScreen() {
         paymentMethod: formData.paymentMethod,
         notes: formData.notes || "",
         shippingAddress: fullAddress,
+        receiverName: formData.receiverName,
         receiverPhoneNumber: formData.receiverPhoneNumber,
         totalAmount,
         ...(directProduct ? {} : { customerCartCode: cart?.cartCode || "" }),
@@ -254,6 +257,11 @@ export default function CheckoutScreen() {
 
       if (response.status === 200 || response.status === 201) {
         setSuccessMessage("✅ Tạo đơn hàng thành công!");
+        
+        // Xoá cart items từ Redux nếu checkout từ giỏ hàng
+        if (!directProduct && cart?.cartCode) {
+          dispatch(clearCart());
+        }
         
         // Chuyển hướng sau 2 giây
         setTimeout(() => {
@@ -723,7 +731,7 @@ export default function CheckoutScreen() {
                   fullWidth
                   variant="contained"
                   onClick={handleSubmitOrder}
-                  disabled={isLoading || (cart?.items?.length || 0) === 0}
+                  disabled={isLoading || ((cart?.items?.length || 0) === 0 && !directProduct)}
                   sx={{
                     bgcolor: "#00CFFF",
                     textTransform: "none",
@@ -738,7 +746,7 @@ export default function CheckoutScreen() {
                       <span>Đang xử lý...</span>
                     </Stack>
                   ) : (
-                    `✅ Xác nhận đặt hàng (${cart?.items?.length || 0} sản phẩm)`
+                    `✅ Xác nhận đặt hàng (${directProduct ? '1' : cart?.items?.length || 0} sản phẩm)`
                   )}
                 </Button>
               </Stack>
