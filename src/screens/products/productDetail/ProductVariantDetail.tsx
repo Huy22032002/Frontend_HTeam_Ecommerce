@@ -105,7 +105,11 @@ const ProductVariantDetail = () => {
       <Container maxWidth="lg">
         {/* Success Alert */}
         {addedSuccess && (
-          <Alert severity="success" sx={{ mb: 3 }} onClose={() => setAddedSuccess(false)}>
+          <Alert
+            severity="success"
+            sx={{ mb: 3 }}
+            onClose={() => setAddedSuccess(false)}
+          >
             ✅ Thêm vào giỏ hàng thành công!
           </Alert>
         )}
@@ -138,7 +142,11 @@ const ProductVariantDetail = () => {
 
             {/* Thumbnail Gallery */}
             {currentOption?.images && currentOption.images.length > 0 && (
-              <Stack direction="row" spacing={1} sx={{ overflowX: "auto", pb: 1 }}>
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ overflowX: "auto", pb: 1 }}
+              >
                 {currentOption.images.map((img: ProductImage, i: number) => (
                   <Box
                     key={i}
@@ -150,7 +158,10 @@ const ProductVariantDetail = () => {
                       borderRadius: 1,
                       overflow: "hidden",
                       cursor: "pointer",
-                      border: imageIndex === i ? `3px solid ${colors.primary[100]}` : "1px solid #ddd",
+                      border:
+                        imageIndex === i
+                          ? `3px solid ${colors.primary[100]}`
+                          : "1px solid #ddd",
                       transition: "all 0.3s",
                       "&:hover": {
                         transform: "scale(1.05)",
@@ -209,7 +220,9 @@ const ProductVariantDetail = () => {
                       setCurrentOption(opt);
                       setImageIndex(0);
                     }}
-                    variant={opt.id === currentOption?.id ? "filled" : "outlined"}
+                    variant={
+                      opt.id === currentOption?.id ? "filled" : "outlined"
+                    }
                     color={opt.id === currentOption?.id ? "primary" : "default"}
                     sx={{
                       cursor: "pointer",
@@ -222,7 +235,14 @@ const ProductVariantDetail = () => {
             </Box>
 
             {/* Price Section */}
-            <Card sx={{ bgcolor: "#fff", p: 2.5, mb: 3, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+            <Card
+              sx={{
+                bgcolor: "#fff",
+                p: 2.5,
+                mb: 3,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              }}
+            >
               <Stack direction="row" spacing={2} alignItems="baseline">
                 <Typography variant="h3" fontWeight="bold" color="#FF6B6B">
                   {currentOption?.availability?.salePrice?.toLocaleString()}₫
@@ -237,7 +257,12 @@ const ProductVariantDetail = () => {
                   {currentOption?.availability?.regularPrice?.toLocaleString()}₫
                 </Typography>
                 <Chip
-                  label={`-${Math.round(((currentOption?.availability?.regularPrice || 0) - (currentOption?.availability?.salePrice || 0)) / (currentOption?.availability?.regularPrice || 1) * 100)}%`}
+                  label={`-${Math.round(
+                    (((currentOption?.availability?.regularPrice || 0) -
+                      (currentOption?.availability?.salePrice || 0)) /
+                      (currentOption?.availability?.regularPrice || 1)) *
+                      100
+                  )}%`}
                   color="error"
                   variant="filled"
                   size="small"
@@ -256,7 +281,15 @@ const ProductVariantDetail = () => {
 
             {/* Info Cards */}
             <Stack spacing={2} mb={3}>
-              <Box sx={{ display: "flex", gap: 2, p: 2, bgcolor: colors.primary[400], borderRadius: 1 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                  p: 2,
+                  bgcolor: colors.primary[400],
+                  borderRadius: 1,
+                }}
+              >
                 <LocalShippingIcon sx={{ color: colors.primary[100] }} />
                 <Box>
                   <Typography fontWeight={600} variant="body2">
@@ -267,7 +300,15 @@ const ProductVariantDetail = () => {
                   </Typography>
                 </Box>
               </Box>
-              <Box sx={{ display: "flex", gap: 2, p: 2, bgcolor: colors.primary[400], borderRadius: 1 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                  p: 2,
+                  bgcolor: colors.primary[400],
+                  borderRadius: 1,
+                }}
+              >
                 <SecurityIcon sx={{ color: colors.primary[100] }} />
                 <Box>
                   <Typography fontWeight={600} variant="body2">
@@ -278,7 +319,15 @@ const ProductVariantDetail = () => {
                   </Typography>
                 </Box>
               </Box>
-              <Box sx={{ display: "flex", gap: 2, p: 2, bgcolor: colors.primary[400], borderRadius: 1 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                  p: 2,
+                  bgcolor: colors.primary[400],
+                  borderRadius: 1,
+                }}
+              >
                 <ThumbUpIcon sx={{ color: colors.primary[100] }} />
                 <Box>
                   <Typography fontWeight={600} variant="body2">
@@ -372,41 +421,43 @@ const ProductVariantDetail = () => {
                 p: 2,
               }}
             >
-              {Object.entries(variant?.specs || {}).map(([key, value], index) => (
-                <Stack
-                  key={key}
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  sx={{
-                    bgcolor:
-                      index % 2 === 0
-                        ? colors.primary[900]
-                        : colors.primary[400],
-                    px: 2,
-                    py: 1.5,
-                    borderRadius: 0.5,
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    fontWeight={500}
-                    sx={{ width: "40%" }}
-                  >
-                    {key}
-                  </Typography>
-                  <Typography
-                    variant="body2"
+              {Object.entries(variant?.specs || {}).map(
+                ([key, value], index) => (
+                  <Stack
+                    key={key}
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
                     sx={{
-                      width: "60%",
-                      textAlign: "right",
-                      color: "text.primary",
+                      bgcolor:
+                        index % 2 === 0
+                          ? colors.primary[900]
+                          : colors.primary[400],
+                      px: 2,
+                      py: 1.5,
+                      borderRadius: 0.5,
                     }}
                   >
-                    {String(value)}
-                  </Typography>
-                </Stack>
-              ))}
+                    <Typography
+                      variant="body2"
+                      fontWeight={500}
+                      sx={{ width: "40%" }}
+                    >
+                      {key}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        width: "60%",
+                        textAlign: "right",
+                        color: "text.primary",
+                      }}
+                    >
+                      {String(value)}
+                    </Typography>
+                  </Stack>
+                )
+              )}
             </Stack>
           </CardContent>
         </Card>
@@ -426,7 +477,8 @@ const ProductVariantDetail = () => {
               }}
             >
               <Typography variant="body1" color="textSecondary">
-                Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá sản phẩm này!
+                Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá sản phẩm
+                này!
               </Typography>
             </Box>
           </CardContent>

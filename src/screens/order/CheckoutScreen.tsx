@@ -56,16 +56,18 @@ export default function CheckoutScreen() {
   });
 
   // Address states
-  const [selectedProvince, setSelectedProvince] = useState<string>('');
-  const [selectedDistrict, setSelectedDistrict] = useState<string>('');
-  const [streetAddress, setStreetAddress] = useState('');
+  const [selectedProvince, setSelectedProvince] = useState<string>("");
+  const [selectedDistrict, setSelectedDistrict] = useState<string>("");
+  const [streetAddress, setStreetAddress] = useState("");
 
   // Previous addresses states
   const { addresses: previousAddresses, loading: loadingAddresses } = usePreviousAddresses(customer?.id?.toString());
   const [showPreviousAddresses, setShowPreviousAddresses] = useState(false);
 
   // Get districts for selected province
-  const availableDistricts = selectedProvince ? getDistrictsByProvince(selectedProvince) : [];
+  const availableDistricts = selectedProvince
+    ? getDistrictsByProvince(selectedProvince)
+    : [];
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,7 +76,7 @@ export default function CheckoutScreen() {
   // Initialize form with customer data
   useEffect(() => {
     if (customer) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         receiverName: customer.name || "",
       }));
@@ -85,7 +87,7 @@ export default function CheckoutScreen() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -94,9 +96,13 @@ export default function CheckoutScreen() {
   const handlePaymentMethodChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      paymentMethod: e.target.value as "CASH" | "TRANSFER" | "CARD" | "E_WALLET",
+      paymentMethod: e.target.value as
+        | "CASH"
+        | "TRANSFER"
+        | "CARD"
+        | "E_WALLET",
     }));
   };
 
@@ -188,12 +194,14 @@ export default function CheckoutScreen() {
       setSuccessMessage(null);
 
       // Build full address from province, district, and street
-      const provinceName = VIETNAM_PROVINCES.find((p) => p.id === selectedProvince)?.name || '';
-      const districtName = availableDistricts.find((d) => d.id === selectedDistrict)?.name || '';
-      
+      const provinceName =
+        VIETNAM_PROVINCES.find((p) => p.id === selectedProvince)?.name || "";
+      const districtName =
+        availableDistricts.find((d) => d.id === selectedDistrict)?.name || "";
+
       const fullAddress = [streetAddress, districtName, provinceName]
         .filter(Boolean)
-        .join(', ');
+        .join(", ");
 
       // Chuyển đổi cart items thành order items hoặc sử dụng sản phẩm từ "Mua ngay"
       let items;
@@ -281,12 +289,12 @@ export default function CheckoutScreen() {
   };
 
   // Tính tổng tiền
-  const subtotal = directProduct 
+  const subtotal = directProduct
     ? directProduct.currentPrice * directProduct.quantity
-    : (cart?.items?.reduce(
+    : cart?.items?.reduce(
         (sum, item) => sum + item.currentPrice * item.quantity,
         0
-      ) || 0);
+      ) || 0;
 
   // Calculate discount from promotions
   const calculateTotalDiscount = () => {
@@ -315,19 +323,31 @@ export default function CheckoutScreen() {
       <Stack
         direction={{ xs: "column", md: "row" }}
         spacing={4}
-        sx={{ px: { xs: 2, sm: 4, md: 6, lg: 20 }, maxWidth: "1400px", mx: "auto" }}
+        sx={{
+          px: { xs: 2, sm: 4, md: 6, lg: 20 },
+          maxWidth: "1400px",
+          mx: "auto",
+        }}
         alignItems="flex-start"
       >
         {/* LEFT FORM */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
           {/* Alerts */}
           {error && (
-            <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+            <Alert
+              severity="error"
+              sx={{ mb: 3 }}
+              onClose={() => setError(null)}
+            >
               {error}
             </Alert>
           )}
           {successMessage && (
-            <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccessMessage(null)}>
+            <Alert
+              severity="success"
+              sx={{ mb: 3 }}
+              onClose={() => setSuccessMessage(null)}
+            >
               {successMessage}
             </Alert>
           )}
@@ -424,10 +444,14 @@ export default function CheckoutScreen() {
                 />
 
                 {/* Province & District Row */}
-                <Box sx={{ display: "flex", gap: 2.5, alignItems: "flex-start" }}>
+                <Box
+                  sx={{ display: "flex", gap: 2.5, alignItems: "flex-start" }}
+                >
                   {/* Province Selection */}
                   <FormControl fullWidth size="small" sx={{ flex: 1 }}>
-                    <InputLabel sx={{ color: "#666" }}>Tỉnh/Thành Phố</InputLabel>
+                    <InputLabel sx={{ color: "#666" }}>
+                      Tỉnh/Thành Phố
+                    </InputLabel>
                     <Select
                       label="Tỉnh/Thành Phố"
                       value={selectedProvince}
@@ -456,12 +480,19 @@ export default function CheckoutScreen() {
                   </FormControl>
 
                   {/* District Selection */}
-                  <FormControl fullWidth size="small" disabled={!selectedProvince || isLoading} sx={{ flex: 1 }}>
+                  <FormControl
+                    fullWidth
+                    size="small"
+                    disabled={!selectedProvince || isLoading}
+                    sx={{ flex: 1 }}
+                  >
                     <InputLabel>Quận/Huyện</InputLabel>
                     <Select
                       label="Quận/Huyện"
                       value={selectedDistrict}
-                      onChange={(e) => setSelectedDistrict(e.target.value as string)}
+                      onChange={(e) =>
+                        setSelectedDistrict(e.target.value as string)
+                      }
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           "&:hover fieldset": {
@@ -523,13 +554,27 @@ export default function CheckoutScreen() {
                       boxShadow: "0 2px 4px rgba(25, 118, 210, 0.1)",
                     }}
                   >
-                    <Typography variant="caption" sx={{ color: "#1565c0", fontWeight: "600" }}>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "#1565c0", fontWeight: "600" }}
+                    >
                       ✓ Địa chỉ giao hàng:
                     </Typography>
-                    <Typography variant="body2" sx={{ mt: 0.5, color: "#1565c0", fontWeight: "500" }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ mt: 0.5, color: "#1565c0", fontWeight: "500" }}
+                    >
                       {streetAddress ? `${streetAddress}, ` : ""}
-                      {VIETNAM_PROVINCES.find((p) => p.id === selectedProvince)?.name},
-                      {availableDistricts.find((d) => d.id === selectedDistrict)?.name}
+                      {
+                        VIETNAM_PROVINCES.find((p) => p.id === selectedProvince)
+                          ?.name
+                      }
+                      ,
+                      {
+                        availableDistricts.find(
+                          (d) => d.id === selectedDistrict
+                        )?.name
+                      }
                     </Typography>
                   </Paper>
                 )}
@@ -601,7 +646,13 @@ export default function CheckoutScreen() {
 
         {/* RIGHT SUMMARY */}
         <Box sx={{ width: { xs: "100%", md: 280 }, flexShrink: 0 }}>
-          <Card sx={{ borderRadius: 2, position: { md: "sticky" }, top: { md: 20 } }}>
+          <Card
+            sx={{
+              borderRadius: 2,
+              position: { md: "sticky" },
+              top: { md: 20 },
+            }}
+          >
             <CardContent>
               <Typography variant="h6" fontWeight="bold" mb={3}>
                 📦 Tóm tắt đơn hàng
@@ -627,8 +678,14 @@ export default function CheckoutScreen() {
                         x{directProduct.quantity}
                       </Typography>
                     </Box>
-                    <Typography variant="body2" fontWeight={500} sx={{ ml: 1, whiteSpace: "nowrap" }}>
-                      {formatCurrency(directProduct.currentPrice * directProduct.quantity)}
+                    <Typography
+                      variant="body2"
+                      fontWeight={500}
+                      sx={{ ml: 1, whiteSpace: "nowrap" }}
+                    >
+                      {formatCurrency(
+                        directProduct.currentPrice * directProduct.quantity
+                      )}
                     </Typography>
                   </Box>
                 ) : (
@@ -652,7 +709,11 @@ export default function CheckoutScreen() {
                           x{item.quantity}
                         </Typography>
                       </Box>
-                      <Typography variant="body2" fontWeight={500} sx={{ ml: 1, whiteSpace: "nowrap" }}>
+                      <Typography
+                        variant="body2"
+                        fontWeight={500}
+                        sx={{ ml: 1, whiteSpace: "nowrap" }}
+                      >
                         {formatCurrency(item.currentPrice * item.quantity)}
                       </Typography>
                     </Box>
@@ -688,7 +749,11 @@ export default function CheckoutScreen() {
                   <Typography variant="body2" color="textSecondary">
                     Phí vận chuyển
                   </Typography>
-                  <Typography variant="body2" fontWeight={500} color="textSecondary">
+                  <Typography
+                    variant="body2"
+                    fontWeight={500}
+                    color="textSecondary"
+                  >
                     Miễn phí
                   </Typography>
                 </Box>

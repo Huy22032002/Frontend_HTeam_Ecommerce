@@ -1,8 +1,4 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Provider } from "react-redux";
 import store from "./store/store";
 
@@ -17,6 +13,8 @@ import ActivityLogScreen from "./screens/activity/ActivityLogScreen";
 import ReportsScreen from "./screens/reports/ReportsScreen";
 import UserManagementScreen from "./screens/users/UserManagementScreen";
 import ProductListScreen from "./screens/products/ProductListScreen";
+import CreateProductScreen from "./screens/admin/products/CreateProductScreen";
+
 import ProductVariantListScreen from "./screens/products/ProductVariantListScreen";
 import CategoryListScreen from "./screens/products/CategoryListScreen";
 import OrderListScreen from "./screens/transactions/OrderListScreen";
@@ -38,7 +36,7 @@ function AdminAppContent() {
     <Routes>
       {/* Login route */}
       <Route path="/admin/login" element={<AdminLoginScreen />} />
-      
+
       {/* Admin routes with CmsLayout */}
       <Route
         path="/admin/*"
@@ -50,13 +48,20 @@ function AdminAppContent() {
               <Route path="reports" element={<ReportsScreen />} />
               <Route path="users" element={<UserManagementScreen />} />
               <Route path="products" element={<ProductListScreen />} />
+<<<<<<< feature/createProductScreen
+              <Route path="create-product" element={<CreateProductScreen />} />
+=======
               <Route path="product-variants" element={<ProductVariantListScreen />} />
+>>>>>>> dev
               <Route path="categories" element={<CategoryListScreen />} />
               <Route path="orders" element={<OrderListScreen />} />
               <Route path="orders/create" element={<CreateOrderScreen />} />
               <Route path="orders/:orderId" element={<OrderDetailScreen />} />
               <Route path="invoices" element={<InvoiceListScreen />} />
-              <Route path="invoices/:invoiceId" element={<InvoiceDetailScreen />} />
+              <Route
+                path="invoices/:invoiceId"
+                element={<InvoiceDetailScreen />}
+              />
               <Route path="payments" element={<PaymentListScreen />} />
               <Route path="shipments" element={<ShipmentListScreen />} />
               <Route path="returns" element={<ReturnListScreen />} />

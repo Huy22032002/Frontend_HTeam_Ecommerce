@@ -68,6 +68,7 @@ const ProductVariant = ({ data }: { data: ProductVariants }) => {
       <CardContent>
         <Typography
           sx={{
+            minHeight: 56,
             width: "100%", // chiếm hết width của Card
             fontWeight: "bold",
             wordWrap: "break-word", // xuống dòng khi quá dài
