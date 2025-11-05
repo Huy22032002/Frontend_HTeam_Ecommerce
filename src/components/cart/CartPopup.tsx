@@ -23,7 +23,6 @@ import { formatCurrency } from "../../utils/formatCurrency";
 import { tokens } from "../../theme/theme";
 import { setCart } from "../../store/cartSlice";
 import { CartApi } from "../../api/cart/cartApi";
-// import { updateCartItemQuantity, removeCartItem } from "../../store/cartSlice"; // giả sử bạn có các action này
 
 interface CartPopupProps {
   open: boolean;
