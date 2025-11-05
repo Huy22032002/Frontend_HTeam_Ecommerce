@@ -1,5 +1,17 @@
 import axios from "axios";
 
+// List of public endpoints that should NOT require authentication
+const PUBLIC_ENDPOINTS = [
+  "/api/promotions/active",
+  "/api/promotions/by-product-sku",
+  "/api/promotions/",
+  "/public/",
+];
+
+const isPublicEndpoint = (url: string): boolean => {
+  return PUBLIC_ENDPOINTS.some(endpoint => url.includes(endpoint));
+};
+
 export const setupAxiosInterceptors = () => {
   // Set default timeout for all axios requests
   axios.defaults.timeout = 10000; // 10 seconds
@@ -8,9 +20,13 @@ export const setupAxiosInterceptors = () => {
   axios.interceptors.request.use(
     (config) => {
       const token = localStorage.getItem("token");
-      if (token) {
+      
+      // Only add Authorization header if not a public endpoint
+      if (token && !isPublicEndpoint(config.url || "")) {
         config.headers.Authorization = `Bearer ${token}`;
         console.log("[AxiosInterceptor] Added Authorization header for request: " + config.url);
+      } else if (isPublicEndpoint(config.url || "")) {
+        console.log("[AxiosInterceptor] Public endpoint - NO Authorization header for request: " + config.url);
       } else {
         console.log("[AxiosInterceptor] No token found in localStorage for request: " + config.url);
       }

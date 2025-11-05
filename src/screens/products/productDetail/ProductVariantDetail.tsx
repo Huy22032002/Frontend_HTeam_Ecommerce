@@ -37,6 +37,7 @@ const ProductVariantDetail = () => {
 
   //get cart from redux
   const cart = useSelector((state: RootState) => state.cart);
+  const customer = useSelector((state: RootState) => state.customerAuth.customer);
 
   const { variantId } = useParams();
 
@@ -50,6 +51,7 @@ const ProductVariantDetail = () => {
     //cart
     addOptionsToCart,
     isLoading,
+    setIsLoading,
   } = useVariantDetail();
 
   useEffect(() => {
@@ -75,14 +77,33 @@ const ProductVariantDetail = () => {
   }, [variantId]);
 
   const handleAddToCart = async () => {
-    if (currentOption) {
-      await addOptionsToCart(cart.cart?.cartCode, currentOption);
-      setAddedSuccess(true);
-      setTimeout(() => setAddedSuccess(false), 3000);
+    // Kiểm tra nếu khách hàng chưa đăng nhập
+    if (!customer) {
+      navigate('/login');
+      return;
+    }
+
+    if (currentOption && !isLoading) {
+      setIsLoading(true);
+      try {
+        await addOptionsToCart(cart.cart?.cartCode, currentOption);
+        setAddedSuccess(true);
+        setTimeout(() => setAddedSuccess(false), 3000);
+      } catch (error) {
+        console.error("Lỗi khi thêm vào giỏ hàng:", error);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
   const handleBuyNow = async () => {
+    // Kiểm tra nếu khách hàng chưa đăng nhập
+    if (!customer) {
+      navigate('/login');
+      return;
+    }
+
     if (currentOption) {
       // Chuyển đến checkout với thông tin sản phẩm (không thêm giỏ hàng)
       navigate('/checkout', {
@@ -276,7 +297,7 @@ const ProductVariantDetail = () => {
               <Typography fontWeight={600} mb={1.5}>
                 🎉 Khuyến mãi
               </Typography>
-              <PromotionDisplay sku={currentOption?.sku || ""} />
+              <PromotionDisplay sku={currentOption?.sku || ""} optionId={currentOption?.id} />
             </Box>
 
             {/* Info Cards */}
