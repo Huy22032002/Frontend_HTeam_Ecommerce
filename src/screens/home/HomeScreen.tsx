@@ -215,6 +215,7 @@ const HomeScreen = () => {
               ) : recommendedProducts.length > 0 ? (
                 <ProductVariantList
                   data={recommendedProducts as ProductVariants[]}
+                  onItemClick={(item) => navigate(`/product/${item.id}`)}
                 />
               ) : (
                 <Typography variant="body1" color="textSecondary" sx={{ py: 2 }}>
@@ -317,6 +318,7 @@ const HomeScreen = () => {
                     </Typography>
                     <ProductVariantList
                       data={searchResults as ProductVariants[]}
+                      onItemClick={(item) => navigate(`/product/${item.id}`)}
                     />
                   </>
                 ) : (
@@ -364,6 +366,7 @@ const HomeScreen = () => {
                 </Stack>
                 <ProductVariantList
                   data={suggestProducts as ProductVariants[]}
+                  onItemClick={(item) => navigate(`/product/${item.id}`)}
                 />
                 {/* Pagination */}
                 {totalPages > 1 && (

@@ -9,6 +9,19 @@ export interface OrderItem {
   discountAmount?: number;
 }
 
+export interface Delivery {
+  fullName?: string;
+  phoneNumber?: string;
+  address?: string;
+  ward?: string;
+  province?: string;
+  postcode?: string;
+  deliveryNote?: string;
+  deliveryMethod?: string;
+  carrier?: string;
+  deliveryStatus?: string;
+}
+
 export interface Transaction {
   id: number;
   amount: number;
@@ -34,7 +47,7 @@ export interface OrderReadableDTO {
   customerName: string;
   total: number;
   totalDiscount?: number;  // Tổng tiền giảm từ promotions
-  status: 'PROCESSING' | 'PAID' | 'SHIPPED' | 'CANCELLED';
+  status: 'PENDING' | 'APPROVED' | 'PROCESSING' | 'SHIPPING' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED' | 'PARTIALLY_REFUNDED';
   createdAt: string;
   items?: OrderItem[];
   deposits?: Transaction[];
@@ -43,5 +56,6 @@ export interface OrderReadableDTO {
   shippingAddress?: string;
   receiverName?: string;  // Tên người nhận từ delivery
   receiverPhoneNumber?: string;
+  delivery?: Delivery;  // Delivery information including carrier
 }
 

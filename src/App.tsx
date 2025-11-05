@@ -50,10 +50,7 @@ function AppContent() {
           <Route path="/checkout" element={<CheckoutScreen />} />
           <Route path="/order-history" element={<OrderHistoryScreen />} />
           <Route path="/profile" element={<CustomerProfile />} />
-          <Route path="/profile" element={<CustomerProfile />} />
-          <Route
-            element={<ProductVariantDetail />}
-          />
+          <Route path="/product/:variantId" element={<ProductVariantDetail />} />
           <Route path="/cart" element={<CartScreen />} />
         </Routes>
         {!hideLayout && <Footer />}

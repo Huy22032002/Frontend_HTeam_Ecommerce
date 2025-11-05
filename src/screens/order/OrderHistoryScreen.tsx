@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Snackbar,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -41,7 +42,14 @@ const OrderHistoryScreen = () => {
   // Dialog state
   const [selectedOrder, setSelectedOrder] = useState<OrderReadableDTO | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const [openCancelRestrictionDialog, setOpenCancelRestrictionDialog] = useState(false);
+  const [cancelRestrictionMessage, setCancelRestrictionMessage] = useState("");
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   const customer = useSelector(
     (state: RootState) => state.customerAuth?.customer
@@ -80,7 +88,8 @@ const OrderHistoryScreen = () => {
 
     // Kiểm tra trạng thái - chỉ cho phép huỷ khi PROCESSING hoặc PAID
     if (!['PROCESSING', 'PAID'].includes(selectedOrder.status)) {
-      alert('Chỉ có thể hủy đơn hàng ở trạng thái "Đang xử lý" hoặc "Đã thanh toán"');
+      setCancelRestrictionMessage('Chỉ có thể hủy đơn hàng ở trạng thái "Đang xử lý" hoặc "Đã thanh toán". Đơn hàng hiện tại không thể hủy.');
+      setOpenCancelRestrictionDialog(true);
       return;
     }
 
@@ -88,15 +97,25 @@ const OrderHistoryScreen = () => {
     try {
       const response = await OrderApi.cancelByCustomer(selectedOrder.id);
       if (response.status === 200) {
-        alert('Hủy đơn hàng thành công');
+        setSnackbar({
+          open: true,
+          message: '✅ Hủy đơn hàng thành công!',
+          severity: 'success',
+        });
         setOpenDialog(false);
         // Refresh lịch sử đơn hàng
-        window.location.reload();
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       }
     } catch (error: any) {
       console.error('Lỗi khi hủy đơn hàng:', error);
       const errorMessage = error?.response?.data?.message || 'Hủy đơn hàng thất bại';
-      alert(errorMessage);
+      setSnackbar({
+        open: true,
+        message: `❌ ${errorMessage}`,
+        severity: 'error',
+      });
     } finally {
       setCancelLoading(false);
     }
@@ -104,18 +123,58 @@ const OrderHistoryScreen = () => {
 
   const canCancelOrder = selectedOrder && ['PROCESSING', 'PAID'].includes(selectedOrder.status);
 
+  const handleReceiveOrder = async () => {
+    if (!selectedOrder) return;
+
+    try {
+      setCancelLoading(true);
+      // Use the same API to update status to DELIVERED
+      await OrderApi.updateOrderStatus(selectedOrder.id, 'DELIVERED');
+      
+      setSnackbar({
+        open: true,
+        message: '✅ Xác nhận nhận hàng thành công!',
+        severity: 'success',
+      });
+
+      // Close dialog and refresh
+      setOpenDialog(false);
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Lỗi khi xác nhận nhận hàng:', error);
+      const errorMessage = error?.response?.data?.message || 'Lỗi khi xác nhận nhận hàng';
+      setSnackbar({
+        open: true,
+        message: `❌ ${errorMessage}`,
+        severity: 'error',
+      });
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
   const getStatusColor = (
     status: string
   ): "default" | "primary" | "secondary" | "error" | "warning" | "info" | "success" => {
     switch (status) {
-      case "PROCESSING":
+      case "PENDING":
         return "warning";
-      case "PAID":
+      case "APPROVED":
         return "info";
-      case "SHIPPED":
-        return "primary";
+      case "PROCESSING":
+        return "info";
+      case "SHIPPING":
+        return "warning";
+      case "DELIVERED":
+        return "success";
+      case "PAID":
+        return "success";
       case "CANCELLED":
         return "error";
+      case "REFUNDED":
+        return "error";
+      case "PARTIALLY_REFUNDED":
+        return "warning";
       default:
         return "default";
     }
@@ -123,14 +182,24 @@ const OrderHistoryScreen = () => {
 
   const getStatusLabel = (status: string): string => {
     switch (status) {
+      case "PENDING":
+        return "Chờ xác nhận";
+      case "APPROVED":
+        return "Đã xác nhận";
       case "PROCESSING":
         return "Đang xử lý";
+      case "SHIPPING":
+        return "Đang giao";
+      case "DELIVERED":
+        return "Đã giao";
       case "PAID":
         return "Đã thanh toán";
-      case "SHIPPED":
-        return "Đã gửi";
       case "CANCELLED":
         return "Đã hủy";
+      case "REFUNDED":
+        return "Hoàn tiền";
+      case "PARTIALLY_REFUNDED":
+        return "Hoàn một phần";
       default:
         return status;
     }
@@ -470,6 +539,17 @@ const OrderHistoryScreen = () => {
                 </Stack>
               </DialogContent>
               <DialogActions sx={{ p: 2, gap: 1 }}>
+                {selectedOrder.status === 'SHIPPING' && (
+                  <Button
+                    onClick={handleReceiveOrder}
+                    disabled={cancelLoading}
+                    variant="contained"
+                    color="success"
+                    sx={{ textTransform: "none" }}
+                  >
+                    {cancelLoading ? "Đang xác nhận..." : "📦 Tôi đã nhận hàng"}
+                  </Button>
+                )}
                 {canCancelOrder && (
                   <Button
                     onClick={handleCancelOrder}
@@ -489,6 +569,49 @@ const OrderHistoryScreen = () => {
             </>
           )}
         </Dialog>
+
+        {/* Cancel Restriction Dialog */}
+        <Dialog
+          open={openCancelRestrictionDialog}
+          onClose={() => setOpenCancelRestrictionDialog(false)}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 2,
+            },
+          }}
+        >
+          <DialogTitle sx={{ fontWeight: "bold", pb: 1, color: "#d32f2f" }}>
+            Cannot Cancel Order
+          </DialogTitle>
+          <DialogContent sx={{ py: 3 }}>
+            <Typography variant="body1" sx={{ color: "#666", mb: 2 }}>
+              {cancelRestrictionMessage}
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#999", fontStyle: "italic" }}>
+              Please contact customer support for assistance.
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button 
+              onClick={() => setOpenCancelRestrictionDialog(false)} 
+              variant="contained"
+              color="primary"
+              sx={{ textTransform: "none" }}
+            >
+              OK
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Snackbar for notifications */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          message={snackbar.message}
+        />
       </Box>
     </Box>
   );

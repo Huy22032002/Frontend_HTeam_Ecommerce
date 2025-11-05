@@ -62,4 +62,8 @@ export const OrderApi = {
   // Huỷ đơn hàng của customer
   cancelByCustomer: (orderId: string | number) =>
     axios.delete(`${import.meta.env.VITE_BASE_URL}/api/customers/orders/${orderId}`, { headers: getAuthHeader() }),
+
+  // Cập nhật trạng thái đơn hàng
+  updateOrderStatus: (id: string | number, status: string) =>
+    axios.put(`${API_BASE}/${id}/status`, { status }, { headers: getAuthHeader() }),
 };
