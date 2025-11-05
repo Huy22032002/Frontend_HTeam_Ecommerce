@@ -1,17 +1,21 @@
 import * as React from 'react';
-import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip, Box, TextField, MenuItem, Select, InputLabel, FormControl, Button, CircularProgress, IconButton, Menu, type SelectChangeEvent } from '@mui/material';
+import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip, Box, TextField, MenuItem, Select, InputLabel, FormControl, Button, CircularProgress, IconButton, Menu, type SelectChangeEvent, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useInvoices } from '../../hooks/useInvoices';
 import { useNavigate } from 'react-router-dom';
+import { InvoiceApi } from '../../api/invoice/InvoiceApi';
 
 const InvoiceListScreen = () => {
   const { invoices, loading, error, filters, setFilters } = useInvoices({ page: 0, size: 20 });
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedInvoiceId, setSelectedInvoiceId] = React.useState<number | null>(null);
+  const [openCancelDialog, setOpenCancelDialog] = React.useState(false);
+  const [cancellingInvoiceId, setCancellingInvoiceId] = React.useState<number | null>(null);
+  const [cancelling, setCancelling] = React.useState(false);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>, invoiceId: number) => {
     setAnchorEl(event.currentTarget);
@@ -23,9 +27,34 @@ const InvoiceListScreen = () => {
     setSelectedInvoiceId(null);
   };
 
-  const handleDeleteInvoice = (invoiceId: number) => {
-    console.log('Xoá hóa đơn:', invoiceId);
+  const handleCancelInvoiceClick = (invoiceId: number) => {
+    setCancellingInvoiceId(invoiceId);
+    setOpenCancelDialog(true);
     handleMenuClose();
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!cancellingInvoiceId) return;
+
+    try {
+      setCancelling(true);
+      await InvoiceApi.cancel(cancellingInvoiceId);
+      alert('✅ Huỷ hoá đơn thành công!');
+      // Reload invoices
+      window.location.reload();
+    } catch (err: any) {
+      console.error('Error cancelling invoice:', err);
+      alert('❌ Lỗi khi huỷ hoá đơn: ' + (err?.response?.data?.message || err.message));
+    } finally {
+      setCancelling(false);
+      setOpenCancelDialog(false);
+      setCancellingInvoiceId(null);
+    }
+  };
+
+  const handleCloseDialog = () => {
+    setOpenCancelDialog(false);
+    setCancellingInvoiceId(null);
   };
 
   const handleViewDetail = (invoiceId: number) => {
@@ -61,9 +90,10 @@ const InvoiceListScreen = () => {
           sx={{ minWidth: 280 }}
         />
         <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Trạng thái thanh toán</InputLabel>
-          <Select name="status" value={filters.status || ''} label="Trạng thái thanh toán" onChange={handleSelectChange}>
+          <InputLabel>Trạng thái</InputLabel>
+          <Select name="status" value={filters.status || ''} label="Trạng thái" onChange={handleSelectChange}>
             <MenuItem value="">Tất cả</MenuItem>
+            <MenuItem value="CREATED">Vừa tạo</MenuItem>
             <MenuItem value="PAID">Đã thanh toán</MenuItem>
             <MenuItem value="UNPAID">Chưa thanh toán</MenuItem>
             <MenuItem value="OVERDUE">Quá hạn</MenuItem>
@@ -117,8 +147,8 @@ const InvoiceListScreen = () => {
                     <MenuItem onClick={() => handleViewDetail(inv.id)}>
                       <VisibilityIcon fontSize="small" sx={{ mr: 1 }} /> Xem chi tiết
                     </MenuItem>
-                    <MenuItem onClick={() => handleDeleteInvoice(inv.id)} sx={{ color: 'error.main' }}>
-                      <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Xoá
+                    <MenuItem onClick={() => handleCancelInvoiceClick(inv.id)} sx={{ color: 'error.main' }}>
+                      <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Huỷ hoá đơn
                     </MenuItem>
                   </Menu>
                 </TableCell>
@@ -129,8 +159,20 @@ const InvoiceListScreen = () => {
                 <TableCell>
                   <Chip 
                     size="small" 
-                    label={inv.status === 'PAID' ? 'Đã thanh toán' : inv.status === 'UNPAID' ? 'Chưa thanh toán' : 'Quá hạn'}
-                    color={inv.status === 'PAID' ? 'success' : inv.status === 'UNPAID' ? 'warning' : 'error'} 
+                    label={
+                      inv.status === 'PAID' ? 'Đã thanh toán' : 
+                      inv.status === 'UNPAID' ? 'Chưa thanh toán' : 
+                      inv.status === 'CREATED' ? 'Vừa tạo' :
+                      inv.status === 'OVERDUE' ? 'Quá hạn' : 
+                      inv.status
+                    }
+                    color={
+                      inv.status === 'PAID' ? 'success' : 
+                      inv.status === 'UNPAID' ? 'warning' : 
+                      inv.status === 'CREATED' ? 'info' :
+                      inv.status === 'OVERDUE' ? 'error' : 
+                      'default'
+                    } 
                   />
                 </TableCell>
               </TableRow>
@@ -138,6 +180,20 @@ const InvoiceListScreen = () => {
           </TableBody>
         </Table>
       )}
+
+      {/* Cancel Dialog */}
+      <Dialog open={openCancelDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Xác nhận huỷ hoá đơn</DialogTitle>
+        <DialogContent>
+          <Typography>Bạn có chắc chắn muốn huỷ hoá đơn này? Hành động này không thể hoàn tác.</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} disabled={cancelling}>Hủy</Button>
+          <Button onClick={handleConfirmCancel} color="error" variant="contained" disabled={cancelling}>
+            {cancelling ? 'Đang xử lý...' : 'Xác nhận huỷ'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

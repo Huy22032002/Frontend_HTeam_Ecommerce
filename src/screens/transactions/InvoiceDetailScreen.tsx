@@ -28,6 +28,8 @@ interface InvoiceDetail {
   id: number;
   invoiceCode: string;
   customerName: string;
+  receiverName: string;
+  receiverPhoneNumber: string;
   shippingAddress: string;
   total: number;
   totalDiscount: number;
@@ -147,9 +149,9 @@ const InvoiceDetailScreen: React.FC = () => {
         </Box>
       </Box>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, gap: 3 }}>
-        {/* Left */}
-        <Box>
+      {/* Single Column Layout - từ trên xuống */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {/* 1. Thông Tin Hoá Đơn */}
           <Card sx={{ mb: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', borderRadius: 2 }}>
             <CardHeader title="📋 Thông Tin Hoá Đơn" sx={{ backgroundColor: '#f5f7fa', borderBottom: '2px solid #e8ebf0' }} />
             <CardContent sx={{ pt: 2.5 }}>
@@ -189,15 +191,28 @@ const InvoiceDetailScreen: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Shipping Info */}
+          {/* 2. Thông Tin Giao Hàng */}
           <Card sx={{ mb: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', borderRadius: 2 }}>
-            <CardHeader title="🏠 Địa chỉ giao hàng" sx={{ backgroundColor: '#f5f7fa', borderBottom: '2px solid #e8ebf0' }} />
+            <CardHeader title="🏠 Thông Tin Giao Hàng" sx={{ backgroundColor: '#f5f7fa', borderBottom: '2px solid #e8ebf0' }} />
             <CardContent sx={{ pt: 2.5 }}>
-              <Typography variant="body2" sx={{ fontWeight: '500' }}>{invoice.shippingAddress || 'Chưa có thông tin'}</Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 2 }}>
+                <Box>
+                  <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>Người nhận</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: '500' }}>{invoice.receiverName || 'Chưa có thông tin'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>Số điện thoại</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: '500' }}>{invoice.receiverPhoneNumber || 'Chưa có thông tin'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>Địa chỉ giao hàng</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: '500' }}>{invoice.shippingAddress || 'Chưa có thông tin'}</Typography>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
 
-          {/* Items */}
+          {/* 3. Chi Tiết Sản Phẩm */}
           <Card sx={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)', borderRadius: 2 }}>
             <CardHeader title="🛍️ Chi Tiết Sản Phẩm" sx={{ backgroundColor: '#f5f7fa', borderBottom: '2px solid #e8ebf0' }} />
             <CardContent sx={{ pt: 0 }}>
@@ -232,34 +247,34 @@ const InvoiceDetailScreen: React.FC = () => {
               </TableContainer>
             </CardContent>
           </Card>
-        </Box>
 
-        {/* Right */}
-        <Box sx={{ position: { md: 'sticky' }, top: { md: 80 } }}>
-          <Card sx={{ boxShadow: '0 4px 12px rgba(0,0,0,0.15)', borderRadius: 2 }}>
+          {/* 4. Tóm Tắt Hoá Đơn */}
+          <Card sx={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)', borderRadius: 2 }}>
             <CardHeader title="💰 Tóm Tắt Hoá Đơn" sx={{ backgroundColor: '#1976d2', color: 'white' }} />
             <CardContent sx={{ pt: 2.5 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
-                <Typography variant="body2" sx={{ color: '#666' }}>Tổng sản phẩm:</Typography>
-                <Typography variant="body2" sx={{ fontWeight: '600' }}>{totalItems} cái</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
-                <Typography variant="body2" sx={{ color: '#666' }}>Tổng tiền hàng:</Typography>
-                <Typography variant="body2" sx={{ fontWeight: '600' }}>{formatCurrency(subtotal)}</Typography>
-              </Box>
-              {invoice.totalDiscount && invoice.totalDiscount > 0 && (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
-                  <Typography variant="body2" sx={{ color: '#666' }}>Chiết khấu:</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: '600', color: 'error.main' }}>-{formatCurrency(invoice.totalDiscount)}</Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
+                <Box>
+                  <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>Tổng sản phẩm</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: '600', color: '#1976d2' }}>{totalItems} cái</Typography>
                 </Box>
-              )}
-              {invoice.tax && invoice.tax > 0 && (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
-                  <Typography variant="body2" sx={{ color: '#666' }}>Thuế VAT:</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: '600' }}>{formatCurrency(invoice.tax)}</Typography>
+                <Box>
+                  <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>Tổng tiền hàng</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: '600', color: '#1976d2' }}>{formatCurrency(subtotal)}</Typography>
                 </Box>
-              )}
-              <Divider sx={{ my: 2 }} />
+                {invoice.totalDiscount && invoice.totalDiscount > 0 && (
+                  <Box>
+                    <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>Chiết khấu</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: '600', color: 'error.main' }}>-{formatCurrency(invoice.totalDiscount)}</Typography>
+                  </Box>
+                )}
+                {invoice.tax && invoice.tax > 0 && (
+                  <Box>
+                    <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>Thuế VAT</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: '600', color: '#1976d2' }}>{formatCurrency(invoice.tax)}</Typography>
+                  </Box>
+                )}
+              </Box>
+              <Divider sx={{ my: 3 }} />
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, backgroundColor: '#e3f2fd', borderRadius: 1, border: '2px solid #1976d2' }}>
                 <Typography variant="h6" sx={{ fontWeight: '600', color: '#1565c0' }}>TỔNG CỘNG:</Typography>
                 <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1565c0' }}>{formatCurrency(invoice.total)}</Typography>
@@ -272,7 +287,6 @@ const InvoiceDetailScreen: React.FC = () => {
             </CardContent>
           </Card>
         </Box>
-      </Box>
     </Container>
   );
 };

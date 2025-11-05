@@ -43,4 +43,8 @@ export const InvoiceApi = {
   // Tạo hóa đơn từ Order ID
   createFromOrder: (orderId: string | number) =>
     axios.post(`${import.meta.env.VITE_BASE_URL}/api/admins/orders/${orderId}/invoice`, {}, { headers: getAuthHeader() }),
+
+  // Huỷ hóa đơn
+  cancel: (invoiceId: string | number) =>
+    axios.patch(`${API_BASE}/${invoiceId}/cancel`, {}, { headers: getAuthHeader() }),
 };
