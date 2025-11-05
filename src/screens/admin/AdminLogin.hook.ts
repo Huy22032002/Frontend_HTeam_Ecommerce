@@ -24,7 +24,13 @@ export const useAdminLogin = () => {
 
             if (token && id) {
                 // Save token
-                localStorage.setItem("token", token);
+                                localStorage.setItem("token", token);
+                                // Save id for subsequent profile API calls
+                                try {
+                                    localStorage.setItem("id", String(id));
+                                } catch (e) {
+                                    console.warn('Could not persist admin id to localStorage', e);
+                                }
                 
                 // // Dispatch initial user info
                 // dispatch(loginAction({

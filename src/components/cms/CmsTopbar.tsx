@@ -26,7 +26,8 @@ export const CmsTopbar = ({ onToggleSidebar }: CmsTopbarProps) => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const user = useSelector((state: any) => state.user);
+  // state.user is the user slice; pick the actual user object inside it
+  const user = useSelector((state: any) => state.user?.user);
 
   const [notifications] = useState<NotificationItem[]>([
     { id: 1, title: 'Bạn có đơn hàng mới' },
@@ -81,8 +82,8 @@ export const CmsTopbar = ({ onToggleSidebar }: CmsTopbarProps) => {
   };
 
   const getAvatarLabel = () => {
-    if (user?.name) {
-      return user.name.charAt(0).toUpperCase();
+    if (user?.fullName) {
+      return user.fullName.charAt(0).toUpperCase();
     }
     if (user?.username) {
       return user.username.charAt(0).toUpperCase();
@@ -154,9 +155,13 @@ export const CmsTopbar = ({ onToggleSidebar }: CmsTopbarProps) => {
             size="small"
             onClick={e => setAnchorEl(e.currentTarget)}
           >
-            <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
-              {getAvatarLabel()}
-            </Avatar>
+            {user?.avatar ? (
+              <Avatar src={user.avatar} sx={{ width: 32, height: 32 }} />
+            ) : (
+              <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
+                {getAvatarLabel()}
+              </Avatar>
+            )}
           </IconButton>
         </Tooltip>
         <Menu
@@ -166,16 +171,16 @@ export const CmsTopbar = ({ onToggleSidebar }: CmsTopbarProps) => {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
-          <MenuItem disabled>
-            👤 {user?.username || 'Người dùng'}
-          </MenuItem>
-          <MenuItem disabled>
-            📧 {user?.emailAddress || ''}
-          </MenuItem>
-          <MenuItem onClick={() => { /* Xử lý chuyển đến trang hồ sơ */ setAnchorEl(null); }}>
+            <MenuItem disabled>
+              👤 {user?.fullName ?? user?.username ?? 'Người dùng'}
+            </MenuItem>
+            <MenuItem disabled>
+              📧 {user?.email ?? ''}
+            </MenuItem>
+          <MenuItem onClick={() => { setAnchorEl(null); navigate('/admin/profile'); }}>
             Hồ sơ
           </MenuItem>
-          <MenuItem onClick={() => { setOpenPasswordDialog(true); setAnchorEl(null); }}>
+          <MenuItem onClick={() => { setAnchorEl(null); navigate('/admin/change-password'); }}>
             Đổi mật khẩu
           </MenuItem>
           <MenuItem onClick={handleLogout}>

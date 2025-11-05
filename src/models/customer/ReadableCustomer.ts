@@ -7,4 +7,5 @@ export interface ReadableCustomer {
   username: string;
   anonymous: boolean;
   roles: string[];
+  avatar?: string; // Added avatar property
 }

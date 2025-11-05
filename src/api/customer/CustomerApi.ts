@@ -24,4 +24,9 @@ export const CustomerApi = {
       return null;
     }
   },
+  update: (customerId: string, payload: Partial<ReadableCustomer>) =>
+    axios.put(`${backendEndpoint}/api/customers/${customerId}`, payload, { headers: getAuthHeader() }),
+
+  changePassword: (customerId: string, oldPassword: string, newPassword: string) =>
+    axios.post(`${backendEndpoint}/api/customers/${customerId}/change-password`, { oldPassword, newPassword }, { headers: getAuthHeader() }),
 };

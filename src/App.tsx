@@ -11,6 +11,8 @@ import { ColorModeContext, useMode } from "./theme/theme";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 
 import Topbar from "./components/Topbar";
+// Customer-facing profile screens (created below)
+import CustomerProfile from "./screens/customers/CustomerProfile";
 
 //screens
 import TestProductForm from "./screens/products/listProduct/TestCreateProduct";
@@ -48,8 +50,9 @@ function AppContent() {
           />
           <Route path="/checkout" element={<CheckoutScreen />} />
           <Route path="/order-history" element={<OrderHistoryScreen />} />
+          <Route path="/profile" element={<CustomerProfile />} />
+          <Route path="/profile" element={<CustomerProfile />} />
           <Route
-            path="/product/:variantId"
             element={<ProductVariantDetail />}
           />
           <Route path="/testCreate" element={<TestProductForm />} />

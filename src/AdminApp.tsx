@@ -32,12 +32,17 @@ import PromotionListScreen from "./screens/promotions/PromotionListScreen";
 import InvoiceListScreen from "./screens/transactions/InvoiceListScreen";
 import PaymentListScreen from "./screens/transactions/PaymentListScreen";
 import CreateOrderScreen from "./screens/admin/CreateOrderScreen";
+import ProfileScreen from "./screens/users/ProfileScreen";
+import ChangePasswordScreen from "./screens/users/ChangePasswordScreen";
 
 function AdminAppContent() {
   return (
     <Routes>
       {/* Login route */}
       <Route path="/admin/login" element={<AdminLoginScreen />} />
+      {/* Direct admin profile routes (render inside CmsLayout) */}
+      <Route path="/admin/profile" element={<CmsLayout><ProfileScreen /></CmsLayout>} />
+      <Route path="/admin/change-password" element={<CmsLayout><ChangePasswordScreen /></CmsLayout>} />
       
       {/* Admin routes with CmsLayout */}
       <Route
@@ -65,6 +70,8 @@ function AdminAppContent() {
               <Route path="warranty" element={<WarrantyScreen />} />
               <Route path="pages" element={<PageListScreen />} />
               <Route path="promotions" element={<PromotionListScreen />} />
+              <Route path="profile" element={<ProfileScreen />} />
+              <Route path="change-password" element={<ChangePasswordScreen />} />
               {/* Redirect root /admin to dashboard */}
               <Route path="*" element={<DashboardScreen />} />
             </Routes>

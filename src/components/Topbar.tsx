@@ -3,6 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import { ColorModeContext, tokens } from "../theme/theme";
 
 import {
+  Avatar,
   Box,
   Button,
   IconButton,
@@ -19,7 +20,7 @@ import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import LogoutIcon from "@mui/icons-material/Logout";
-import HistoryIcon from "@mui/icons-material/History";
+import LockIcon from "@mui/icons-material/Lock";
 
 import { useNavigate } from "react-router-dom";
 
@@ -186,13 +187,23 @@ const Topbar: React.FC = () => {
             >
               <MuiMenuItem
                 onClick={() => {
-                  navigate("/order-history");
+                  navigate("/profile");
                   setUserMenuAnchor(null);
                 }}
                 sx={{ display: "flex", gap: 1 }}
               >
-                <HistoryIcon fontSize="small" />
-                <Typography>Lịch sử đơn hàng</Typography>
+                <Avatar src={user.avatar} alt={user.name} sx={{ width: 24, height: 24 }} />
+                <Typography>{user.name}</Typography>
+              </MuiMenuItem>
+              <MuiMenuItem
+                onClick={() => {
+                  navigate("/change-password");
+                  setUserMenuAnchor(null);
+                }}
+                sx={{ display: "flex", gap: 1 }}
+              >
+                <LockIcon fontSize="small" />
+                <Typography>Đổi mật khẩu</Typography>
               </MuiMenuItem>
               <MuiMenuItem
                 onClick={() => {
