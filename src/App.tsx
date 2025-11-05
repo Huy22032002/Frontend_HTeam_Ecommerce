@@ -12,7 +12,7 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 
 import Topbar from "./components/Topbar";
 // Customer-facing profile screens (created below)
-import CustomerProfile from "./screens/customers/CustomerProfil";
+import CustomerProfile from "./screens/customers/CustomerProfile";
 
 //screens
 import LoginScreen from "./screens/login/LoginScreen";
