@@ -209,15 +209,29 @@ export default function CheckoutScreen() {
 
       if (directProduct) {
         // Từ "Mua ngay" - không gửi customerCartCode
-        items = [{
+        const directProductPromotion = itemPromotionsRedux[directProduct.optionId];
+        const orderItem: any = {
           variantId: directProduct.optionId,
           productVariantOptionId: directProduct.optionId,
           sku: directProduct.sku,
-          productName: directProduct.productName,
+          productName: directProduct.name,
           quantity: directProduct.quantity,
           price: directProduct.currentPrice,
-        }];
-        totalAmount = directProduct.currentPrice * directProduct.quantity;
+        };
+
+        // Add promotion info if exists
+        if (directProductPromotion) {
+          orderItem.promotionId = directProductPromotion.id;
+          const itemTotal = directProduct.currentPrice * directProduct.quantity;
+          if (directProductPromotion.discountPercentage) {
+            orderItem.discountAmount = (itemTotal * directProductPromotion.discountPercentage) / 100;
+          } else if (directProductPromotion.discountAmount) {
+            orderItem.discountAmount = directProductPromotion.discountAmount;
+          }
+        }
+
+        items = [orderItem];
+        totalAmount = finalTotal; // Use final total after discount
       } else {
         // Từ giỏ hàng
         items = (cart?.items || []).map(item => {
@@ -299,7 +313,20 @@ export default function CheckoutScreen() {
   // Calculate discount from promotions
   const calculateTotalDiscount = () => {
     let totalDiscount = 0;
-    if (!directProduct && cart?.items) {
+    
+    // Kiểm tra promotion cho "Mua ngay"
+    if (directProduct) {
+      const directProductPromotion = itemPromotionsRedux[directProduct.optionId];
+      if (directProductPromotion) {
+        const itemTotal = directProduct.currentPrice * directProduct.quantity;
+        if (directProductPromotion.discountPercentage) {
+          totalDiscount += (itemTotal * directProductPromotion.discountPercentage) / 100;
+        } else if (directProductPromotion.discountAmount) {
+          totalDiscount += directProductPromotion.discountAmount;
+        }
+      }
+    } else if (cart?.items) {
+      // Kiểm tra promotion cho giỏ hàng
       cart.items.forEach((item) => {
         const promotion = itemPromotionsRedux[item.id!];
         if (promotion) {

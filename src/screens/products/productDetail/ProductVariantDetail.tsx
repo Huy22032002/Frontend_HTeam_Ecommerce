@@ -297,7 +297,7 @@ const ProductVariantDetail = () => {
               <Typography fontWeight={600} mb={1.5}>
                 🎉 Khuyến mãi
               </Typography>
-              <PromotionDisplay sku={currentOption?.sku || ""} />
+              <PromotionDisplay sku={currentOption?.sku || ""} optionId={currentOption?.id} />
             </Box>
 
             {/* Info Cards */}
