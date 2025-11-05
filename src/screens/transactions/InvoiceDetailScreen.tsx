@@ -87,7 +87,7 @@ const InvoiceDetailScreen: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'CREATED':
-        return 'info';
+        return 'success';
       case 'PAID':
         return 'success';
       case 'SHIPPED':
@@ -102,7 +102,7 @@ const InvoiceDetailScreen: React.FC = () => {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'CREATED':
-        return 'Vừa tạo';
+        return 'Đã tạo';
       case 'PAID':
         return 'Đã thanh toán';
       case 'SHIPPED':
