@@ -546,7 +546,7 @@ const InvoiceDetailScreen: React.FC = () => {
         message={snackbar.message}
       />
     </Box>
-  );
+);
 };
 
 export default InvoiceDetailScreen;

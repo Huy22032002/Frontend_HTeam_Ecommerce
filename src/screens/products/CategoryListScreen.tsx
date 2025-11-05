@@ -19,6 +19,8 @@ import {
   Typography,
   CircularProgress,
   Switch,
+  Snackbar,
+  Alert,
   Paper,
 } from "@mui/material";
 import {
@@ -29,6 +31,7 @@ import {
   VisibilityOff as VisibilityOffIcon,
 } from "@mui/icons-material";
 import { CategoryApi } from "../../api/catalog/CategoryApi";
+import { CloudApi } from "../../api/CloudApi";
 import type { Category } from "../../models/catalogs/Category";
 
 interface CategoryFormData {
@@ -38,6 +41,7 @@ interface CategoryFormData {
   sortOrder: number;
   visible: boolean;
   featured: boolean;
+  imageUrl?: string;
 }
 
 const CategoryListScreen: React.FC = () => {
@@ -50,9 +54,18 @@ const CategoryListScreen: React.FC = () => {
     sortOrder: 0,
     visible: true,
     featured: false,
+    imageUrl: undefined,
   });
   const [editingId, setEditingId] = useState<number | null>(null);
   const [dialogTitle, setDialogTitle] = useState("Thêm danh mục");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | undefined>(undefined);
+  const [uploading, setUploading] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   // Load categories
   useEffect(() => {
@@ -81,8 +94,23 @@ const CategoryListScreen: React.FC = () => {
       sortOrder: 0,
       visible: true,
       featured: false,
+      imageUrl: undefined,
     });
+    setSelectedFile(null);
+    setImagePreview(undefined);
     setOpenDialog(true);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setImagePreview(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleOpenEditDialog = async (category: Category) => {
@@ -95,7 +123,10 @@ const CategoryListScreen: React.FC = () => {
       sortOrder: category.sortOrder || 0,
       visible: category.visible || true,
       featured: category.featured || false,
+      imageUrl: category.imageUrl,
     });
+    setSelectedFile(null);
+    setImagePreview(category.imageUrl);
     setOpenDialog(true);
   };
 
@@ -106,31 +137,73 @@ const CategoryListScreen: React.FC = () => {
     }
 
     try {
+      setUploading(true);
+      let finalImageUrl = formData.imageUrl;
+
+      // If a new file was selected, upload it to cloud
+      if (selectedFile) {
+        const uploadFormData = new FormData();
+        uploadFormData.append("file", selectedFile);
+        uploadFormData.append("folder", "categories");
+        const urls = await CloudApi.uploadImages(uploadFormData);
+        if (urls && urls.length > 0) {
+          finalImageUrl = urls[0];
+        } else {
+          alert("Lỗi khi tải ảnh lên cloud");
+          return;
+        }
+      }
+
+      const payload = {
+        ...formData,
+        imageUrl: finalImageUrl,
+      };
+
       if (editingId) {
         // Update
-        await CategoryApi.update(editingId, formData);
-        alert("Cập nhật danh mục thành công!");
+        const res = await CategoryApi.update(editingId, payload);
+        const updated = res?.data;
+        // update local list without full reload
+        if (updated) {
+          setCategories((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+        }
+        setSnackbar({ open: true, message: 'Cập nhật danh mục thành công!', severity: 'success' });
       } else {
         // Create
-        await CategoryApi.create(formData);
-        alert("Tạo danh mục thành công!");
+        const res = await CategoryApi.create(payload);
+        const created = res?.data;
+        if (created) {
+          setCategories((prev) => [created, ...prev]);
+        } else {
+          // fallback to reload
+          loadCategories();
+        }
+        setSnackbar({ open: true, message: 'Tạo danh mục thành công!', severity: 'success' });
       }
       setOpenDialog(false);
-      loadCategories();
+      setSelectedFile(null);
+      setImagePreview(undefined);
     } catch (error) {
       console.error("Failed to save category:", error);
-      alert("Lỗi khi lưu danh mục");
+      setSnackbar({ open: true, message: 'Lỗi khi lưu danh mục', severity: 'error' });
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleToggleVisible = async (category: Category) => {
     try {
-      await CategoryApi.toggleVisible(category.id);
-      alert("Cập nhật trạng thái hiển thị danh mục thành công!");
-      loadCategories();
+      const res = await CategoryApi.toggleVisible(category.id);
+      const updated = res?.data;
+      if (updated) {
+        setCategories((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+      } else {
+        loadCategories();
+      }
+      setSnackbar({ open: true, message: 'Cập nhật trạng thái hiển thị danh mục thành công!', severity: 'success' });
     } catch (error) {
       console.error("Failed to toggle category visible:", error);
-      alert("Lỗi khi cập nhật trạng thái hiển thị");
+      setSnackbar({ open: true, message: 'Lỗi khi cập nhật trạng thái hiển thị', severity: 'error' });
     }
   };
 
@@ -141,11 +214,11 @@ const CategoryListScreen: React.FC = () => {
 
     try {
       await CategoryApi.delete(category.id);
-      alert("Xóa danh mục thành công!");
-      loadCategories();
+      setCategories((prev) => prev.filter((c) => c.id !== category.id));
+      setSnackbar({ open: true, message: 'Xóa danh mục thành công!', severity: 'success' });
     } catch (error) {
       console.error("Failed to delete category:", error);
-      alert("Lỗi khi xóa danh mục");
+      setSnackbar({ open: true, message: 'Lỗi khi xóa danh mục', severity: 'error' });
     }
   };
 
@@ -176,6 +249,7 @@ const CategoryListScreen: React.FC = () => {
         <Table>
           <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
             <TableRow>
+              <TableCell sx={{ fontWeight: "bold" }}>Ảnh</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Tên danh mục</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Code</TableCell>
               <TableCell sx={{ fontWeight: "bold" }} align="center">
@@ -196,6 +270,17 @@ const CategoryListScreen: React.FC = () => {
             {categories && categories.length > 0 ? (
               categories.map((category) => (
                 <TableRow key={category.id} hover>
+                  <TableCell>
+                    {category.imageUrl ? (
+                      <img
+                        src={category.imageUrl}
+                        alt={category.name}
+                        style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 6 }}
+                      />
+                    ) : (
+                      <Box sx={{ width: 50, height: 50, bgcolor: "#f0f0f0", borderRadius: 1 }} />
+                    )}
+                  </TableCell>
                   <TableCell>{category.name}</TableCell>
                   <TableCell>{category.code}</TableCell>
                   <TableCell align="center">{category.sortOrder || 0}</TableCell>
@@ -234,7 +319,7 @@ const CategoryListScreen: React.FC = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
+                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
                   <Typography color="textSecondary">
                     Chưa có danh mục nào
                   </Typography>
@@ -292,15 +377,49 @@ const CategoryListScreen: React.FC = () => {
                 }
               />
             </Box>
+            <Box>
+              <Typography sx={{ mb: 1 }}>Ảnh danh mục</Typography>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ marginBottom: 12 }}
+              />
+              {imagePreview && (
+                <Box mt={1}>
+                  <img
+                    src={imagePreview}
+                    alt="preview"
+                    style={{ width: 120, height: 80, objectFit: "cover", borderRadius: 6 }}
+                  />
+                </Box>
+              )}
+            </Box>
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Hủy</Button>
-          <Button variant="contained" onClick={handleSaveCategory}>
-            {editingId ? "Cập nhật" : "Thêm"}
+          <Button onClick={() => setOpenDialog(false)} disabled={uploading}>
+            Hủy
+          </Button>
+          <Button 
+            variant="contained" 
+            onClick={handleSaveCategory}
+            disabled={uploading}
+          >
+            {uploading ? "Đang tải lên..." : editingId ? "Cập nhật" : "Thêm"}
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Card>
   );
 };
