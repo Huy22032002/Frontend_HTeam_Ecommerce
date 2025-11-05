@@ -20,6 +20,7 @@ import { tokens } from "../../theme/theme";
 //hooks
 import useHome from "./Home.hook";
 import ProductVariantList from "../../components/product/ProductVariantsList";
+import ActivePromotionsCarousel from "../../components/promotion/ActivePromotionsCarousel";
 import type { ProductVariants } from "../../models/products/ProductVariant";
 import BannerSlider from "../../models/BannerSlider";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
@@ -196,6 +197,9 @@ const HomeScreen = () => {
             </Box>
           </CardContent>
         </Card>
+
+        {/* Active Promotions Section */}
+        <ActivePromotionsCarousel />
 
         {/* Recommendations Section for Logged-in Customers */}
         {!searchTerm.trim() && isLoggedIn && (recommendedProducts.length > 0 || isLoadingRecommendations) && (

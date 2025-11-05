@@ -39,6 +39,22 @@ export const PromotionApi = {
   getByProductSku: (sku: string) =>
     axios.get(`${API_BASE}/promotions/by-product-sku?sku=${sku}`),
 
+  // Lấy tất cả khuyến mãi active (công khai - không cần token)
+  getAllActive: (filters: PromotionFilters = {}) => {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params.append(key, String(value));
+      }
+    });
+
+    return axios.get(`${API_BASE}/promotions/active?${params.toString()}`);
+  },
+
+  // Lấy promotion by ID (công khai - không cần token)
+  getById: (id: number) =>
+    axios.get(`${API_BASE}/promotions/${id}`),
+
   // Lấy tất cả khuyến mãi (admin)
   getAll: (filters: PromotionFilters = {}) => {
     const params = new URLSearchParams();
