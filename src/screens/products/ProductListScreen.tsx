@@ -63,6 +63,7 @@ const ProductListScreen = () => {
               <TableCell>Danh mục</TableCell>
               <TableCell>Loại</TableCell>
               <TableCell>Trạng thái</TableCell>
+              <TableCell>Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -93,11 +94,34 @@ const ProductListScreen = () => {
                       label={getStatus(p) === "OUT" ? "Hết hàng" : "Đang bán"}
                     />
                   </TableCell>
+                  <TableCell>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => navigate(`/admin/products/${p.id}/edit`)}
+                      style={{ marginRight: 8 }}
+                    >
+                      Sửa
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="error"
+                      onClick={() => {
+                        if (window.confirm("Bạn có chắc muốn xóa sản phẩm này?")) {
+                          // Call delete API
+                          console.log("Delete product:", p.id);
+                        }
+                      }}
+                    >
+                      Xóa
+                    </Button>
+                  </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell
                     style={{ paddingBottom: 0, paddingTop: 0 }}
-                    colSpan={6}
+                    colSpan={7}
                   >
                     <Collapse
                       in={openRow === p.id}

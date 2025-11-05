@@ -5,8 +5,9 @@ export interface Category {
   sortOrder: number;
   visible: boolean;
   featured: boolean;
-  imageUrl: string;
-  parentCode: string;
-  parentName: string;
-  Category: [];
+  imageUrl?: string;
+  parentCode?: string;
+  parentName?: string;
+  categoryImage?: string;
+  Category?: [];
 }

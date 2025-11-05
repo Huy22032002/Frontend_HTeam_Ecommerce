@@ -23,6 +23,9 @@ const useCreateProduct = () => {
   const [manufacturers, setManufacturers] = useState<Manufacturer[]>([]);
   const [selectedManufacturerId, setSelectedManufacturerId] = useState("");
 
+  // Track which variant has specs editor open
+  const [specsEditMode, setSpecsEditMode] = useState<{ [key: number]: boolean }>({});
+
   //validate & submit product form
   const validateProductForm = () => {
     if (!productName.trim()) {
@@ -278,6 +281,39 @@ const useCreateProduct = () => {
     setVariants(updated);
   };
 
+  // Specs management functions
+  const handleAddSpec = (variantIndex: number, key: string, value: string) => {
+    const updated = [...variants];
+    if (!updated[variantIndex].specifications) {
+      updated[variantIndex].specifications = {};
+    }
+    updated[variantIndex].specifications![key] = value;
+    setVariants(updated);
+  };
+
+  const handleRemoveSpec = (variantIndex: number, key: string) => {
+    const updated = [...variants];
+    if (updated[variantIndex].specifications) {
+      delete updated[variantIndex].specifications![key];
+    }
+    setVariants(updated);
+  };
+
+  const handlePasteSpecsJson = (variantIndex: number, jsonString: string) => {
+    try {
+      const parsed = JSON.parse(jsonString);
+      if (typeof parsed === 'object' && parsed !== null) {
+        const updated = [...variants];
+        updated[variantIndex].specifications = parsed;
+        setVariants(updated);
+      } else {
+        alert('JSON phải là một object');
+      }
+    } catch (e) {
+      alert('JSON không hợp lệ: ' + (e instanceof Error ? e.message : String(e)));
+    }
+  };
+
   const getAllCategory = async () => {
     await CategoryApi.getAllNoPaging().then(setCategories);
   };
@@ -318,6 +354,12 @@ const useCreateProduct = () => {
     //state
     setProductName,
     setProductDescription,
+    //specs
+    handleAddSpec,
+    handleRemoveSpec,
+    handlePasteSpecsJson,
+    specsEditMode,
+    setSpecsEditMode,
   };
 };
 
