@@ -11,7 +11,7 @@ export interface Variant {
   name: string; // VD: DareU ESP100 - Small
   code: string; // VD: dareu-esp100-small
   options: Option[]; // danh sách màu
-  specifications?: any;
+  specifications?: Record<string, any>; // Specs as key-value pairs (stored as JSON in backend)
 }
 
 export interface Option {

@@ -60,4 +60,53 @@ export const ProductApi = {
   // Xoá sản phẩm
   delete: (id: number) =>
     axios.delete(`${API_BASE}/products/${id}`, { headers: getAuthHeader() }),
+
+  // ===== Admin endpoints for variants =====
+  // Get product by id (full details)
+  getByIdAdmin: (id: number) =>
+    axios.get(`${API_BASE}/admins/products/${id}`, { headers: getAuthHeader() }),
+
+  // Get product variant by id
+  getVariantById: (variantId: number) =>
+    axios.get(`${API_BASE}/product/variant/${variantId}`, { headers: getAuthHeader() }),
+
+  // Create variant for a product
+  createVariantForProduct: (productId: number, data: any) =>
+    axios.post(`${API_BASE}/${productId}/variants`, data, { headers: getAuthHeader() }),
+
+  // Update variant
+  updateVariant: (variantId: number, data: any) =>
+    axios.put(`${API_BASE}/admin/products/variants/${variantId}`, data, { headers: getAuthHeader() }),
+
+  // Update all specs (replace)
+  updateVariantSpecs: (variantId: number, specs: any) =>
+    axios.put(`${API_BASE}/admin/products/variants/${variantId}/specs`, specs, { headers: getAuthHeader() }),
+
+  // Add individual spec (key-value pair)
+  addSpecToVariant: (variantId: number, key: string, value: string) =>
+    axios.post(`${API_BASE}/admin/products/variants/${variantId}/specs/add`, null, {
+      params: { key, value },
+      headers: getAuthHeader(),
+    }),
+
+  // Remove individual spec
+  removeSpecFromVariant: (variantId: number, key: string) =>
+    axios.delete(`${API_BASE}/admin/products/variants/${variantId}/specs/${key}`, { headers: getAuthHeader() }),
+
+  // Delete variant
+  deleteVariant: (variantId: number) =>
+    axios.delete(`${API_BASE}/admin/products/variants/${variantId}`, { headers: getAuthHeader() }),
+
+  // ===== Admin endpoints for options =====
+  // Create option for a variant
+  createOptionForVariant: (variantId: number, data: any) =>
+    axios.post(`${API_BASE}/variants/${variantId}/options`, data, { headers: getAuthHeader() }),
+
+  // Update option
+  updateOption: (optionId: number, data: any) =>
+    axios.put(`${API_BASE}/admin/products/variants/options/${optionId}`, data, { headers: getAuthHeader() }),
+
+  // Delete option
+  deleteOption: (optionId: number) =>
+    axios.delete(`${API_BASE}/admin/products/variants/options/${optionId}`, { headers: getAuthHeader() }),
 };

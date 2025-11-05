@@ -14,9 +14,13 @@ import ReportsScreen from "./screens/reports/ReportsScreen";
 import UserManagementScreen from "./screens/users/UserManagementScreen";
 import ProductListScreen from "./screens/products/ProductListScreen";
 import CreateProductScreen from "./screens/admin/products/CreateProductScreen";
+import EditProductScreen from "./screens/admin/products/EditProductScreen";
 
 import ProductVariantListScreen from "./screens/products/ProductVariantListScreen";
 import CategoryListScreen from "./screens/products/CategoryListScreen";
+import ManufacturerListScreen from "./screens/manufacturer/ManufacturerListScreen";
+import CreateManufacturerScreen from "./screens/manufacturer/CreateManufacturerScreen";
+import EditManufacturerScreen from "./screens/manufacturer/EditManufacturerScreen";
 import OrderListScreen from "./screens/transactions/OrderListScreen";
 import OrderDetailScreen from "./screens/transactions/OrderDetailScreen";
 import InvoiceDetailScreen from "./screens/transactions/InvoiceDetailScreen";
@@ -48,11 +52,12 @@ function AdminAppContent() {
               <Route path="reports" element={<ReportsScreen />} />
               <Route path="users" element={<UserManagementScreen />} />
               <Route path="products" element={<ProductListScreen />} />
-<<<<<<< feature/createProductScreen
               <Route path="create-product" element={<CreateProductScreen />} />
-=======
+              <Route path="products/:id/edit" element={<EditProductScreen />} />
               <Route path="product-variants" element={<ProductVariantListScreen />} />
->>>>>>> dev
+              <Route path="manufacturers" element={<ManufacturerListScreen />} />
+              <Route path="manufacturers/create" element={<CreateManufacturerScreen />} />
+              <Route path="manufacturers/:id/edit" element={<EditManufacturerScreen />} />
               <Route path="categories" element={<CategoryListScreen />} />
               <Route path="orders" element={<OrderListScreen />} />
               <Route path="orders/create" element={<CreateOrderScreen />} />

@@ -11,9 +11,10 @@ import { ColorModeContext, useMode } from "./theme/theme";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 
 import Topbar from "./components/Topbar";
+// Customer-facing profile screens (created below)
+import CustomerProfile from "./screens/customers/CustomerProfile";
 
 //screens
-import TestProductForm from "./screens/products/listProduct/TestCreateProduct";
 import LoginScreen from "./screens/login/LoginScreen";
 import SignupScreen from "./screens/signup/SignupScreen";
 import HomeScreen from "./screens/home/HomeScreen";
@@ -33,19 +34,9 @@ function AppContent() {
     location.pathname === "/forget-password";
 
   return (
-    <div
-      className="app"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100vh",
-      }}
-    >
-      {/* Header */}
-      {!hideLayout && <Topbar />}
-
-      {/* Main content */}
-      <main style={{ flex: 1 }}>
+    <div className="app">
+      <main className="content">
+        {!hideLayout && <Topbar />}
         <Routes>
           <Route path="/login" element={<LoginScreen />} />
           <Route path="/signup" element={<SignupScreen />} />
@@ -58,17 +49,15 @@ function AppContent() {
           />
           <Route path="/checkout" element={<CheckoutScreen />} />
           <Route path="/order-history" element={<OrderHistoryScreen />} />
+          <Route path="/profile" element={<CustomerProfile />} />
+          <Route path="/profile" element={<CustomerProfile />} />
           <Route
-            path="/product/:variantId"
             element={<ProductVariantDetail />}
           />
-          <Route path="/testCreate" element={<TestProductForm />} />
           <Route path="/cart" element={<CartScreen />} />
         </Routes>
+        {!hideLayout && <Footer />}
       </main>
-
-      {/* Footer */}
-      {!hideLayout && <Footer />}
     </div>
   );
 }

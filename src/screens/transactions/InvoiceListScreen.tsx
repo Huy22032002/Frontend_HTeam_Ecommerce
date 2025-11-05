@@ -127,10 +127,30 @@ const InvoiceListScreen = () => {
                 <TableCell>{new Date(inv.createdAt).toLocaleDateString('vi-VN')}</TableCell>
                 <TableCell align="right">{inv.total.toLocaleString()}₫</TableCell>
                 <TableCell>
-                  <Chip 
-                    size="small" 
-                    label={inv.status === 'PAID' ? 'Đã thanh toán' : inv.status === 'UNPAID' ? 'Chưa thanh toán' : 'Quá hạn'}
-                    color={inv.status === 'PAID' ? 'success' : inv.status === 'UNPAID' ? 'warning' : 'error'} 
+                  <Chip
+                    size="small"
+                    label={
+                      inv.status === 'PAID'
+                        ? 'Đã thanh toán'
+                        : inv.status === 'UNPAID'
+                        ? 'Chưa thanh toán'
+                        : inv.status === 'CREATED'
+                        ? 'Đã tạo'
+                        : inv.status === 'CANCELLED'
+                        ? 'Đã huỷ'
+                        : 'Quá hạn'
+                    }
+                    color={
+                      inv.status === 'PAID'
+                        ? 'success'
+                        : inv.status === 'UNPAID'
+                        ? 'warning'
+                        : inv.status === 'CREATED'
+                        ? 'success'
+                        : inv.status === 'CANCELLED'
+                        ? 'error'
+                        : 'error'
+                    }
                   />
                 </TableCell>
               </TableRow>
