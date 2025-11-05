@@ -1,5 +1,6 @@
 export interface CreateProduct {
   productName: string;
+  productDescription?: string;
   categoryIds: number[];
   manufacturerId: number;
   taxClassId: number;
@@ -10,6 +11,7 @@ export interface Variant {
   name: string; // VD: DareU ESP100 - Small
   code: string; // VD: dareu-esp100-small
   options: Option[]; // danh sách màu
+  specifications?: any;
 }
 
 export interface Option {

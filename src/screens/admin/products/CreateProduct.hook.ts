@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import type {
+  CreateProduct,
+  Option,
   ProductImage,
   Variant,
 } from "../../../models/products/CreateProduct";
@@ -7,14 +9,106 @@ import { CategoryApi } from "../../../api/catalog/CategoryApi";
 import type { Category } from "../../../models/catalogs/Category";
 import type { Manufacturer } from "../../../models/manufacturer/Manufacturer";
 import { ManufacturerApi } from "../../../api/manufacturer/manufacturerApi";
+import { CloudApi } from "../../../api/CloudApi";
+import { ProductApi } from "../../../api/product/ProductApi";
 
 const useCreateProduct = () => {
+  const [productName, setProductName] = useState("");
+  const [productDescription, setProductDescription] = useState("");
+
   const [variants, setVariants] = useState<Variant[]>([]);
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [manufacturers, setManufacturers] = useState<Manufacturer[]>([]);
   const [selectedManufacturerId, setSelectedManufacturerId] = useState("");
+
+  //validate & submit product form
+  const validateProductForm = () => {
+    if (!productName.trim()) {
+      console.error("Tên sản phẩm không được để trống");
+      return;
+    }
+    if (!selectedCategoryId) {
+      console.error("Vui lòng chọn danh mục");
+      return;
+    }
+
+    if (!selectedManufacturerId) {
+      console.error("Vui lòng chọn nhà sản xuất");
+      return;
+    }
+  };
+
+  const handleUploadImage = async (files: File[] | null) => {
+    if (!files) return;
+
+    const formData = new FormData();
+    Array.from(files).forEach((file) => formData.append("file", file));
+    formData.append("folder", "products");
+
+    const imgUrls = await CloudApi.uploadImages(formData);
+    if (imgUrls) {
+      console.log("list url img uploaded: ", imgUrls);
+      return imgUrls;
+    }
+    return [];
+  };
+
+  const submitProductForm = async () => {
+    validateProductForm();
+    //upload hình lên cloud trước (tất cả hình trong variants/options)
+    const updatedVariants: Variant[] = await Promise.all(
+      variants.map(async (variant) => {
+        const newOptions: Option[] = await Promise.all(
+          variant.options.map(async (option) => {
+            if (!option.images || option.images.length === 0) return option;
+
+            const filesToUpload = option.images
+              .flatMap((img) => img.files || [])
+              .filter((f) => f); // lọc undefined
+
+            if (filesToUpload.length === 0) return option;
+
+            const urls = await handleUploadImage(filesToUpload);
+
+            if (urls && urls.length > 0) {
+              const newImages: ProductImage[] = urls.map((url, idx) => ({
+                productImageUrl: url,
+                altTag: filesToUpload[idx].name,
+                sortOrder: idx,
+              }));
+              return { ...option, images: newImages };
+            }
+
+            // Nếu không có urls, vẫn return option gốc
+            return option;
+          })
+        );
+        return { ...variant, options: newOptions };
+      })
+    );
+
+    const createProduct: CreateProduct = {
+      productName: productName.trim(),
+      productDescription: productDescription.trim(),
+      categoryIds: selectedCategoryId ? [Number(selectedCategoryId)] : [],
+      manufacturerId: Number(selectedManufacturerId),
+      variants: updatedVariants,
+      taxClassId: 1,
+    };
+
+    const data = await ProductApi.createFull(createProduct);
+    if (data) {
+      alert("Tao Product thanh cong");
+      // --- RESET FORM ---
+      setProductName("");
+      setProductDescription("");
+      setVariants([]);
+      setSelectedCategoryId("");
+      setSelectedManufacturerId("");
+    }
+  };
 
   //image
   const handleImageUpload = (
@@ -25,34 +119,75 @@ const useCreateProduct = () => {
     if (!files) return;
 
     setVariants((prev) => {
-      const newVariants = [...prev];
-      const option = newVariants[variantIndex].options[optionIndex];
+      const newVariants = prev.map((v, vi) => {
+        if (vi !== variantIndex) return v;
+        // clone variant
+        const newOptions = v.options.map((opt, oi) => {
+          if (oi !== optionIndex) return opt;
+          // clone option
+          const existing = (opt.images || [])
+            .flatMap((img) => img.files || [])
+            .map((f) => f.name + "_" + f.size);
+          const filesToAdd = Array.from(files!).filter(
+            (f) => !existing.includes(f.name + "_" + f.size)
+          );
+          if (filesToAdd.length === 0) return opt;
 
-      // Lấy danh sách tất cả file name đã có trong option.images
-      const existingFiles =
-        option.images?.flatMap((img) => img.files || []).map((f) => f.name) ||
-        [];
+          const addedImages = filesToAdd.map((file, idx) => ({
+            files: [file],
+            productImageUrl: URL.createObjectURL(file),
+            altTag: file.name,
+            sortOrder: (opt.images?.length || 0) + idx,
+          })) as ProductImage[];
 
-      const newFilesArray = Array.from(files).filter(
-        (file) => !existingFiles.includes(file.name)
-      );
+          return {
+            ...opt,
+            images: [...(opt.images || []), ...addedImages],
+          };
+        });
+        return { ...v, options: newOptions };
+      });
+      return newVariants;
+    });
+  };
 
-      if (newFilesArray.length === 0) return newVariants; // nếu toàn trùng, return luôn
+  const handleRemoveImage = (
+    variantIndex: number,
+    optionIndex: number,
+    imageIndex: number
+  ) => {
+    setVariants((prev) => {
+      const newVariants = prev.map((v, vi) => {
+        if (vi !== variantIndex) return v;
 
-      const newImages: ProductImage[] = [
-        ...(option.images || []),
-        {
-          files: newFilesArray, // lưu mảng file
-          productImageUrl: newFilesArray.map((file) =>
-            URL.createObjectURL(file)
-          )[0], // preview lấy file đầu tiên
-          altTag: newFilesArray[0].name,
-          sortOrder: option.images?.length || 0,
-        },
-      ];
+        const newOptions = v.options.map((opt, oi) => {
+          if (oi !== optionIndex) return opt;
 
-      option.images = newImages;
+          //clone images
+          const newImages = [...(opt.images || [])];
 
+          //revoke URL de tranh memory leak
+          const removed = newImages[imageIndex];
+          if (removed && removed.productImageUrl) {
+            URL.revokeObjectURL(removed.productImageUrl);
+          }
+
+          //xoa hinh khoi mang
+          newImages.splice(imageIndex, 1);
+          //update lai sortOrder
+          const reOrderd = newImages.map((img, idx) => ({
+            ...img,
+            sortOrder: idx,
+          }));
+
+          return {
+            ...opt,
+            images: reOrderd,
+          };
+        });
+
+        return { ...v, options: newOptions };
+      });
       return newVariants;
     });
   };
@@ -86,7 +221,7 @@ const useCreateProduct = () => {
         ...updated[variantIndex].options,
         {
           sku: "",
-          code: "màu",
+          code: "color",
           value: "",
           availability: { regularPrice: 0, salePrice: 0, quantity: 0 },
         },
@@ -160,6 +295,7 @@ const useCreateProduct = () => {
   }, []);
 
   return {
+    submitProductForm,
     variants,
     setVariants,
     handleAddVariant,
@@ -177,7 +313,11 @@ const useCreateProduct = () => {
     selectedManufacturerId,
     setSelectedManufacturerId,
     //image
+    handleRemoveImage,
     handleImageUpload,
+    //state
+    setProductName,
+    setProductDescription,
   };
 };
 

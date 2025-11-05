@@ -24,6 +24,11 @@ import type { ProductImage } from "../../../models/products/CreateProduct";
 
 const CreateProductScreen = () => {
   const {
+    submitProductForm,
+    //state
+    setProductName,
+    setProductDescription,
+    //variants
     variants,
     handleAddVariant,
     handleAddOption,
@@ -42,6 +47,7 @@ const CreateProductScreen = () => {
     selectedManufacturerId,
     setSelectedManufacturerId,
     //image
+    handleRemoveImage,
     handleImageUpload,
   } = useCreateProduct();
 
@@ -80,6 +86,7 @@ const CreateProductScreen = () => {
                 fullWidth
                 label="Tên sản phẩm"
                 placeholder="Nhập tên sản phẩm..."
+                onChange={(e) => setProductName(e.target.value)}
               />
               <TextField
                 fullWidth
@@ -87,6 +94,7 @@ const CreateProductScreen = () => {
                 rows={4}
                 label="Mô tả"
                 placeholder="Mô tả ngắn gọn về sản phẩm..."
+                onChange={(e) => setProductDescription(e.target.value)}
               />
             </Stack>
           </Card>
@@ -354,9 +362,13 @@ const CreateProductScreen = () => {
                                 <IconButton
                                   size="small"
                                   color="error"
-                                  //   onClick={() =>
-                                  //     handleRemoveImage(variantIndex, optionIndex, imgIndex)
-                                  //   }
+                                  onClick={() =>
+                                    handleRemoveImage(
+                                      variantIndex,
+                                      optionIndex,
+                                      imgIndex
+                                    )
+                                  }
                                   sx={{
                                     position: "absolute",
                                     top: -10,
@@ -431,272 +443,16 @@ const CreateProductScreen = () => {
           </Button>
         </Stack>
       </Card>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={submitProductForm}
+        sx={{ mt: 3, borderRadius: 2, textTransform: "none" }}
+      >
+        Tạo sản phẩm
+      </Button>
     </Card>
   );
-
-  //   return (
-  //     <Card sx={{ mb: 3 }}>
-  //       <Box display="flex" gap={2} p={3}>
-  //         {/* --- Box trái: Thông tin chung --- */}
-  //         <Box sx={{ flex: "0 0 60%" }}>
-  //           <CardContent sx={{ flex: 1 }}>
-  //             <Typography variant="h5" mb={2} fontWeight="bold">
-  //               Thông tin chung
-  //             </Typography>
-  //             <Stack spacing={2}>
-  //               <TextField
-  //                 fullWidth
-  //                 label="Product Name"
-  //                 placeholder="Nhập tên sản phẩm..."
-  //               />
-  //               <TextField
-  //                 fullWidth
-  //                 label="Description"
-  //                 multiline
-  //                 rows={4}
-  //                 placeholder="Mô tả ngắn gọn về sản phẩm..."
-  //               />
-  //             </Stack>
-  //           </CardContent>
-  //         </Box>
-
-  //         {/* --- Box phải: Danh mục + Thương hiệu --- */}
-
-  //         <Box sx={{ flex: "1", p: 2 }}>
-  //           <Typography variant="h5" mb={2} fontWeight="bold">
-  //             Phân loại
-  //           </Typography>
-
-  //           <Stack spacing={3}>
-  //             {/* danh mục */}
-  //             <FormControl fullWidth>
-  //               <InputLabel>Danh mục</InputLabel>
-  //               <Select
-  //                 label="Danh mục"
-  //                 defaultValue=""
-  //                 value={selectedCategoryId || ""}
-  //                 onChange={(e) => setSelectedCategoryId(e.target.value)}
-  //               >
-  //                 {categories.map((category) => (
-  //                   <MenuItem value={category.id} key={category.id}>
-  //                     <Box display={"flex"} gap={1} flexDirection={"row"}>
-  //                       <img
-  //                         src={category.imageUrl}
-  //                         alt={category.name}
-  //                         height={28}
-  //                         style={{ borderRadius: 4, objectFit: "cover" }}
-  //                       />
-  //                       <Typography>{category.name}</Typography>
-  //                     </Box>
-  //                   </MenuItem>
-  //                 ))}
-  //               </Select>
-  //             </FormControl>
-
-  //             {/* thương hiệu */}
-  //             <FormControl fullWidth>
-  //               <InputLabel>Thương hiệu</InputLabel>
-  //               <Select
-  //                 label="Thương hiệu"
-  //                 defaultValue=""
-  //                 value={selectedManufacturerId || ""}
-  //                 onChange={(e) => setSelectedManufacturerId(e.target.value)}
-  //               >
-  //                 {manufacturers.map((manufacturer) => (
-  //                   <MenuItem value={manufacturer.id} key={manufacturer.id}>
-  //                     <Box display={"flex"} gap={1} flexDirection={"row"}>
-  //                       <img
-  //                         src={manufacturer.imageUrl}
-  //                         alt={manufacturer.name}
-  //                         height={28}
-  //                         style={{ borderRadius: 4, objectFit: "cover" }}
-  //                       />
-  //                       <Typography>{manufacturer.name}</Typography>
-  //                     </Box>
-  //                   </MenuItem>
-  //                 ))}
-  //               </Select>
-  //             </FormControl>
-  //           </Stack>
-  //         </Box>
-  //       </Box>
-
-  //       {/* variants   */}
-  //       <Card sx={{ mt: 3 }}>
-  //         <CardContent>
-  //           <Typography variant="h5" mb={2} fontWeight="bold">
-  //             Biến thể sản phẩm
-  //           </Typography>
-
-  //           <Stack spacing={2}>
-  //             {variants.map((variant, variantIndex) => (
-  //               <Card key={variantIndex} variant="outlined" sx={{ p: 2 }}>
-  //                 <Stack spacing={2}>
-  //                   <Stack direction="row" spacing={2}>
-  //                     <TextField
-  //                       fullWidth
-  //                       label="Tên biến thể"
-  //                       value={variant.name}
-  //                       onChange={(e) =>
-  //                         handleVariantChange(
-  //                           variantIndex,
-  //                           "name",
-  //                           e.target.value
-  //                         )
-  //                       }
-  //                     />
-  //                     <TextField
-  //                       fullWidth
-  //                       label="Code"
-  //                       value={variant.code}
-  //                       onChange={(e) =>
-  //                         handleVariantChange(
-  //                           variantIndex,
-  //                           "code",
-  //                           e.target.value
-  //                         )
-  //                       }
-  //                     />
-  //                   </Stack>
-
-  //                   {/* Danh sách option con */}
-  //                   <Typography variant="subtitle1" fontWeight="bold" mt={2}>
-  //                     Chọn màu sản phẩm
-  //                   </Typography>
-  //                   {variant.options.map((option, optionIndex) => (
-  //                     <Card
-  //                       key={optionIndex}
-  //                       variant="outlined"
-  //                       sx={{ p: 2, backgroundColor: "#fafafa" }}
-  //                     >
-  //                       <Stack spacing={2}>
-  //                         <Stack direction="row" spacing={2}>
-  //                           <TextField
-  //                             label="SKU"
-  //                             value={option.sku}
-  //                             onChange={(e) =>
-  //                               handleOptionChange(
-  //                                 variantIndex,
-  //                                 optionIndex,
-  //                                 "sku",
-  //                                 e.target.value
-  //                               )
-  //                             }
-  //                           />
-  //                           <TextField
-  //                             label="Màu biến thể"
-  //                             value={option.value}
-  //                             onChange={(e) =>
-  //                               handleOptionChange(
-  //                                 variantIndex,
-  //                                 optionIndex,
-  //                                 "value",
-  //                                 e.target.value
-  //                               )
-  //                             }
-  //                           />
-  //                         </Stack>
-
-  //                         <Stack direction="row" spacing={2}>
-  //                           <TextField
-  //                             label="Giá gốc (VNĐ)"
-  //                             type="number"
-  //                             value={option.availability.regularPrice}
-  //                             onChange={(e) => {
-  //                               const value = +e.target.value;
-  //                               if (value >= 1000 || e.target.value === "")
-  //                                 handleOptionChange(
-  //                                   variantIndex,
-  //                                   optionIndex,
-  //                                   "regularPrice",
-  //                                   +e.target.value
-  //                                 );
-  //                             }}
-  //                             inputProps={{ min: 1000, step: 1000 }}
-  //                           />
-  //                           <TextField
-  //                             label="Giá sale (VNĐ)"
-  //                             type="number"
-  //                             value={option.availability.salePrice}
-  //                             onChange={(e) => {
-  //                               const value = +e.target.value;
-  //                               if (value >= 1000 || e.target.value === "")
-  //                                 handleOptionChange(
-  //                                   variantIndex,
-  //                                   optionIndex,
-  //                                   "salePrice",
-  //                                   +e.target.value
-  //                                 );
-  //                             }}
-  //                             inputProps={{ min: 1000, step: 1000 }}
-  //                           />
-  //                           <TextField
-  //                             label="Tồn kho"
-  //                             type="number"
-  //                             value={option.availability.quantity}
-  //                             onChange={(e) =>
-  //                               handleOptionChange(
-  //                                 variantIndex,
-  //                                 optionIndex,
-  //                                 "quantity",
-  //                                 +e.target.value
-  //                               )
-  //                             }
-  //                             inputProps={{ min: 1, step: 1 }}
-  //                           />
-  //                           {variant.options.length > 1 && (
-  //                             <IconButton
-  //                               color="error"
-  //                               onClick={() =>
-  //                                 handleRemoveOption(variantIndex, optionIndex)
-  //                               }
-  //                             >
-  //                               <DeleteIcon />
-  //                             </IconButton>
-  //                           )}
-  //                         </Stack>
-  //                       </Stack>
-  //                     </Card>
-  //                   ))}
-
-  //                   {/* Nút thêm option con */}
-  //                   <Button
-  //                     variant="outlined"
-  //                     startIcon={<AddIcon />}
-  //                     onClick={() => handleAddOption(variantIndex)}
-  //                     sx={{ alignSelf: "flex-start" }}
-  //                   >
-  //                     Thêm tuỳ chọn
-  //                   </Button>
-
-  //                   {/* Nút xoá variant */}
-  //                   {variants.length > 1 && (
-  //                     <Button
-  //                       color="error"
-  //                       startIcon={<DeleteIcon />}
-  //                       onClick={() => handleRemoveVariant(variantIndex)}
-  //                       sx={{ alignSelf: "flex-start" }}
-  //                     >
-  //                       Xoá biến thể
-  //                     </Button>
-  //                   )}
-  //                 </Stack>
-  //               </Card>
-  //             ))}
-
-  //             {/* Nút thêm variant */}
-  //             <Button
-  //               variant="contained"
-  //               startIcon={<AddIcon />}
-  //               onClick={handleAddVariant} // Mở giao diện thêm Variant
-  //             >
-  //               Thêm biến thể
-  //             </Button>
-  //           </Stack>
-  //         </CardContent>
-  //       </Card>
-  //     </Card>
-  //   );
 };
 
 export default CreateProductScreen;

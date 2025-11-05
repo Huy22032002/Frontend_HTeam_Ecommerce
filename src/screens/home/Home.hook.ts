@@ -13,8 +13,7 @@ const useHome = () => {
 
   const getAllCategories = async () => {
     try {
-      const response = await CategoryApi.getAllNoPaging();
-      setCategories(response.data);
+      await CategoryApi.getAllNoPaging().then(setCategories);
     } catch (error) {
       console.error("Failed to fetch categories:", error);
     }

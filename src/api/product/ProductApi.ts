@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { Product } from "../../models/products/Product";
+import type { CreateProduct } from "../../models/products/CreateProduct";
 const API_BASE = import.meta.env.VITE_BASE_URL + "/api";
 
 function getAuthHeader() {
@@ -28,6 +29,11 @@ export const ProductApi = {
       return null;
     }
   },
+  // Tạo sản phẩm kèm biến thể và tuỳ chọn
+  createFull: (data: CreateProduct) =>
+    axios.post(`${API_BASE}/admins/products/full-create`, data, {
+      headers: getAuthHeader(),
+    }),
 
   // Lấy chi tiết sản phẩm theo id
   getById: (id: number) =>
@@ -35,11 +41,9 @@ export const ProductApi = {
 
   // Tạo sản phẩm mới
   create: (product: Product) =>
-    axios.post(`${API_BASE}/admins/products`, product, { headers: getAuthHeader() }),
-
-  // Tạo sản phẩm kèm biến thể và tuỳ chọn
-  createFull: (data: any) =>
-    axios.post(`${API_BASE}/admins/products/full-create`, data, { headers: getAuthHeader() }),
+    axios.post(`${API_BASE}/admins/products`, product, {
+      headers: getAuthHeader(),
+    }),
 
   // Thêm biến thể cho sản phẩm
   createVariant: (productId: number, data: any) =>
@@ -49,7 +53,9 @@ export const ProductApi = {
 
   // Cập nhật sản phẩm
   update: (id: number, product: Partial<Product>) =>
-    axios.put(`${API_BASE}/products/${id}`, product, { headers: getAuthHeader() }),
+    axios.put(`${API_BASE}/products/${id}`, product, {
+      headers: getAuthHeader(),
+    }),
 
   // Xoá sản phẩm
   delete: (id: number) =>
