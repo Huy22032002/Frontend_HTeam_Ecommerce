@@ -158,8 +158,6 @@ const InvoiceDetailScreen: React.FC = () => {
         return 'info';
       case 'PAID':
         return 'success';
-      case 'SHIPPED':
-        return 'warning';
       case 'CANCELLED':
         return 'error';
       default:
@@ -173,8 +171,6 @@ const InvoiceDetailScreen: React.FC = () => {
         return 'Vừa tạo';
       case 'PAID':
         return 'Đã thanh toán';
-      case 'SHIPPED':
-        return 'Đã giao';
       case 'CANCELLED':
         return 'Đã huỷ';
       default:
@@ -344,7 +340,7 @@ const InvoiceDetailScreen: React.FC = () => {
                   <TableHead>
                     <TableRow sx={{ backgroundColor: '#f5f7fa', borderBottom: '2px solid #1976d2' }}>
                       <TableCell sx={{ fontWeight: 700, color: '#1565c0', fontSize: '12px', py: 1.5 }}>Tên hàng</TableCell>
-                      <TableCell sx={{ fontWeight: 700, color: '#1565c0', fontSize: '12px', py: 1.5 }} align="center">SL</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: '#1565c0', fontSize: '12px', py: 1.5 }} align="center">Số lượng</TableCell>
                       <TableCell sx={{ fontWeight: 700, color: '#1565c0', fontSize: '12px', py: 1.5 }} align="right">Đơn giá</TableCell>
                       <TableCell sx={{ fontWeight: 700, color: '#1565c0', fontSize: '12px', py: 1.5 }} align="right">Thành tiền</TableCell>
                     </TableRow>

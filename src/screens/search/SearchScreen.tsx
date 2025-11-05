@@ -211,6 +211,7 @@ const SearchScreen = () => {
                       <ProductVariantList 
                         data={searchResults as ProductVariants[]}
                         maxColumns={{ xs: 1, sm: 2, md: 2, lg: 4, xl: 4 }}
+                        onItemClick={(item) => navigate(`/product/${item.id}`)}
                       />
                     </Box>
 

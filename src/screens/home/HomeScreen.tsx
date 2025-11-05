@@ -20,6 +20,7 @@ import { tokens } from "../../theme/theme";
 //hooks
 import useHome from "./Home.hook";
 import ProductVariantList from "../../components/product/ProductVariantsList";
+import ActivePromotionsCarousel from "../../components/promotion/ActivePromotionsCarousel";
 import type { ProductVariants } from "../../models/products/ProductVariant";
 import BannerSlider from "../../models/BannerSlider";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
@@ -197,6 +198,9 @@ const HomeScreen = () => {
           </CardContent>
         </Card>
 
+        {/* Active Promotions Section */}
+        <ActivePromotionsCarousel />
+
         {/* Recommendations Section for Logged-in Customers */}
         {!searchTerm.trim() && isLoggedIn && (recommendedProducts.length > 0 || isLoadingRecommendations) && (
           <Card sx={{ borderRadius: 2, mb: 6, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", overflow: "hidden" }}>
@@ -215,6 +219,7 @@ const HomeScreen = () => {
               ) : recommendedProducts.length > 0 ? (
                 <ProductVariantList
                   data={recommendedProducts as ProductVariants[]}
+                  onItemClick={(item) => navigate(`/product/${item.id}`)}
                 />
               ) : (
                 <Typography variant="body1" color="textSecondary" sx={{ py: 2 }}>
@@ -317,6 +322,7 @@ const HomeScreen = () => {
                     </Typography>
                     <ProductVariantList
                       data={searchResults as ProductVariants[]}
+                      onItemClick={(item) => navigate(`/product/${item.id}`)}
                     />
                   </>
                 ) : (
@@ -364,6 +370,7 @@ const HomeScreen = () => {
                 </Stack>
                 <ProductVariantList
                   data={suggestProducts as ProductVariants[]}
+                  onItemClick={(item) => navigate(`/product/${item.id}`)}
                 />
                 {/* Pagination */}
                 {totalPages > 1 && (

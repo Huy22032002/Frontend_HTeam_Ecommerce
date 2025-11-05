@@ -25,6 +25,7 @@ import CartScreen from "./screens/cart/Cartscreen";
 import CheckoutScreen from "./screens/order/CheckoutScreen";
 import OrderHistoryScreen from "./screens/order/OrderHistoryScreen";
 import SearchScreen from "./screens/search/SearchScreen";
+import PromotionProductsScreen from "./screens/promotions/PromotionProductsScreen";
 
 function AppContent() {
   const location = useLocation();
@@ -50,11 +51,9 @@ function AppContent() {
           <Route path="/checkout" element={<CheckoutScreen />} />
           <Route path="/order-history" element={<OrderHistoryScreen />} />
           <Route path="/profile" element={<CustomerProfile />} />
-          <Route path="/profile" element={<CustomerProfile />} />
-          <Route
-            element={<ProductVariantDetail />}
-          />
+          <Route path="/product/:variantId" element={<ProductVariantDetail />} />
           <Route path="/cart" element={<CartScreen />} />
+          <Route path="/promotions/:promotionId/products" element={<PromotionProductsScreen />} />
         </Routes>
         {!hideLayout && <Footer />}
       </main>

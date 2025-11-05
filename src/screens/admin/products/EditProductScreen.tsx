@@ -589,7 +589,7 @@ const EditProductScreen: React.FC = () => {
                 {/* Specs Section */}
                 <Divider sx={{ my: 2 }} />
                 <Typography variant="subtitle1" fontWeight={600} mb={2}>
-                  Thông số kỹ thuật (Specs)
+                  Thông số kỹ thuật
                 </Typography>
 
                 {variant.specifications && Object.keys(variant.specifications).length > 0 && (

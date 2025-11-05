@@ -55,6 +55,56 @@ const OrderListScreen = () => {
     setFilters(prev => ({ ...prev, search: e.target.value }));
   };
 
+  const getStatusLabel = (status: string | undefined | null) => {
+    switch (status) {
+      case 'PENDING':
+        return 'Chờ xác nhận';
+      case 'APPROVED':
+        return 'Đã xác nhận';
+      case 'PROCESSING':
+        return 'Đang xử lý';
+      case 'SHIPPING':
+        return 'Đang giao';
+      case 'DELIVERED':
+        return 'Đã giao';
+      case 'PAID':
+        return 'Thanh toán';
+      case 'CANCELLED':
+        return 'Đã huỷ';
+      case 'REFUNDED':
+        return 'Hoàn tiền';
+      case 'PARTIALLY_REFUNDED':
+        return 'Hoàn một phần';
+      default:
+        return status || 'N/A';
+    }
+  };
+
+  const getStatusColor = (status: string | undefined | null): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
+    switch (status) {
+      case 'PENDING':
+        return 'warning';
+      case 'APPROVED':
+        return 'info';
+      case 'PROCESSING':
+        return 'info';
+      case 'SHIPPING':
+        return 'warning';
+      case 'DELIVERED':
+        return 'success';
+      case 'PAID':
+        return 'success';
+      case 'CANCELLED':
+        return 'error';
+      case 'REFUNDED':
+        return 'error';
+      case 'PARTIALLY_REFUNDED':
+        return 'warning';
+      default:
+        return 'default';
+    }
+  };
+
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
@@ -82,10 +132,15 @@ const OrderListScreen = () => {
             <InputLabel>Trạng thái</InputLabel>
             <Select name="status" value={filters.status || ''} label="Trạng thái" onChange={handleSelectChange}>
               <MenuItem value="">Tất cả</MenuItem>
-              <MenuItem value="PAID">Thành công</MenuItem>
               <MenuItem value="PENDING">Chờ xác nhận</MenuItem>
-              <MenuItem value="SHIPPED">Đã giao</MenuItem>
+              <MenuItem value="APPROVED">Đã xác nhận</MenuItem>
+              <MenuItem value="PROCESSING">Đang xử lý</MenuItem>
+              <MenuItem value="SHIPPING">Đang giao</MenuItem>
+              <MenuItem value="DELIVERED">Đã giao</MenuItem>
+              <MenuItem value="PAID">Thanh toán</MenuItem>
               <MenuItem value="CANCELLED">Đã huỷ</MenuItem>
+              <MenuItem value="REFUNDED">Hoàn tiền</MenuItem>
+              <MenuItem value="PARTIALLY_REFUNDED">Hoàn một phần</MenuItem>
             </Select>
           </FormControl>
           <TextField
@@ -144,7 +199,9 @@ const OrderListScreen = () => {
                 <TableCell>DH-{o.id}</TableCell>
                 <TableCell>{o.customerName}</TableCell>
                 <TableCell align="right">{(o.total || 0).toLocaleString()}₫</TableCell>
-                <TableCell><Chip size="small" color={o.status === 'PAID' ? 'success' : o.status === 'PENDING' ? 'warning' : 'default'} label={o.status} /></TableCell>
+                <TableCell>
+                  <Chip size="small" color={getStatusColor(o.status)} label={getStatusLabel(o.status)} />
+                </TableCell>
                 <TableCell>{new Date(o.createdAt).toLocaleDateString()}</TableCell>
               </TableRow>
             ))}
