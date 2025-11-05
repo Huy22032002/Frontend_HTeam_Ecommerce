@@ -18,6 +18,15 @@ export interface Transaction {
   details?: string;
 }
 
+export interface Invoice {
+  id: number;
+  invoiceCode: string;
+  customerName?: string;
+  total?: number;
+  status: string;
+  createdAt?: string;
+}
+
 export interface OrderReadableDTO {
   id: number;
   orderCode: string;
@@ -29,6 +38,7 @@ export interface OrderReadableDTO {
   createdAt: string;
   items?: OrderItem[];
   deposits?: Transaction[];
+  invoices?: Invoice[];  // Danh sách hoá đơn liên quan
   notes?: string;
   shippingAddress?: string;
   receiverName?: string;  // Tên người nhận từ delivery

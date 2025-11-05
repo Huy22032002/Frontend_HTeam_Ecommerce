@@ -15,9 +15,15 @@ import {
   Alert,
   Chip,
   Paper,
+  Snackbar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PrintIcon from '@mui/icons-material/Print';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate, useParams } from 'react-router-dom';
 import { InvoiceApi } from '../../api/invoice/InvoiceApi';
 import { formatCurrency } from '../../utils/formatCurrency';
@@ -58,6 +64,13 @@ const InvoiceDetailScreen: React.FC = () => {
   const [invoice, setInvoice] = useState<InvoiceDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [canceling, setCanceling] = useState(false);
+  const [openCancelDialog, setOpenCancelDialog] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   useEffect(() => {
     const fetchInvoice = async () => {
@@ -89,6 +102,53 @@ const InvoiceDetailScreen: React.FC = () => {
       if (printContainer) {
         printInvoiceDetail(printContainer.outerHTML);
       }
+    }
+  };
+
+  const handleOpenCancelDialog = () => {
+    setOpenCancelDialog(true);
+  };
+
+  const handleCloseCancelDialog = () => {
+    setOpenCancelDialog(false);
+  };
+
+  const handleCancelInvoice = async () => {
+    if (!invoiceId) return;
+
+    try {
+      setCanceling(true);
+      await InvoiceApi.cancel(invoiceId);
+
+      setSnackbar({
+        open: true,
+        message: '✅ Huỷ hoá đơn thành công!',
+        severity: 'success',
+      });
+
+      handleCloseCancelDialog();
+
+      // Refresh invoice data
+      setTimeout(() => {
+        const fetchInvoice = async () => {
+          try {
+            const response = await InvoiceApi.getDetail(invoiceId);
+            setInvoice(response.data);
+          } catch (err) {
+            console.error('Error refreshing invoice:', err);
+          }
+        };
+        fetchInvoice();
+      }, 1500);
+    } catch (err: any) {
+      console.error('Error canceling invoice:', err);
+      setSnackbar({
+        open: true,
+        message: `❌ ${err?.response?.data?.message || 'Lỗi khi huỷ hoá đơn'}`,
+        severity: 'error',
+      });
+    } finally {
+      setCanceling(false);
     }
   };
 
@@ -412,6 +472,18 @@ const InvoiceDetailScreen: React.FC = () => {
                 >
                   In
                 </Button>
+                {invoice.status !== 'CANCELLED' && (
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="error"
+                    startIcon={<DeleteIcon />}
+                    onClick={handleOpenCancelDialog}
+                    sx={{ textTransform: 'none', whiteSpace: 'nowrap' }}
+                  >
+                    Huỷ
+                  </Button>
+                )}
                 <Button
                   size="small"
                   variant="outlined"
@@ -431,6 +503,48 @@ const InvoiceDetailScreen: React.FC = () => {
       <Box id="invoice-print-template" sx={{ display: 'none' }}>
         <InvoicePrintTemplate invoice={invoice!} />
       </Box>
+
+      {/* Cancel Invoice Dialog */}
+      <Dialog open={openCancelDialog} onClose={handleCloseCancelDialog} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700, color: '#d32f2f', fontSize: '18px' }}>
+          ⚠️ Huỷ Hoá Đơn
+        </DialogTitle>
+        <DialogContent sx={{ pt: 2 }}>
+          <Typography sx={{ color: '#666', mb: 2 }}>
+            Bạn có chắc chắn muốn huỷ hoá đơn <strong>{invoice?.invoiceCode}</strong> không?
+          </Typography>
+          <Typography sx={{ color: '#999', fontSize: '13px' }}>
+            Hành động này không thể hoàn tác. Hoá đơn sẽ chuyển sang trạng thái "Đã huỷ".
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Button
+            variant="outlined"
+            onClick={handleCloseCancelDialog}
+            sx={{ textTransform: 'none' }}
+          >
+            Hủy bỏ
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleCancelInvoice}
+            disabled={canceling}
+            sx={{ textTransform: 'none' }}
+          >
+            {canceling ? 'Đang xử lý...' : 'Xác nhận huỷ'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Success/Error Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        message={snackbar.message}
+      />
     </Box>
   );
 };
