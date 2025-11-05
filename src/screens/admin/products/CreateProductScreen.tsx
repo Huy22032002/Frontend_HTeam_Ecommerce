@@ -207,6 +207,7 @@ const CreateProductScreen = () => {
                 <Stack direction="row" spacing={2}>
                   <TextField
                     fullWidth
+                    placeholder="Ví dụ: Laptop Zenbook 14 512GB"
                     label="Tên biến thể"
                     value={variant.name}
                     onChange={(e) =>
@@ -216,6 +217,7 @@ const CreateProductScreen = () => {
                   <TextField
                     fullWidth
                     label="Code"
+                    placeholder="Ví dụ: zenbook-15-512gb"
                     value={variant.code}
                     onChange={(e) =>
                       handleVariantChange(variantIndex, "code", e.target.value)
@@ -258,6 +260,7 @@ const CreateProductScreen = () => {
                         <TextField
                           label="SKU"
                           value={option.sku}
+                          placeholder="zenbook_14_512gb_red"
                           onChange={(e) =>
                             handleOptionChange(
                               variantIndex,
@@ -269,6 +272,7 @@ const CreateProductScreen = () => {
                         />
                         <TextField
                           label="Màu"
+                          placeholder="Ví dụ: Đỏ"
                           value={option.value}
                           onChange={(e) =>
                             handleOptionChange(
