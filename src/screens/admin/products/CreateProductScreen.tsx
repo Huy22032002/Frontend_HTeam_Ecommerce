@@ -454,7 +454,7 @@ const CreateProductScreen = () => {
                 {/* --- Thông số kỹ thuật --- */}
                 <Divider sx={{ my: 2 }} />
                 <Typography variant="subtitle1" fontWeight={600} mb={2}>
-                  Thông số kỹ thuật (Specs)
+                  Thông số kỹ thuật
                 </Typography>
 
                 {/* Display existing specs */}
