@@ -21,11 +21,14 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import PrintIcon from '@mui/icons-material/Print';
 import { useNavigate, useParams } from 'react-router-dom';
 import { OrderApi } from '../../api/order/OrderApi';
 import { InvoiceApi } from '../../api/invoice/InvoiceApi';
 import type { OrderReadableDTO } from '../../models/orders/Order';
 import { formatCurrency } from '../../utils/formatCurrency';
+import { printOrderDetail } from '../../utils/printUtils';
+import OrderPrintTemplate from '../../components/print/OrderPrintTemplate';
 
 const OrderDetailScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -35,6 +38,19 @@ const OrderDetailScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [canceling, setCanceling] = useState(false);
+
+  const handlePrint = () => {
+    if (!order) return;
+    
+    // Get the template element and extract just the print-container div
+    const printElement = document.getElementById('order-print-template');
+    if (printElement) {
+      const printContainer = printElement.querySelector('.print-container');
+      if (printContainer) {
+        printOrderDetail(printContainer.outerHTML);
+      }
+    }
+  };
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -150,10 +166,13 @@ const OrderDetailScreen: React.FC = () => {
           <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1976d2', mb: 1 }}>📋 Chi Tiết Đơn Hàng</Typography>
           <Typography variant="body2" sx={{ color: '#666' }}>Mã đơn: DH-{order.id}</Typography>
         </Box>
-        <Button startIcon={<ArrowBackIcon />} variant="outlined" onClick={() => navigate(-1)} sx={{ textTransform: 'none', px: 3 }}>Quay Lại</Button>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button startIcon={<PrintIcon />} variant="contained" onClick={handlePrint} sx={{ textTransform: 'none', backgroundColor: '#4CAF50' }}>In</Button>
+          <Button startIcon={<ArrowBackIcon />} variant="outlined" onClick={() => navigate(-1)} sx={{ textTransform: 'none', px: 3 }}>Quay Lại</Button>
+        </Box>
       </Box>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, gap: 3 }}>
+      <Box className="order-print-area" sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, gap: 3 }}>
         {/* Left */}
         <Box>
           <Card sx={{ mb: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', borderRadius: 2 }}>
@@ -283,6 +302,11 @@ const OrderDetailScreen: React.FC = () => {
             </CardContent>
           </Card>
         </Box>
+      </Box>
+
+      {/* Hidden Print Template */}
+      <Box id="order-print-template" sx={{ display: 'none' }}>
+        <OrderPrintTemplate order={order!} />
       </Box>
     </Container>
   );

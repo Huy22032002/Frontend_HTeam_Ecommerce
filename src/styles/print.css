@@ -1,0 +1,66 @@
+/* Print Styles for Order and Invoice Details */
+
+@media print {
+  /* Hide elements that should not be printed */
+  body.printing-order button,
+  body.printing-invoice button,
+  body.printing-order nav,
+  body.printing-invoice nav,
+  body.printing-order .no-print,
+  body.printing-invoice .no-print {
+    display: none !important;
+  }
+
+  /* Order Print Styles */
+  body.printing-order {
+    background: white;
+  }
+
+  body.printing-order .order-print-area {
+    max-width: 100%;
+    margin: 0;
+    padding: 20mm;
+    background: white;
+    box-shadow: none !important;
+  }
+
+  body.printing-order .order-print-area > * {
+    box-shadow: none !important;
+    border: none;
+    page-break-inside: avoid;
+  }
+
+  /* Invoice Print Styles */
+  body.printing-invoice {
+    background: white;
+  }
+
+  body.printing-invoice .invoice-print-area {
+    max-width: 100%;
+    margin: 0;
+    padding: 20mm;
+    background: white;
+    box-shadow: none !important;
+  }
+
+  body.printing-invoice .invoice-print-area > * {
+    box-shadow: none !important;
+    border: none;
+    page-break-inside: avoid;
+  }
+
+  /* Adjust table styling for print */
+  table {
+    page-break-inside: avoid;
+  }
+
+  tr {
+    page-break-inside: avoid;
+  }
+
+  /* Page breaks */
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+}
