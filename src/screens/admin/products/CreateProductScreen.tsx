@@ -515,7 +515,7 @@ const CreateProductScreen = () => {
                 {/* Paste JSON specs */}
                 <Box sx={{ p: 2, bgcolor: '#f9f9f9', borderRadius: 1, border: '1px dashed #ccc' }}>
                   <Typography variant="caption" display="block" mb={1} fontWeight={600}>
-                    Hoặc dán JSON specs (sẽ ghi đè specs hiện tại):
+                    Hoặc dán JSON specs (sẽ ghi đè thông số hiện tại):
                   </Typography>
                   <Stack direction="row" spacing={1} alignItems="flex-start">
                     <TextField
