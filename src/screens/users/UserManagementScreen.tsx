@@ -21,9 +21,10 @@ import {
   InputAdornment,
   useTheme,
   Button,
+  Avatar,
 } from '@mui/material';
 import { useUsers } from '../../hooks/useUsers';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import ToggleOnIcon from '@mui/icons-material/ToggleOn';
 import ToggleOffIcon from '@mui/icons-material/ToggleOff';
@@ -36,7 +37,13 @@ const UserManagementScreen = () => {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
-  const { users, loading, error } = useUsers(page, size);
+  const { users: apiUsers, loading, error } = useUsers(page, size);
+  const [users, setUsers] = useState(apiUsers);
+
+  // Sync API users with local state
+  useEffect(() => {
+    setUsers(apiUsers);
+  }, [apiUsers]);
 
   // Dialog state for toggle confirmation
   const [toggleDialogOpen, setToggleDialogOpen] = useState(false);
@@ -46,8 +53,8 @@ const UserManagementScreen = () => {
 
   // Handle search
   const filteredUsers = users.filter((user) =>
-    user.adminName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.adminEmail?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.username?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -73,12 +80,20 @@ const UserManagementScreen = () => {
     if (!selectedUserId) return;
 
     try {
-      await UserApi.toggleUserActive(selectedUserId);
+      const response = await UserApi.toggleUserActive(selectedUserId);
       setToggleDialogOpen(false);
-      // Reload page to refresh user list
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+      
+      // Update local state instead of reloading
+      const updatedUser = response.data;
+      setUsers(prevUsers =>
+        prevUsers.map(u =>
+          Number(u.id) === selectedUserId
+            ? { ...u, active: updatedUser.active }
+            : u
+        )
+      );
+      
+      console.log(`✅ User ${selectedUserName} status updated to: ${updatedUser.active ? 'Active' : 'Inactive'}`);
     } catch (error) {
       console.error('Error toggling user status:', error);
       alert('Không thể cập nhật trạng thái người dùng');
@@ -90,6 +105,19 @@ const UserManagementScreen = () => {
       return <Chip label="✓ Hoạt động" color="success" size="small" variant="filled" />;
     }
     return <Chip label="✗ Vô hiệu" color="error" size="small" variant="outlined" />;
+  };
+
+  // Check if user has SUPERADMIN role
+  const hasSuperAdminRole = (user: any) => {
+    if (!user.role) return false;
+    // user.role is an array of role objects with name property
+    return Array.isArray(user.role) && user.role.some((r: any) => r.name === 'SUPERADMIN');
+  };
+
+  // Get role names for display
+  const getRoleNames = (roles: any) => {
+    if (!Array.isArray(roles)) return '-';
+    return roles.map((r: any) => r.name).join(', ') || '-';
   };
 
   return (
@@ -115,25 +143,25 @@ const UserManagementScreen = () => {
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ color: colors.primary[100] }} />
+                <SearchIcon sx={{ color: '#000' }} />
               </InputAdornment>
             ),
           }}
           sx={{
             '& .MuiOutlinedInput-root': {
-              color: colors.primary[100],
+              color: '#000',
               '& fieldset': {
                 borderColor: colors.primary[200],
               },
               '&:hover fieldset': {
-                borderColor: colors.primary[100],
+                borderColor: colors.primary[900],
               },
               '&.Mui-focused fieldset': {
                 borderColor: colors.blueAccent[500],
               },
             },
             '& .MuiOutlinedInput-input::placeholder': {
-              color: colors.primary[200],
+              color: '#999',
               opacity: 0.7,
             },
           }}
@@ -156,9 +184,11 @@ const UserManagementScreen = () => {
           <Table>
             <TableHead sx={{ bgcolor: colors.greenAccent[700] }}>
               <TableRow>
+                <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Avatar</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#fff' }}>ID</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Tên</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Email</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Role</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Trạng thái</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Ngày tạo</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#fff', textAlign: 'center' }}>
@@ -178,20 +208,31 @@ const UserManagementScreen = () => {
                     },
                   }}
                 >
-                  <TableCell>{user.id}</TableCell>
-                  <TableCell sx={{ fontWeight: 500 }}>{user.adminName}</TableCell>
-                  <TableCell>{user.adminEmail}</TableCell>
-                  <TableCell>{getStatusChip(user.active ?? true)}</TableCell>
-                  <TableCell>{new Date(user.createdAt).toLocaleDateString('vi-VN')}</TableCell>
-                  <TableCell align="center">
+                  <TableCell align="center" sx={{ color: '#000', py: 1 }}>
+                    <Avatar
+                      src={user.avatarUrl}
+                      alt={user.fullName}
+                      sx={{ width: 40, height: 40, margin: '0 auto' }}
+                    >
+                      {user.fullName?.charAt(0).toUpperCase()}
+                    </Avatar>
+                  </TableCell>
+                  <TableCell sx={{ color: '#000' }}>{user.id}</TableCell>
+                  <TableCell sx={{ fontWeight: 500, color: '#000' }}>{user.fullName}</TableCell>
+                  <TableCell sx={{ color: '#000' }}>{user.email}</TableCell>
+                  <TableCell sx={{ color: '#000' }}>{getRoleNames(user.role)}</TableCell>
+                  <TableCell sx={{ color: '#000' }}>{getStatusChip(user.active ?? true)}</TableCell>
+                  <TableCell sx={{ color: '#000' }}>{new Date(user.createdAt).toLocaleDateString('vi-VN')}</TableCell>
+                  <TableCell align="center" sx={{ color: '#000' }}>
                     <IconButton
                       size="small"
                       onClick={() =>
-                        handleToggleClick(Number(user.id), user.adminName, user.active ?? true)
+                        handleToggleClick(Number(user.id), user.fullName, user.active ?? true)
                       }
-                      title={user.active ? 'Vô hiệu hóa' : 'Kích hoạt'}
+                      disabled={hasSuperAdminRole(user)}
+                      title={hasSuperAdminRole(user) ? 'Không thể chỉnh SUPERADMIN' : (user.active ? 'Vô hiệu hóa' : 'Kích hoạt')}
                       sx={{
-                        color: user.active ? '#4caf50' : '#ff9800',
+                        color: hasSuperAdminRole(user) ? '#ccc' : (user.active ? '#4caf50' : '#ff9800'),
                       }}
                     >
                       {user.active ? <ToggleOnIcon /> : <ToggleOffIcon />}
@@ -213,9 +254,9 @@ const UserManagementScreen = () => {
             onRowsPerPageChange={handleChangeRowsPerPage}
             sx={{
               bgcolor: colors.primary[400],
-              color: colors.primary[100],
+              color: '#000',
               '& .MuiIconButton-root': {
-                color: colors.primary[100],
+                color: '#000',
               },
             }}
           />

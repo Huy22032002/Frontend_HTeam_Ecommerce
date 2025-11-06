@@ -10,9 +10,9 @@ function getAuthHeader() {
 }
 
 export const UserApi = {
-  // Lấy danh sách người dùng (có phân trang) - endpoint công khai cho admin
+  // Lấy danh sách người dùng (có phân trang) - endpoint admin
   getAll: (page = 0, size = 20) =>
-    axios.get(`${API_BASE}/users?page=${page}&size=${size}`, {
+    axios.get(`${ADMIN_API}/users?page=${page}&size=${size}`, {
       headers: getAuthHeader(),
     }),
 
