@@ -42,18 +42,20 @@ export function usePromotionsByActive(active: boolean) {
 
   useEffect(() => {
     setLoading(true);
-    PromotionApi.getByActive(active)
+    
+    // Dùng endpoint công khai để lấy active promotions
+    PromotionApi.getAllActive({})
       .then(res => {
-        if (Array.isArray(res.data)) {
-          setPromotions(res.data);
-        } else if (res.data && res.data.content) {
-          setPromotions(res.data.content);
-        } else {
-          setPromotions([]);
-        }
+        let data = Array.isArray(res.data) ? res.data : (res.data?.content || []);
+        
+        console.log('[usePromotionsByActive] Raw data:', data);
+        console.log('[usePromotionsByActive] Data count:', data.length);
+        
+        setPromotions(data);
         setError(null);
       })
       .catch(err => {
+        console.error('[usePromotionsByActive] Error:', err);
         setError(err);
         setPromotions([]);
       })

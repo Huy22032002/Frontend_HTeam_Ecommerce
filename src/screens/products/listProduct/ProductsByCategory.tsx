@@ -10,12 +10,13 @@ import { useEffect, useState } from "react";
 import useProductByCategory from "./ProductByCategory.hook";
 import ManufacturerTabs from "../../../components/manufacturer/ManufacturerTabs";
 import FilterSideBar from "../../../components/product/FilterSideBar";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import ProductVariantList from "../../../components/product/ProductVariantsList";
 import { tokens } from "../../../theme/theme";
 
 const ProductsByCategory = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
+  const navigate = useNavigate();
 
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -189,6 +190,7 @@ const ProductsByCategory = () => {
             <ProductVariantList 
               data={filteredVariants}
               maxColumns={{ xs: 1, sm: 2, md: 2, lg: 4, xl: 4 }}
+              onItemClick={(item) => navigate(`/product/${item.id}`)}
             />
           </Box>
           {/* Pagination */}

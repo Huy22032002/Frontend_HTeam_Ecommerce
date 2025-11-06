@@ -61,6 +61,7 @@ function AppContent() {
             element={<ProductVariantDetail />}
           />
           <Route path="/cart" element={<CartScreen />} />
+          <Route path="/promotions/:promotionId/products" element={<PromotionProductsScreen />} />
         </Routes>
         {!hideLayout && <Footer />}
       </main>

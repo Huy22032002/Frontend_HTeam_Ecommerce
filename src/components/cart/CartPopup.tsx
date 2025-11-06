@@ -8,6 +8,7 @@ import {
   Paper,
   colors,
   useTheme,
+  Backdrop,
 } from "@mui/material";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import CloseIcon from "@mui/icons-material/Close";
@@ -22,7 +23,6 @@ import { formatCurrency } from "../../utils/formatCurrency";
 import { tokens } from "../../theme/theme";
 import { setCart } from "../../store/cartSlice";
 import { CartApi } from "../../api/cart/cartApi";
-// import { updateCartItemQuantity, removeCartItem } from "../../store/cartSlice"; // giả sử bạn có các action này
 
 interface CartPopupProps {
   open: boolean;
@@ -86,20 +86,32 @@ const CartPopup: React.FC<CartPopupProps> = ({ open, onClose, cartItems }) => {
   };
 
   return (
-    <Paper
-      elevation={6}
-      sx={{
-        position: "absolute",
-        top: "68px",
-        right: "80px",
-        width: 400,
-        p: 2,
-        borderRadius: 2,
-        zIndex: 1000,
-        background: "linear-gradient(180deg, #ffffff, #f8fbff)",
-        border: "1px solid #e3e8ef",
-      }}
-    >
+    <>
+      {/* Backdrop - click vào để tắt popup */}
+      <Backdrop
+        open={open}
+        onClick={onClose}
+        sx={{
+          zIndex: 999, // backdrop ở dưới popup
+          backgroundColor: 'rgba(0, 0, 0, 0.3)',
+        }}
+      />
+      
+      {/* Popup */}
+      <Paper
+        elevation={6}
+        sx={{
+          position: "absolute",
+          top: "68px",
+          right: "80px",
+          width: 400,
+          p: 2,
+          borderRadius: 2,
+          zIndex: 1000,
+          background: "linear-gradient(180deg, #ffffff, #f8fbff)",
+          border: "1px solid #e3e8ef",
+        }}
+      >
       <Stack
         direction="row"
         justifyContent="space-between"
@@ -240,7 +252,8 @@ const CartPopup: React.FC<CartPopupProps> = ({ open, onClose, cartItems }) => {
           </Button>
         </Stack>
       )}
-    </Paper>
+      </Paper>
+    </>
   );
 };
 

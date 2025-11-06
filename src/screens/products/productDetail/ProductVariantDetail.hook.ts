@@ -127,6 +127,7 @@ const useVariantDetail = () => {
     //cart
     addOptionsToCart,
     isLoading,
+    setIsLoading,
   };
 };
 
