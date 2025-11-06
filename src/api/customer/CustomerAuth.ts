@@ -103,3 +103,33 @@ export const loginGoogle = async (jwtGoogleToken: string) => {
     throw err;
   }
 };
+
+export const signUpByPhone = async (phone: string, password: string) => {
+  const data = {
+    phone,
+    password,
+  };
+
+  try {
+    const r = await axios.post(
+      `${backendEndpoint}/api/public/signUpByPhone`,
+      data,
+      {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      }
+    );
+    const loginResponse: LoginResponse = r.data;
+    if (loginResponse) {
+      localStorage.setItem("token", loginResponse.token);
+      localStorage.setItem("id", loginResponse.id.toString());
+    }
+
+    return loginResponse;
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err) && err.response) {
+      throw new Error(err.response.data?.message || "Lỗi server");
+    }
+    throw new Error("Không thể kết nối server");
+  }
+};
