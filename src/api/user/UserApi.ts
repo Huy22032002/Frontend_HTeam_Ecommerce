@@ -42,7 +42,7 @@ export const UserApi = {
 
   // Đăng ký người dùng mới
   register: (user: Partial<UserSummary>) =>
-    axios.post(`${ADMIN_API}/register`, user),
+    axios.post(`${ADMIN_API}/register`, user, { headers: getAuthHeader() }),
 
   // Đăng xuất người dùng
   logout: () => {

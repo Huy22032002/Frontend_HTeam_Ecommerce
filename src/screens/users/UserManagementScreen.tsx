@@ -51,6 +51,19 @@ const UserManagementScreen = () => {
   const [selectedUserName, setSelectedUserName] = useState('');
   const [selectedUserCurrentStatus, setSelectedUserCurrentStatus] = useState(false);
 
+  // Dialog state for create user
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [newUserForm, setNewUserForm] = useState({
+    userName: '',
+    name: '',
+    emailAddress: '',
+    password: '',
+    repeatPassword: '',
+    active: true,
+  });
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createError, setCreateError] = useState('');
+
   // Handle search
   const filteredUsers = users.filter((user) =>
     user.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -120,6 +133,125 @@ const UserManagementScreen = () => {
     return roles.map((r: any) => r.name).join(', ') || '-';
   };
 
+  // Format date from ISO timestamp (from backend Instant)
+  const formatCreatedDate = (createdAt?: string) => {
+    if (!createdAt) return '-';
+    try {
+      const date = new Date(createdAt);
+      return date.toLocaleDateString('vi-VN', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit' 
+      });
+    } catch {
+      return '-';
+    }
+  };
+
+  // Password validation regex (same as backend)
+  // Must have: lowercase, uppercase, digit, 6-12 characters
+  const validatePasswordFormat = (password: string): boolean => {
+    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,12}$/;
+    return passwordPattern.test(password);
+  };
+
+  // Handle create user form changes
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewUserForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Handle create user submit
+  const handleCreateUser = async () => {
+    setCreateError('');
+    
+    // Validate form
+    if (!newUserForm.userName.trim()) {
+      setCreateError('Username không được để trống');
+      return;
+    }
+    if (!newUserForm.name.trim()) {
+      setCreateError('Tên người dùng không được để trống');
+      return;
+    }
+    if (!newUserForm.emailAddress.trim()) {
+      setCreateError('Email không được để trống');
+      return;
+    }
+    if (!newUserForm.password) {
+      setCreateError('Mật khẩu không được để trống');
+      return;
+    }
+    if (newUserForm.password !== newUserForm.repeatPassword) {
+      setCreateError('Mật khẩu không khớp');
+      return;
+    }
+    if (!validatePasswordFormat(newUserForm.password)) {
+      setCreateError('Mật khẩu phải có: chữ thường (a-z), chữ hoa (A-Z), số (0-9), độ dài 6-12 ký tự. VD: Test123');
+      return;
+    }
+
+    setCreateLoading(true);
+    try {
+      const response = await UserApi.register({
+        userName: newUserForm.userName,
+        name: newUserForm.name,
+        emailAddress: newUserForm.emailAddress,
+        password: newUserForm.password,
+        repeatPassword: newUserForm.repeatPassword,
+        active: newUserForm.active,
+      } as any);
+      
+      // Add new user to the list without reload
+      const newUser = response.data;
+      setUsers(prevUsers => [newUser, ...prevUsers]);
+      
+      // Reset form and close dialog
+      setNewUserForm({
+        userName: '',
+        name: '',
+        emailAddress: '',
+        password: '',
+        repeatPassword: '',
+        active: true,
+      });
+      setCreateDialogOpen(false);
+      setCreateError('');
+      alert('✅ Tạo user thành công!');
+    } catch (error: any) {
+      console.error('Error creating user:', error);
+      // Get error message from various possible locations
+      let errorMsg = 'Không thể tạo user';
+      if (error.response?.data) {
+        const data = error.response.data;
+        if (typeof data === 'string') {
+          errorMsg = data;
+        } else if (data.errorMessage) {
+          errorMsg = data.errorMessage;
+          // If there are field errors, append them
+          if (data.errors && typeof data.errors === 'object') {
+            const fieldErrors = Object.entries(data.errors)
+              .map(([field, message]) => `${field}: ${message}`)
+              .join(', ');
+            if (fieldErrors) {
+              errorMsg += ` (${fieldErrors})`;
+            }
+          }
+        } else if (data.message) {
+          errorMsg = data.message;
+        }
+      } else if (error.message) {
+        errorMsg = error.message;
+      }
+      setCreateError(errorMsg);
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
@@ -127,9 +259,19 @@ const UserManagementScreen = () => {
         <Typography variant="h4" fontWeight={600}>
           👤 Quản lý người dùng
         </Typography>
-        <Typography variant="body2" color="textSecondary">
-          Tổng: {users.length} người dùng
-        </Typography>
+        <Stack direction="row" gap={2} alignItems="center">
+          <Typography variant="body2" color="textSecondary">
+            Tổng: {users.length} người dùng
+          </Typography>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => setCreateDialogOpen(true)}
+            sx={{ textTransform: 'none' }}
+          >
+            + Tạo user mới
+          </Button>
+        </Stack>
       </Stack>
 
       {/* Search Box */}
@@ -197,12 +339,12 @@ const UserManagementScreen = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredUsers.map((user, index) => (
+              {filteredUsers.map((user) => (
                 <TableRow
                   key={user.id}
                   hover
                   sx={{
-                    backgroundColor: index % 2 === 0 ? colors.primary[400] : colors.primary[500],
+                    backgroundColor: colors.primary[400],
                     '&:hover': {
                       backgroundColor: colors.primary[300],
                     },
@@ -222,7 +364,7 @@ const UserManagementScreen = () => {
                   <TableCell sx={{ color: '#000' }}>{user.email}</TableCell>
                   <TableCell sx={{ color: '#000' }}>{getRoleNames(user.role)}</TableCell>
                   <TableCell sx={{ color: '#000' }}>{getStatusChip(user.active ?? true)}</TableCell>
-                  <TableCell sx={{ color: '#000' }}>{new Date(user.createdAt).toLocaleDateString('vi-VN')}</TableCell>
+                  <TableCell sx={{ color: '#000' }}>{formatCreatedDate(user.createdAt)}</TableCell>
                   <TableCell align="center" sx={{ color: '#000' }}>
                     <IconButton
                       size="small"
@@ -264,6 +406,7 @@ const UserManagementScreen = () => {
       )}
 
       {/* Toggle Status Confirmation Dialog */}
+      {/* Toggle Status Confirmation Dialog */}
       <Dialog open={toggleDialogOpen} onClose={() => setToggleDialogOpen(false)}>
         <DialogTitle sx={{ color: colors.blueAccent[400], fontWeight: 600 }}>
           🔄 Cập nhật trạng thái người dùng
@@ -285,6 +428,88 @@ const UserManagementScreen = () => {
           </Button>
           <Button onClick={handleConfirmToggle} color="success" variant="contained">
             Xác nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Create User Dialog */}
+      <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ color: colors.blueAccent[400], fontWeight: 600 }}>
+          ➕ Tạo user mới
+        </DialogTitle>
+        <DialogContent sx={{ pt: 2 }}>
+          {createError && (
+            <Box sx={{ mb: 2, p: 1.5, bgcolor: '#ffebee', color: '#c62828', borderRadius: 1, fontSize: '0.9rem' }}>
+              ❌ {createError}
+            </Box>
+          )}
+          <Stack spacing={2}>
+            <TextField
+              label="Username"
+              name="userName"
+              value={newUserForm.userName}
+              onChange={handleFormChange}
+              fullWidth
+              size="small"
+              placeholder="vd: admin2"
+            />
+            <TextField
+              label="Tên người dùng"
+              name="name"
+              value={newUserForm.name}
+              onChange={handleFormChange}
+              fullWidth
+              size="small"
+              placeholder="vd: Nguyễn Văn A"
+            />
+            <TextField
+              label="Email"
+              name="emailAddress"
+              value={newUserForm.emailAddress}
+              onChange={handleFormChange}
+              fullWidth
+              size="small"
+              type="email"
+              placeholder="vd: admin@example.com"
+            />
+            <Box>
+              <TextField
+                label="Mật khẩu"
+                name="password"
+                value={newUserForm.password}
+                onChange={handleFormChange}
+                fullWidth
+                size="small"
+                type="password"
+                placeholder="Nhập mật khẩu"
+              />
+              <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: '#666' }}>
+                💡 Yêu cầu: Chữ thường (a-z) + Chữ hoa (A-Z) + Số (0-9) + 6-12 ký tự. VD: <strong>Test123</strong>
+              </Typography>
+            </Box>
+            <TextField
+              label="Nhập lại mật khẩu"
+              name="repeatPassword"
+              value={newUserForm.repeatPassword}
+              onChange={handleFormChange}
+              fullWidth
+              size="small"
+              type="password"
+              placeholder="Nhập lại mật khẩu"
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreateDialogOpen(false)} color="primary">
+            Hủy
+          </Button>
+          <Button 
+            onClick={handleCreateUser} 
+            color="success" 
+            variant="contained"
+            disabled={createLoading}
+          >
+            {createLoading ? 'Đang tạo...' : 'Tạo user'}
           </Button>
         </DialogActions>
       </Dialog>
