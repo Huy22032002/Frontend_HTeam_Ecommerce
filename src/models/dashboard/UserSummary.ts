@@ -1,6 +1,17 @@
+export interface Role {
+  id?: number;
+  name: string;
+}
+
 export interface UserSummary {
   id: string;
-  name: string;
+  username: string;
+  fullName: string;
   email: string;
-  createdAt: string; // ISO date
+  active?: boolean;
+  role?: Role[];
+  avatarUrl?: string;
+  gender?: boolean;
+  dateOfBirth?: string;
+  createdAt?: string; // ISO timestamp from backend
 }
