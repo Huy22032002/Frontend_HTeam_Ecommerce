@@ -68,10 +68,7 @@ const Topbar: React.FC = () => {
   };
 
   const [openCartPopup, setOpenCartPopup] = useState(false);
-  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(
-    null
-  );
-  const openUserMenu = Boolean(userMenuAnchor);
+
   const [searchInput, setSearchInput] = useState("");
 
   //get or create Cart
@@ -166,48 +163,22 @@ const Topbar: React.FC = () => {
         {user ? (
           <Box display="flex" alignItems="center" gap={1}>
             <Typography
+              onClick={() => navigate("/customer/account-info")}
               variant="body1"
               fontWeight="bold"
               sx={{
                 color: colors.primary[100],
                 cursor: "pointer",
-                "&:hover": { textDecoration: "underline" },
+                "&:hover": {
+                  background: colors.blueAccent[900],
+                  borderRadius: 4,
+                  p: 2,
+                  boxSizing: "border-box",
+                },
               }}
-              onClick={(e) => setUserMenuAnchor(e.currentTarget)}
             >
               {user.name || user.username}
             </Typography>
-
-            {/* User Menu Dropdown */}
-            <Menu
-              anchorEl={userMenuAnchor}
-              open={openUserMenu}
-              onClose={() => setUserMenuAnchor(null)}
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              transformOrigin={{ vertical: "top", horizontal: "right" }}
-            >
-              <MuiMenuItem
-                onClick={() => {
-                  navigate("/order-history");
-                  setUserMenuAnchor(null);
-                }}
-                sx={{ display: "flex", gap: 1 }}
-              >
-                <HistoryIcon fontSize="small" />
-                <Typography>Lịch sử đơn hàng</Typography>
-              </MuiMenuItem>
-              <MuiMenuItem
-                onClick={() => {
-                  dispatch(logout());
-                  navigate("/login");
-                  setUserMenuAnchor(null);
-                }}
-                sx={{ display: "flex", gap: 1 }}
-              >
-                <LogoutIcon fontSize="small" />
-                <Typography>Đăng xuất</Typography>
-              </MuiMenuItem>
-            </Menu>
           </Box>
         ) : (
           <Button

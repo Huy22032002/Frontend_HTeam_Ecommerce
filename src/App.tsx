@@ -11,8 +11,6 @@ import { ColorModeContext, useMode } from "./theme/theme";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 
 import Topbar from "./components/Topbar";
-// Customer-facing profile screens (created below)
-import CustomerProfile from "./screens/customers/CustomerProfile";
 
 //screens
 import LoginScreen from "./screens/login/LoginScreen";
@@ -23,11 +21,14 @@ import Footer from "./components/Footer";
 import ProductVariantDetail from "./screens/products/productDetail/ProductVariantDetail";
 import CartScreen from "./screens/cart/Cartscreen";
 import CheckoutScreen from "./screens/order/CheckoutScreen";
-import OrderHistoryScreen from "./screens/order/OrderHistoryScreen";
+import OrderHistoryScreen from "./screens/customerLayout/orderHistory/OrderHistoryScreen";
 import SearchScreen from "./screens/search/SearchScreen";
 import OtpScreen from "./screens/signup/OtpScreen";
 import SetPasswordScreen from "./screens/signup/setPassword/SetPasswordScreen";
 import PromotionProductsScreen from "./screens/promotions/PromotionProductsScreen";
+import CustomerLayout from "./screens/customerLayout/CustomerLayout";
+import ListAddress from "./screens/customerLayout/listAddress/ListAddress";
+import CustomerInfo from "./screens/customerLayout/customerInfo/CustomerInfo";
 
 function AppContent() {
   const location = useLocation();
@@ -46,8 +47,14 @@ function AppContent() {
           <Route path="/signup" element={<SignupScreen />} />
           <Route path="/signup/set-password" element={<SetPasswordScreen />} />
           <Route path="/otp" element={<OtpScreen />} />
-
           <Route path="/" element={<HomeScreen />} />
+          {/* CUSTOMER LAYOUT */}
+          <Route path="/customer" element={<CustomerLayout />}>
+            <Route path="account-info" element={<CustomerInfo />} />
+            <Route path="orders-history" element={<OrderHistoryScreen />} />
+            <Route path="addresses" element={<ListAddress />} />
+          </Route>
+          ;
           <Route path="/search" element={<SearchScreen />} />
           <Route path="/all-products" element={<SearchScreen />} />
           <Route
@@ -56,7 +63,6 @@ function AppContent() {
           />
           <Route path="/checkout" element={<CheckoutScreen />} />
           <Route path="/order-history" element={<OrderHistoryScreen />} />
-          <Route path="/profile" element={<CustomerProfile />} />
           <Route
             path="/product/:variantId"
             element={<ProductVariantDetail />}
