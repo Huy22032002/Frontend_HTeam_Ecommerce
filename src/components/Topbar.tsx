@@ -68,10 +68,12 @@ const Topbar: React.FC = () => {
   };
 
   const [openCartPopup, setOpenCartPopup] = useState(false);
-  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
+  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(
+    null
+  );
   const openUserMenu = Boolean(userMenuAnchor);
   const [searchInput, setSearchInput] = useState("");
-  
+
   //get or create Cart
   const getCartByCustomerId = async () => {
     if (user?.id) {
@@ -173,7 +175,7 @@ const Topbar: React.FC = () => {
               }}
               onClick={(e) => setUserMenuAnchor(e.currentTarget)}
             >
-              {user.name}
+              {user.name || user.username}
             </Typography>
 
             {/* User Menu Dropdown */}
@@ -206,15 +208,6 @@ const Topbar: React.FC = () => {
                 <Typography>Đăng xuất</Typography>
               </MuiMenuItem>
             </Menu>
-
-            <IconButton
-              onClick={() => {
-                dispatch(logout());
-                navigate("/login");
-              }}
-            >
-              <LogoutIcon sx={{ color: colors.primary[100] }} />
-            </IconButton>
           </Box>
         ) : (
           <Button
