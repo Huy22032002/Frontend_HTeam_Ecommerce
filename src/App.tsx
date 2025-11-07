@@ -27,6 +27,7 @@ import OrderHistoryScreen from "./screens/order/OrderHistoryScreen";
 import SearchScreen from "./screens/search/SearchScreen";
 import OtpScreen from "./screens/signup/OtpScreen";
 import SetPasswordScreen from "./screens/signup/setPassword/SetPasswordScreen";
+import PromotionProductsScreen from "./screens/promotions/PromotionProductsScreen";
 
 function AppContent() {
   const location = useLocation();
