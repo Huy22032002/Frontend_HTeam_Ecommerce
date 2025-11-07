@@ -1,15 +1,19 @@
 import {
   Box,
+  Divider,
   List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
   Typography,
 } from "@mui/material";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import LogoutIcon from "@mui/icons-material/Logout";
+import { useDispatch } from "react-redux";
+import { logout } from "../../store/customerSlice";
 
 const menu = [
   {
@@ -26,6 +30,14 @@ const menu = [
 ];
 
 const CustomerSidebar = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/");
+  };
+
   return (
     <Box
       sx={{
@@ -59,7 +71,27 @@ const CustomerSidebar = () => {
             <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
             <ListItemText primary={item.label} />
           </ListItemButton>
-        ))}
+        ))}{" "}
+        {/* Divider ngăn cách menu và logout */}
+        <Divider sx={{ my: 1 }} />
+        {/* Logout */}
+        <ListItemButton
+          onClick={handleLogout}
+          sx={{
+            borderRadius: "8px",
+            mb: 0.5,
+            color: "#d32f2f",
+            "& .MuiListItemIcon-root": { color: "#d32f2f" },
+            "&:hover": {
+              backgroundColor: "rgba(211,47,47,0.1)",
+            },
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 40 }}>
+            <LogoutIcon />
+          </ListItemIcon>
+          <ListItemText primary="Đăng xuất" />
+        </ListItemButton>
       </List>
     </Box>
   );
