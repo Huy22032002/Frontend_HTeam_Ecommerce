@@ -11,10 +11,10 @@ export interface OrderItem {
 
 // Yêu cầu tạo đơn hàng
 export interface CreateOrderRequest {
-  customerId: number; 
+  customerId: number;
   userId?: number; // ID nhân viên CMS tạo đơn (optional)
   items: OrderItem[];
-  paymentMethod: 'CASH' | 'TRANSFER' | 'CARD' | 'E_WALLET'; // Các phương thức thanh toán
+  paymentMethod: "CASH" | "TRANSFER" | "CARD" | "MOMO"; // Các phương thức thanh toán
   notes?: string;
   shippingAddress?: string;
   receiverName?: string; // Tên người nhận hàng
