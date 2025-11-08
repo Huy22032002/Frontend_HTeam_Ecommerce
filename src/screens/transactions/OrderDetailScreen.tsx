@@ -246,7 +246,7 @@ const OrderDetailScreen: React.FC = () => {
         severity: 'success',
       });
       setTimeout(() => {
-        navigate('/orders');
+        navigate('/admin/orders');
       }, 1500);
     } catch (err: any) {
       console.error('Error canceling order:', err);
