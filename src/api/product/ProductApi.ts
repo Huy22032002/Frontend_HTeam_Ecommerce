@@ -74,6 +74,10 @@ export const ProductApi = {
   getVariantByIdPublic: (variantId: number) =>
     axios.get(`${API_BASE}/public/product/variant/${variantId}`),
 
+  // Get product option by SKU (public - no auth required)
+  getOptionBySkuPublic: (sku: string) =>
+    axios.get(`${API_BASE}/public/product/option/sku/${sku}`),
+
   // Create variant for a product
   createVariantForProduct: (productId: number, data: any) =>
     axios.post(`${API_BASE}/${productId}/variants`, data, { headers: getAuthHeader() }),

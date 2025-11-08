@@ -427,13 +427,26 @@ const ProductVariantListScreen = () => {
       {/* Header */}
       <Box sx={{ mb: 3, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h1>📦 Danh sách Biến thể Sản phẩm</h1>
-        <Button
-          onClick={() => setShowFilters(!showFilters)}
-          variant="outlined"
-          sx={{ textTransform: "none" }}
-        >
-          {showFilters ? "Ẩn" : "Hiện"} Bộ lọc
-        </Button>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button
+            variant="contained"
+            color="success"
+            sx={{ textTransform: "none" }}
+            onClick={() => {
+              // Navigate to create product screen
+              window.location.href = "/admin/products/create";
+            }}
+          >
+            + Thêm sản phẩm
+          </Button>
+          <Button
+            onClick={() => setShowFilters(!showFilters)}
+            variant="outlined"
+            sx={{ textTransform: "none" }}
+          >
+            {showFilters ? "Ẩn" : "Hiện"} Bộ lọc
+          </Button>
+        </Box>
       </Box>
 
       {/* Error Alert */}

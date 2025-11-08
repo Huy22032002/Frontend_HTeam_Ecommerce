@@ -25,11 +25,13 @@ import {
   CircularProgress,
   Alert,
   Paper,
+  Chip,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate } from 'react-router-dom';
 import { useCreateOrder } from '../../hooks/useCreateOrder';
+import { useCustomerDeliveryAddresses } from '../../hooks/useCustomerDeliveryAddresses';
 import CustomerListModal from '../../components/modals/CustomerListModal';
 import ProductVariantListModal from '../../components/modals/ProductVariantListModal';
 import type { ProductOption } from '../../models/products/ProductVariantOption';
@@ -52,13 +54,59 @@ const CreateOrderScreen: React.FC = () => {
   const [loadingPromotions, setLoadingPromotions] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
 
+  // Fetch saved delivery addresses for selected customer
+  const { deliveryAddresses, loading: loadingSavedAddresses } = useCustomerDeliveryAddresses(order.state.selectedCustomer?.id);
+
   // Address states
   const [selectedProvince, setSelectedProvince] = useState<string>('');
   const [selectedDistrict, setSelectedDistrict] = useState<string>('');
   const [streetAddress, setStreetAddress] = useState('');
+  const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<number | null>(null);
 
   // Get districts for selected province
   const availableDistricts = selectedProvince ? getDistrictsByProvince(selectedProvince) : [];
+
+  // Handle selecting a saved delivery address
+  const handleSelectSavedAddress = (address: typeof deliveryAddresses[0]) => {
+    setSelectedSavedAddressId(address.id);
+    
+    // Set form data from saved address
+    order.setReceiverPhoneNumber(address.phone);
+
+    // Parse fullAddress
+    const parts = address.fullAddress.split(",").map(p => p.trim());
+    
+    if (parts.length >= 2) {
+      const provinceName = parts[parts.length - 1];
+      const districtName = parts.length >= 3 ? parts[parts.length - 2] : "";
+      const street = parts.slice(0, parts.length - 2).join(", ").trim();
+
+      // Find matching province
+      const matchingProvince = VIETNAM_PROVINCES.find(
+        p => p.name.toUpperCase() === provinceName.toUpperCase()
+      );
+
+      if (matchingProvince) {
+        setSelectedProvince(matchingProvince.id);
+        
+        // Find matching district
+        if (districtName) {
+          const districts = getDistrictsByProvince(matchingProvince.id);
+          const matchingDistrict = districts.find(
+            d => d.name.toUpperCase() === districtName.toUpperCase()
+          );
+          
+          if (matchingDistrict) {
+            setSelectedDistrict(matchingDistrict.id);
+          } else {
+            setSelectedDistrict("");
+          }
+        }
+      }
+
+      setStreetAddress(street);
+    }
+  };
 
   // Handle chọn khách hàng
   const handleSelectCustomer = (customer: any) => {
@@ -370,6 +418,75 @@ const CreateOrderScreen: React.FC = () => {
               sx={{ backgroundColor: '#f5f7fa', borderBottom: '2px solid #e8ebf0' }}
             />
             <CardContent sx={{ pt: 2.5, pb: 2 }}>
+              {/* Saved Delivery Addresses Section */}
+              {deliveryAddresses.length > 0 && (
+                <Box sx={{ mb: 3, p: 2, bgcolor: '#f0f8ff', borderRadius: 1, border: '1px solid #b3d9ff' }}>
+                  <Typography variant="subtitle2" fontWeight={600} mb={2}>
+                    📌 Chọn một địa chỉ đã lưu của khách hàng:
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                    {deliveryAddresses.map((addr) => (
+                      <Paper
+                        key={addr.id}
+                        sx={{
+                          p: 1.5,
+                          cursor: 'pointer',
+                          border: selectedSavedAddressId === addr.id ? '2px solid #1976d2' : '1px solid #ddd',
+                          borderRadius: 1,
+                          transition: 'all 0.3s',
+                          backgroundColor: selectedSavedAddressId === addr.id ? '#e3f2fd' : 'transparent',
+                          '&:hover': {
+                            bgcolor: '#e3f2fd',
+                            borderColor: '#1976d2',
+                            boxShadow: '0 2px 8px rgba(25, 118, 210, 0.1)',
+                          },
+                        }}
+                        onClick={() => handleSelectSavedAddress(addr)}
+                      >
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <Box sx={{ flex: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                              <Typography variant="body2" fontWeight={600}>
+                                {addr.recipientName}
+                              </Typography>
+                              {addr.isDefault && (
+                                <Chip label="Mặc định" size="small" color="success" variant="outlined" />
+                              )}
+                            </Box>
+                            <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 0.5 }}>
+                              📞 {addr.phone}
+                            </Typography>
+                            <Typography variant="body2" sx={{ mt: 1, color: '#555' }}>
+                              {addr.fullAddress}
+                            </Typography>
+                          </Box>
+                          {selectedSavedAddressId === addr.id && (
+                            <Chip
+                              label="✓ Đã chọn"
+                              size="small"
+                              color="success"
+                              variant="filled"
+                              sx={{ ml: 1, flexShrink: 0 }}
+                            />
+                          )}
+                        </Box>
+                      </Paper>
+                    ))}
+                  </Box>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="caption" color="textSecondary">
+                    💡 Nhấp vào một địa chỉ để sử dụng hoặc điền thông tin thủ công bên dưới
+                  </Typography>
+                </Box>
+              )}
+
+              {loadingSavedAddresses && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <CircularProgress size={20} />
+                  <Typography variant="caption">Đang tải danh sách địa chỉ đã lưu...</Typography>
+                </Box>
+              )}
+
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                 {/* Province & District Row */}
                 <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'flex-start' }}>

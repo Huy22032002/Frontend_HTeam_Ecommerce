@@ -59,28 +59,37 @@ const PromotionProductsScreen = () => {
         if (foundPromo.applicableProductOptions && Array.isArray(foundPromo.applicableProductOptions)) {
           console.log('[PromotionProductsScreen] Products found:', foundPromo.applicableProductOptions.length);
           
-          // Fetch full product data for each variant
-          const variantIds = foundPromo.applicableProductOptions.map((option: any) => option.id);
-          console.log('[PromotionProductsScreen] Variant IDs:', variantIds);
+          // Fetch full product data for each option using SKU
+          const optionSkus = foundPromo.applicableProductOptions.map((option: any) => option.sku);
+          console.log('[PromotionProductsScreen] Option SKUs:', optionSkus);
           
           try {
-            // Fetch full variants in parallel using public endpoint
-            const variantPromises = variantIds.map((id: number) => 
-              ProductApi.getVariantByIdPublic(id).catch(err => {
-                console.warn(`Failed to fetch variant ${id}:`, err);
+            // Fetch full product options in parallel using public endpoint with SKU
+            const optionPromises = optionSkus.map((sku: string) => 
+              ProductApi.getOptionBySkuPublic(sku).catch(err => {
+                console.warn(`Failed to fetch option with SKU ${sku}:`, err);
                 return null;
               })
             );
-            const variantResponses = await Promise.all(variantPromises);
+            const optionResponses = await Promise.all(optionPromises);
             
-            const productVariants: ProductVariants[] = variantResponses
+            const productOptions: ProductVariants[] = optionResponses
               .filter(res => res && res.data)
               .map(res => res.data);
             
-            console.log('[PromotionProductsScreen] Fetched variants:', productVariants.length);
-            setProducts(productVariants);
+            // Filter out duplicate variants (same variant ID) - keep only unique variants
+            const uniqueVariantsMap = new Map<number, ProductVariants>();
+            productOptions.forEach(variant => {
+              if (!uniqueVariantsMap.has(variant.id)) {
+                uniqueVariantsMap.set(variant.id, variant);
+              }
+            });
+            const uniqueVariants = Array.from(uniqueVariantsMap.values());
+            
+            console.log('[PromotionProductsScreen] Fetched options:', productOptions.length, 'Unique variants:', uniqueVariants.length);
+            setProducts(uniqueVariants);
           } catch (err) {
-            console.error('[PromotionProductsScreen] Error fetching variants:', err);
+            console.error('[PromotionProductsScreen] Error fetching options:', err);
             // Fallback: use basic product info from options
             const fallbackVariants: ProductVariants[] = foundPromo.applicableProductOptions.map((option: any) => ({
               id: option.id,

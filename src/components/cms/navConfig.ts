@@ -15,8 +15,8 @@ export const cmsNav: CmsNavItem[] = [
       { key: 'partners-list', label: 'Danh sách', path: '/admin/partners' },
     ] },
   { key: 'hanghoa', label: 'Hàng hóa', icon: '💼', children: [
-      { key: 'product-list', label: 'Danh sách sản phẩm', path: '/admin/products' },
-      { key: 'product-variants', label: 'Biến thể sản phẩm', path: '/admin/product-variants' },
+      // { key: 'product-list', label: 'Danh sách sản phẩm', path: '/admin/products' },
+      { key: 'product-variants', label: 'Danh sách sản phẩm', path: '/admin/product-variants' },
       { key: 'manufacturers', label: 'Thương hiệu', path: '/admin/manufacturers' },
       { key: 'categories', label: 'Danh mục', path: '/admin/categories' },
     ] },

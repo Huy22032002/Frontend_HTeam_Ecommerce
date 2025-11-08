@@ -29,6 +29,7 @@ import type { CreateOrderRequest } from "../../models/orders/CreateOrderRequest"
 import { formatCurrency } from "../../utils/formatCurrency";
 import { VIETNAM_PROVINCES, getDistrictsByProvince } from "../../utils/vietnamAddresses";
 import { usePreviousAddresses } from "../../hooks/usePreviousAddresses";
+import { useCustomerDeliveryAddresses } from "../../hooks/useCustomerDeliveryAddresses";
 import HistoryIcon from "@mui/icons-material/History";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
@@ -42,6 +43,9 @@ export default function CheckoutScreen() {
   const cart = useSelector((state: RootState) => state.cart.cart);
   const customer = useSelector((state: RootState) => state.customerAuth?.customer);
   const itemPromotionsRedux = useSelector((state: RootState) => state.cart.itemPromotions);
+
+  // Fetch saved delivery addresses
+  const { deliveryAddresses, loading: loadingSavedAddresses } = useCustomerDeliveryAddresses(customer?.id);
 
   // Lấy sản phẩm từ "Mua ngay"
   const directProduct = (location.state as any)?.directProduct;
@@ -63,6 +67,9 @@ export default function CheckoutScreen() {
   // Previous addresses states
   const { addresses: previousAddresses, loading: loadingAddresses } = usePreviousAddresses(customer?.id?.toString());
   const [showPreviousAddresses, setShowPreviousAddresses] = useState(false);
+
+  // Saved delivery address selection
+  const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<number | null>(null);
 
   // Get districts for selected province
   const availableDistricts = selectedProvince
@@ -147,6 +154,54 @@ export default function CheckoutScreen() {
     }
 
     setShowPreviousAddresses(false);
+  };
+
+  // Handle selecting a saved delivery address
+  const handleSelectSavedAddress = (address: typeof deliveryAddresses[0]) => {
+    setSelectedSavedAddressId(address.id);
+    
+    // Set form data from saved address
+    setFormData(prev => ({
+      ...prev,
+      receiverName: address.recipientName,
+      receiverPhoneNumber: address.phone,
+    }));
+
+    // Parse fullAddress: e.g., "street, ward, district, province"
+    // AddDeliveryForm format stores it as: street, ward, district, province
+    const parts = address.fullAddress.split(",").map(p => p.trim());
+    
+    if (parts.length >= 2) {
+      // Last part is province name
+      const provinceName = parts[parts.length - 1];
+      const districtName = parts.length >= 3 ? parts[parts.length - 2] : "";
+      const street = parts.slice(0, parts.length - 2).join(", ").trim();
+
+      // Find matching province
+      const matchingProvince = VIETNAM_PROVINCES.find(
+        p => p.name.toUpperCase() === provinceName.toUpperCase()
+      );
+
+      if (matchingProvince) {
+        setSelectedProvince(matchingProvince.id);
+        
+        // Find matching district
+        if (districtName) {
+          const districts = getDistrictsByProvince(matchingProvince.id);
+          const matchingDistrict = districts.find(
+            d => d.name.toUpperCase() === districtName.toUpperCase()
+          );
+          
+          if (matchingDistrict) {
+            setSelectedDistrict(matchingDistrict.id);
+          } else {
+            setSelectedDistrict("");
+          }
+        }
+      }
+
+      setStreetAddress(street);
+    }
   };
 
   const validateForm = (): boolean => {
@@ -382,6 +437,89 @@ export default function CheckoutScreen() {
           {/* Shipping Information Card */}
           <Card sx={{ mb: 3, borderRadius: 2 }}>
             <CardContent>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                <Typography variant="h6" fontWeight="bold">
+                  🏠 Thông tin giao hàng
+                </Typography>
+                {deliveryAddresses.length > 0 && (
+                  <Chip
+                    label={`📌 ${deliveryAddresses.length} địa chỉ đã lưu`}
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                  />
+                )}
+              </Box>
+
+              {/* Saved Delivery Addresses Section */}
+              {deliveryAddresses.length > 0 && (
+                <Box sx={{ mb: 3, p: 2, bgcolor: "#f0f8ff", borderRadius: 1, border: "1px solid #b3d9ff" }}>
+                  <Typography variant="subtitle2" fontWeight={600} mb={2}>
+                    📌 Chọn một địa chỉ đã lưu:
+                  </Typography>
+                  <Stack spacing={1.5}>
+                    {deliveryAddresses.map((addr) => (
+                      <Paper
+                        key={addr.id}
+                        sx={{
+                          p: 1.5,
+                          cursor: "pointer",
+                          border: selectedSavedAddressId === addr.id ? "2px solid #1976d2" : "1px solid #ddd",
+                          borderRadius: 1,
+                          transition: "all 0.3s",
+                          backgroundColor: selectedSavedAddressId === addr.id ? "#e3f2fd" : "transparent",
+                          "&:hover": {
+                            bgcolor: "#e3f2fd",
+                            borderColor: "#1976d2",
+                            boxShadow: "0 2px 8px rgba(25, 118, 210, 0.1)",
+                          },
+                        }}
+                        onClick={() => handleSelectSavedAddress(addr)}
+                      >
+                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                          <Box sx={{ flex: 1 }}>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                              <Typography variant="body2" fontWeight={600}>
+                                {addr.recipientName}
+                              </Typography>
+                              {addr.isDefault && (
+                                <Chip label="Mặc định" size="small" color="success" variant="outlined" />
+                              )}
+                            </Box>
+                            <Typography variant="caption" color="textSecondary" sx={{ display: "block", mt: 0.5 }}>
+                              📞 {addr.phone}
+                            </Typography>
+                            <Typography variant="body2" sx={{ mt: 1, color: "#555" }}>
+                              {addr.fullAddress}
+                            </Typography>
+                          </Box>
+                          {selectedSavedAddressId === addr.id && (
+                            <Chip
+                              label="✓ Đã chọn"
+                              size="small"
+                              color="success"
+                              variant="filled"
+                              sx={{ ml: 1, flexShrink: 0 }}
+                            />
+                          )}
+                        </Box>
+                      </Paper>
+                    ))}
+                  </Stack>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="caption" color="textSecondary">
+                    💡 Nhấp vào một địa chỉ để sử dụng hoặc điền thông tin thủ công bên dưới
+                  </Typography>
+                </Box>
+              )}
+
+              {loadingSavedAddresses && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+                  <CircularProgress size={20} />
+                  <Typography variant="caption">Đang tải danh sách địa chỉ đã lưu...</Typography>
+                </Box>
+              )}
+
               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
                 <Typography variant="h6" fontWeight="bold">
                   🏠 Thông tin giao hàng
@@ -813,11 +951,11 @@ export default function CheckoutScreen() {
                 <Button
                   fullWidth
                   variant="outlined"
-                  onClick={() => navigate("/cart")}
+                  onClick={() => navigate(-1)}
                   disabled={isLoading}
                   sx={{ textTransform: "none" }}
                 >
-                  ← Quay lại giỏ hàng
+                  ← Quay lại
                 </Button>
                 <Button
                   fullWidth
