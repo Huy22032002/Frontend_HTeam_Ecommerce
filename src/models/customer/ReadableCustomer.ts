@@ -5,6 +5,7 @@ export interface ReadableCustomer {
   dateOfBirth: string;
   emailAddress: string;
   username: string;
+  phone: string;
   anonymous: boolean;
   roles: string[];
 }

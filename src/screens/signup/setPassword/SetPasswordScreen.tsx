@@ -5,6 +5,8 @@ import AuthLayout from "../../../components/auth/Layout";
 import { signUpByPhone } from "../../../api/customer/CustomerAuth";
 import type { LoginResponse } from "../../../models/auths/LoginResponse";
 import { useDispatch } from "react-redux";
+import { CustomerApi } from "../../../api/customer/CustomerApi";
+import { login } from "../../../store/customerSlice";
 
 const SetPasswordScreen = () => {
   //redux
@@ -43,6 +45,12 @@ const SetPasswordScreen = () => {
         password
       );
       if (result) {
+        // fetch customer ngay sau khi signup
+        const customer = await CustomerApi.getById(result.id.toString());
+        //luu vao redux
+        if (customer) {
+          dispatch(login(customer));
+        }
         navigate("/");
       } else {
         setError("Đã có lỗi xảy ra, vui lòng thử lại");

@@ -2,6 +2,7 @@ const backendEndpoint = import.meta.env.VITE_BASE_URL;
 
 import axios from "axios";
 import type { ReadableCustomer } from "../../models/customer/ReadableCustomer";
+import type { UpdateCustomer } from "../../models/customer/UpdateCustomer";
 
 function getAuthHeader() {
   const token = localStorage.getItem("token");
@@ -20,8 +21,31 @@ export const CustomerApi = {
       );
       return response.data;
     } catch (error: any) {
-      console.error("Failed to fetch customer:", error?.response?.data || error?.message);
+      console.error(
+        "Failed to fetch customer:",
+        error?.response?.data || error?.message
+      );
       return null;
     }
+  },
+  updateInfo(id: number, data: UpdateCustomer) {
+    return axios.put(`${backendEndpoint}/api/customers/${id}`, data, {
+      headers: getAuthHeader(),
+      withCredentials: true,
+    });
+  },
+  changePassword(id: number, currentPassword: string, newPassword: string) {
+    const data = {
+      oldPassword: currentPassword,
+      newPassword: newPassword,
+    };
+
+    return axios.post(
+      `${backendEndpoint}/api/customers/${id}/change-password`,
+      data,
+      {
+        headers: getAuthHeader(),
+      }
+    );
   },
 };

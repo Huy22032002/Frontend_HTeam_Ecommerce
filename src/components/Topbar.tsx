@@ -2,15 +2,7 @@ import { useContext, useEffect, useState } from "react";
 
 import { ColorModeContext, tokens } from "../theme/theme";
 
-import {
-  Box,
-  Button,
-  IconButton,
-  Menu,
-  Typography,
-  useTheme,
-  MenuItem as MuiMenuItem,
-} from "@mui/material";
+import { Box, Button, IconButton, Typography, useTheme } from "@mui/material";
 import InputBase from "@mui/material/InputBase";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
@@ -18,8 +10,6 @@ import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import SearchIcon from "@mui/icons-material/Search";
-import LogoutIcon from "@mui/icons-material/Logout";
-import HistoryIcon from "@mui/icons-material/History";
 
 import { useNavigate } from "react-router-dom";
 
@@ -28,7 +18,7 @@ import { CustomerApi } from "../api/customer/CustomerApi";
 //redux
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../store/store";
-import { login, logout } from "../store/customerSlice";
+import { login } from "../store/customerSlice";
 import CartPopup from "./cart/CartPopup";
 import { CartApi } from "../api/cart/cartApi";
 import { setCart } from "../store/cartSlice";
@@ -68,10 +58,7 @@ const Topbar: React.FC = () => {
   };
 
   const [openCartPopup, setOpenCartPopup] = useState(false);
-  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(
-    null
-  );
-  const openUserMenu = Boolean(userMenuAnchor);
+
   const [searchInput, setSearchInput] = useState("");
 
   //get or create Cart
@@ -166,48 +153,22 @@ const Topbar: React.FC = () => {
         {user ? (
           <Box display="flex" alignItems="center" gap={1}>
             <Typography
+              onClick={() => navigate("/customer/account-info")}
               variant="body1"
               fontWeight="bold"
               sx={{
                 color: colors.primary[100],
                 cursor: "pointer",
-                "&:hover": { textDecoration: "underline" },
+                p: 1,
+                "&:hover": {
+                  background: colors.blueAccent[900],
+                  borderRadius: 4,
+                  boxSizing: "border-box",
+                },
               }}
-              onClick={(e) => setUserMenuAnchor(e.currentTarget)}
             >
               {user.name || user.username}
             </Typography>
-
-            {/* User Menu Dropdown */}
-            <Menu
-              anchorEl={userMenuAnchor}
-              open={openUserMenu}
-              onClose={() => setUserMenuAnchor(null)}
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              transformOrigin={{ vertical: "top", horizontal: "right" }}
-            >
-              <MuiMenuItem
-                onClick={() => {
-                  navigate("/order-history");
-                  setUserMenuAnchor(null);
-                }}
-                sx={{ display: "flex", gap: 1 }}
-              >
-                <HistoryIcon fontSize="small" />
-                <Typography>Lịch sử đơn hàng</Typography>
-              </MuiMenuItem>
-              <MuiMenuItem
-                onClick={() => {
-                  dispatch(logout());
-                  navigate("/login");
-                  setUserMenuAnchor(null);
-                }}
-                sx={{ display: "flex", gap: 1 }}
-              >
-                <LogoutIcon fontSize="small" />
-                <Typography>Đăng xuất</Typography>
-              </MuiMenuItem>
-            </Menu>
           </Box>
         ) : (
           <Button
@@ -280,27 +241,12 @@ const Topbar: React.FC = () => {
           </Typography>
         </Button>
 
-        {/* Popup */}
+        {/* Cart Popup */}
         <CartPopup
           open={openCartPopup}
           cartItems={cart?.items || []}
           onClose={() => setOpenCartPopup(false)}
         />
-        <Menu
-          anchorEl={null}
-          open={false}
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          transformOrigin={{ vertical: "top", horizontal: "right" }}
-        >
-          <MuiMenuItem>
-            <IconButton
-              sx={{ display: "flex", flexDirection: "row", gap: "4px" }}
-            >
-              <LogoutIcon />
-              <Typography>Log out</Typography>
-            </IconButton>
-          </MuiMenuItem>
-        </Menu>
       </Box>
     </Box>
   );
