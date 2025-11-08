@@ -62,7 +62,6 @@ function AppContent() {
             element={<ProductsByCategory />}
           />
           <Route path="/checkout" element={<CheckoutScreen />} />
-          <Route path="/order-history" element={<OrderHistoryScreen />} />
           <Route
             path="/product/:variantId"
             element={<ProductVariantDetail />}

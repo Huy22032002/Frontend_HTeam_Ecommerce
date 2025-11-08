@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import {
@@ -33,23 +32,30 @@ import { useOrderHistory } from "../../../hooks/useOrderHistory";
 import { formatCurrency } from "../../../utils/formatCurrency";
 import { OrderApi } from "../../../api/order/OrderApi";
 import type { OrderReadableDTO } from "../../../models/orders/Order";
+import useOrderHistoryy from "./OrderHistory.hook";
 
 const OrderHistoryScreen = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const { orders, isLoading, error } = useOrderHistory();
 
-  // Dialog state
-  const [selectedOrder, setSelectedOrder] = useState<OrderReadableDTO | null>(null);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [openCancelRestrictionDialog, setOpenCancelRestrictionDialog] = useState(false);
-  const [cancelRestrictionMessage, setCancelRestrictionMessage] = useState("");
-  const [cancelLoading, setCancelLoading] = useState(false);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
-    open: false,
-    message: '',
-    severity: 'success',
-  });
+  const {
+    selectedOrder,
+    setSelectedOrder,
+    openDialog,
+    setOpenDialog,
+    cancelLoading,
+    setCancelLoading,
+    cancelRestrictionMessage,
+    setCancelRestrictionMessage,
+    openCancelRestrictionDialog,
+    setOpenCancelRestrictionDialog,
+    snackbar,
+    setSnackbar,
+    //color / label render
+    getStatusColor,
+    getStatusLabel,
+  } = useOrderHistoryy();
 
   const customer = useSelector(
     (state: RootState) => state.customerAuth?.customer
@@ -153,70 +159,28 @@ const OrderHistoryScreen = () => {
     }
   };
 
-  const getStatusColor = (
-    status: string
-  ): "default" | "primary" | "secondary" | "error" | "warning" | "info" | "success" => {
-    switch (status) {
-      case "PENDING":
-        return "warning";
-      case "APPROVED":
-        return "info";
-      case "PROCESSING":
-        return "info";
-      case "SHIPPING":
-        return "warning";
-      case "DELIVERED":
-        return "success";
-      case "PAID":
-        return "success";
-      case "CANCELLED":
-        return "error";
-      case "REFUNDED":
-        return "error";
-      case "PARTIALLY_REFUNDED":
-        return "warning";
-      default:
-        return "default";
-    }
-  };
-
-  const getStatusLabel = (status: string): string => {
-    switch (status) {
-      case "PENDING":
-        return "Chờ xác nhận";
-      case "APPROVED":
-        return "Đã xác nhận";
-      case "PROCESSING":
-        return "Đang xử lý";
-      case "SHIPPING":
-        return "Đang giao";
-      case "DELIVERED":
-        return "Đã giao";
-      case "PAID":
-        return "Đã thanh toán";
-      case "CANCELLED":
-        return "Đã hủy";
-      case "REFUNDED":
-        return "Hoàn tiền";
-      case "PARTIALLY_REFUNDED":
-        return "Hoàn một phần";
-      default:
-        return status;
-    }
-  };
-
   return (
-    <Box sx={{ bgcolor: "#f8f9fa", minHeight: "100vh", py: 4 }}>
-      <Box sx={{ px: { xs: 2, sm: 4, md: 6, lg: 20 }, maxWidth: "1400px", mx: "auto" }}>
+    <Box
+      sx={{
+        flex: 1,
+        width: "100%",
+        maxWidth: 1000,
+        background: "white",
+        p: { xs: 1, sm: 2, md: 3 },
+        borderRadius: 2,
+        boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+        mx: "auto", // căn giữa
+      }}
+    >
+      <Box
+        sx={{
+          px: { xs: 2, sm: 3, md: 4, lg: 6 },
+          maxWidth: "1400px",
+          mx: "auto",
+        }}
+      >
         {/* Header */}
         <Box sx={{ mb: 4, display: "flex", alignItems: "center", gap: 2 }}>
-          {/* <Button
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate("/")}
-            sx={{ textTransform: "none" }}
-          >
-            Quay lại
-          </Button> */}
           <Typography variant="h4" fontWeight="bold">
             📦 Lịch sử đơn hàng
           </Typography>
@@ -262,7 +226,10 @@ const OrderHistoryScreen = () => {
               </Card>
             ) : (
               /* Orders Table */
-              <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+              <TableContainer
+                component={Paper}
+                sx={{ borderRadius: 2, width: "100%", overflowX: "auto" }}
+              >
                 <Table sx={{ minWidth: 700 }}>
                   <TableHead
                     sx={{

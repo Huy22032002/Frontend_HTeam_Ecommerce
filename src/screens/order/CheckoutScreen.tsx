@@ -1,6 +1,4 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useEffect } from "react";
 import {
   Box,
   Typography,
@@ -15,390 +13,74 @@ import {
   Alert,
   CircularProgress,
   Stack,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Paper,
   Chip,
 } from "@mui/material";
-import type { RootState } from "../../store/store";
-import { clearCart } from "../../store/cartSlice";
-import { OrderApi } from "../../api/order/OrderApi";
-import type { CreateOrderRequest } from "../../models/orders/CreateOrderRequest";
 import { formatCurrency } from "../../utils/formatCurrency";
-import { VIETNAM_PROVINCES, getDistrictsByProvince } from "../../utils/vietnamAddresses";
-import { usePreviousAddresses } from "../../hooks/usePreviousAddresses";
-import { useCustomerDeliveryAddresses } from "../../hooks/useCustomerDeliveryAddresses";
 import HistoryIcon from "@mui/icons-material/History";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import useCheckout from "./Checkout.hook";
+import { useNavigate } from "react-router-dom";
 
 export default function CheckoutScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const dispatch = useDispatch();
 
-  // Redux state
-  const cart = useSelector((state: RootState) => state.cart.cart);
-  const customer = useSelector((state: RootState) => state.customerAuth?.customer);
-  const itemPromotionsRedux = useSelector((state: RootState) => state.cart.itemPromotions);
-
-  // Fetch saved delivery addresses
-  const { deliveryAddresses, loading: loadingSavedAddresses } = useCustomerDeliveryAddresses(customer?.id);
-
-  // Lấy sản phẩm từ "Mua ngay"
-  const directProduct = (location.state as any)?.directProduct;
-
-  // Form state
-  const [formData, setFormData] = useState({
-    receiverName: "",
-    receiverPhoneNumber: "",
-    shippingAddress: "",
-    notes: "",
-    paymentMethod: "CASH" as "CASH" | "TRANSFER" | "CARD" | "E_WALLET",
-  });
-
-  // Address states
-  const [selectedProvince, setSelectedProvince] = useState<string>("");
-  const [selectedDistrict, setSelectedDistrict] = useState<string>("");
-  const [streetAddress, setStreetAddress] = useState("");
-
-  // Previous addresses states
-  const { addresses: previousAddresses, loading: loadingAddresses } = usePreviousAddresses(customer?.id?.toString());
-  const [showPreviousAddresses, setShowPreviousAddresses] = useState(false);
-
-  // Saved delivery address selection
-  const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<number | null>(null);
-
-  // Get districts for selected province
-  const availableDistricts = selectedProvince
-    ? getDistrictsByProvince(selectedProvince)
-    : [];
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const {
+    qrCode,
+    //state address
+    listAddress,
+    streetAddress,
+    showListAddresses,
+    setShowListAddresses,
+    setStreetAddress,
+    //handle
+    handleInputChange,
+    handleSubmitOrder,
+    handleSelecteAddress,
+    //form data
+    formData,
+    setFormData,
+    //error
+    successMessage,
+    setSuccessMessage,
+    isLoading,
+    error,
+    setError,
+    //direct product & cart
+    directProduct,
+    cart,
+    //subtotal discount
+    discount,
+    subtotal,
+    finalTotal,
+  } = useCheckout();
 
   // Initialize form with customer data
   useEffect(() => {
-    if (customer) {
-      setFormData((prev) => ({
-        ...prev,
-        receiverName: customer.name || "",
-      }));
-    }
-  }, [customer]);
+    if (listAddress && listAddress.length > 0) {
+      const defaultAddr = listAddress.find((addr) => addr.isDefault);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+      if (defaultAddr) {
+        setFormData((prev) => ({
+          ...prev,
+          receiverName: defaultAddr.recipientName || "",
+          receiverPhoneNumber: defaultAddr.phone || "",
+        }));
+
+        setStreetAddress(defaultAddr.fullAddress || "");
+      }
+    }
+  }, [listAddress]);
 
   const handlePaymentMethodChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     setFormData((prev) => ({
       ...prev,
-      paymentMethod: e.target.value as
-        | "CASH"
-        | "TRANSFER"
-        | "CARD"
-        | "E_WALLET",
+      paymentMethod: e.target.value as "CASH" | "TRANSFER" | "CARD" | "MOMO",
     }));
   };
-
-  // Handle selecting a previous address
-  const handleSelectPreviousAddress = (address: typeof previousAddresses[0]) => {
-    setFormData(prev => ({
-      ...prev,
-      receiverPhoneNumber: address.phoneNumber,
-    }));
-
-    // Try to parse the address - it's typically: "street, district, province"
-    const parts = address.shippingAddress.split(', ');
-    
-    if (parts.length >= 3) {
-      const provinceName = parts[parts.length - 1].trim();
-      const districtName = parts[parts.length - 2].trim();
-      const street = parts.slice(0, parts.length - 2).join(', ').trim();
-
-      // Find matching province ID
-      const matchingProvince = VIETNAM_PROVINCES.find(
-        p => p.name.toUpperCase() === provinceName.toUpperCase()
-      );
-      
-      if (matchingProvince) {
-        setSelectedProvince(matchingProvince.id);
-        
-        // Find matching district
-        const districts = getDistrictsByProvince(matchingProvince.id);
-        const matchingDistrict = districts.find(
-          d => d.name.toUpperCase() === districtName.toUpperCase()
-        );
-        
-        if (matchingDistrict) {
-          setSelectedDistrict(matchingDistrict.id);
-        }
-      }
-
-      setStreetAddress(street);
-    } else {
-      // Fallback: use the whole address as street address
-      setStreetAddress(address.shippingAddress);
-    }
-
-    setShowPreviousAddresses(false);
-  };
-
-  // Handle selecting a saved delivery address
-  const handleSelectSavedAddress = (address: typeof deliveryAddresses[0]) => {
-    setSelectedSavedAddressId(address.id);
-    
-    // Set form data from saved address
-    setFormData(prev => ({
-      ...prev,
-      receiverName: address.recipientName,
-      receiverPhoneNumber: address.phone,
-    }));
-
-    // Parse fullAddress: e.g., "street, ward, district, province"
-    // AddDeliveryForm format stores it as: street, ward, district, province
-    const parts = address.fullAddress.split(",").map(p => p.trim());
-    
-    if (parts.length >= 2) {
-      // Last part is province name
-      const provinceName = parts[parts.length - 1];
-      const districtName = parts.length >= 3 ? parts[parts.length - 2] : "";
-      const street = parts.slice(0, parts.length - 2).join(", ").trim();
-
-      // Find matching province
-      const matchingProvince = VIETNAM_PROVINCES.find(
-        p => p.name.toUpperCase() === provinceName.toUpperCase()
-      );
-
-      if (matchingProvince) {
-        setSelectedProvince(matchingProvince.id);
-        
-        // Find matching district
-        if (districtName) {
-          const districts = getDistrictsByProvince(matchingProvince.id);
-          const matchingDistrict = districts.find(
-            d => d.name.toUpperCase() === districtName.toUpperCase()
-          );
-          
-          if (matchingDistrict) {
-            setSelectedDistrict(matchingDistrict.id);
-          } else {
-            setSelectedDistrict("");
-          }
-        }
-      }
-
-      setStreetAddress(street);
-    }
-  };
-
-  const validateForm = (): boolean => {
-    if (!formData.receiverName.trim()) {
-      setError("Vui lòng nhập họ và tên");
-      return false;
-    }
-    if (!formData.receiverPhoneNumber.trim()) {
-      setError("Vui lòng nhập số điện thoại");
-      return false;
-    }
-    if (!selectedProvince) {
-      setError("Vui lòng chọn Tỉnh/Thành phố");
-      return false;
-    }
-    if (!selectedDistrict) {
-      setError("Vui lòng chọn Quận/Huyện");
-      return false;
-    }
-    if (!streetAddress.trim()) {
-      setError("Vui lòng nhập số nhà, đường phố");
-      return false;
-    }
-    // Kiểm tra giỏ hàng hoặc sản phẩm mua ngay
-    if (!directProduct && (!cart?.items || cart.items.length === 0)) {
-      setError("Giỏ hàng trống");
-      return false;
-    }
-    return true;
-  };
-
-  const handleSubmitOrder = async () => {
-    if (!validateForm()) {
-      return;
-    }
-
-    if (!customer?.id) {
-      setError("Vui lòng đăng nhập để tiếp tục");
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      setError(null);
-      setSuccessMessage(null);
-
-      // Build full address from province, district, and street
-      const provinceName =
-        VIETNAM_PROVINCES.find((p) => p.id === selectedProvince)?.name || "";
-      const districtName =
-        availableDistricts.find((d) => d.id === selectedDistrict)?.name || "";
-
-      const fullAddress = [streetAddress, districtName, provinceName]
-        .filter(Boolean)
-        .join(", ");
-
-      // Chuyển đổi cart items thành order items hoặc sử dụng sản phẩm từ "Mua ngay"
-      let items;
-      let totalAmount;
-
-      if (directProduct) {
-        // Từ "Mua ngay" - không gửi customerCartCode
-        const directProductPromotion = itemPromotionsRedux[directProduct.optionId];
-        const orderItem: any = {
-          variantId: directProduct.optionId,
-          productVariantOptionId: directProduct.optionId,
-          sku: directProduct.sku,
-          productName: directProduct.name,
-          quantity: directProduct.quantity,
-          price: directProduct.currentPrice,
-        };
-
-        // Add promotion info if exists
-        if (directProductPromotion) {
-          orderItem.promotionId = directProductPromotion.id;
-          const itemTotal = directProduct.currentPrice * directProduct.quantity;
-          if (directProductPromotion.discountPercentage) {
-            orderItem.discountAmount = (itemTotal * directProductPromotion.discountPercentage) / 100;
-          } else if (directProductPromotion.discountAmount) {
-            orderItem.discountAmount = directProductPromotion.discountAmount;
-          }
-        }
-
-        items = [orderItem];
-        totalAmount = finalTotal; // Use final total after discount
-      } else {
-        // Từ giỏ hàng
-        items = (cart?.items || []).map(item => {
-          const promotion = itemPromotionsRedux[item.id!];
-          const orderItem: any = {
-            variantId: item.optionId,
-            productVariantOptionId: item.optionId,
-            sku: item.sku,
-            productName: item.productName,
-            quantity: item.quantity,
-            price: item.currentPrice,
-          };
-
-          // Add promotion info if exists
-          if (promotion) {
-            orderItem.promotionId = promotion.id;
-            const itemTotal = item.currentPrice * item.quantity;
-            if (promotion.discountPercentage) {
-              orderItem.discountAmount = (itemTotal * promotion.discountPercentage) / 100;
-            } else if (promotion.discountAmount) {
-              orderItem.discountAmount = promotion.discountAmount;
-            }
-          }
-
-          return orderItem;
-        });
-        totalAmount = finalTotal; // Use final total after discount
-      }
-
-      const orderRequest: CreateOrderRequest = {
-        customerId: customer.id,
-        items,
-        paymentMethod: formData.paymentMethod,
-        notes: formData.notes || "",
-        shippingAddress: fullAddress,
-        receiverName: formData.receiverName,
-        receiverPhoneNumber: formData.receiverPhoneNumber,
-        totalAmount,
-        ...(directProduct ? {} : { customerCartCode: cart?.cartCode || "" }),
-      };
-
-      console.log("📤 Order request gửi lên:", JSON.stringify(orderRequest, null, 2));
-
-      const response = await OrderApi.createByCustomer(orderRequest as any);
-
-      if (response.status === 200 || response.status === 201) {
-        setSuccessMessage("✅ Tạo đơn hàng thành công!");
-        
-        // Xoá cart items từ Redux nếu checkout từ giỏ hàng
-        if (!directProduct && cart?.cartCode) {
-          dispatch(clearCart());
-        }
-        
-        // Chuyển hướng sau 2 giây
-        setTimeout(() => {
-          navigate("/order-history", { replace: true });
-        }, 2000);
-      }
-    } catch (err: any) {
-      const errorMessage =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Có lỗi xảy ra khi tạo đơn hàng";
-      setError(errorMessage);
-      console.error("Checkout error:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Tính tổng tiền
-  const subtotal = directProduct
-    ? directProduct.currentPrice * directProduct.quantity
-    : cart?.items?.reduce(
-        (sum, item) => sum + item.currentPrice * item.quantity,
-        0
-      ) || 0;
-
-  // Calculate discount from promotions
-  const calculateTotalDiscount = () => {
-    let totalDiscount = 0;
-    
-    // Kiểm tra promotion cho "Mua ngay"
-    if (directProduct) {
-      const directProductPromotion = itemPromotionsRedux[directProduct.optionId];
-      if (directProductPromotion) {
-        const itemTotal = directProduct.currentPrice * directProduct.quantity;
-        if (directProductPromotion.discountPercentage) {
-          totalDiscount += (itemTotal * directProductPromotion.discountPercentage) / 100;
-        } else if (directProductPromotion.discountAmount) {
-          totalDiscount += directProductPromotion.discountAmount;
-        }
-      }
-    } else if (cart?.items) {
-      // Kiểm tra promotion cho giỏ hàng
-      cart.items.forEach((item) => {
-        const promotion = itemPromotionsRedux[item.id!];
-        if (promotion) {
-          const itemTotal = item.currentPrice * item.quantity;
-          if (promotion.discountPercentage) {
-            totalDiscount += (itemTotal * promotion.discountPercentage) / 100;
-          } else if (promotion.discountAmount) {
-            totalDiscount += promotion.discountAmount;
-          }
-        }
-      });
-    }
-    return totalDiscount;
-  };
-
-  const discount = calculateTotalDiscount();
-  const finalTotal = subtotal - discount;
 
   return (
     <Box sx={{ bgcolor: "#f8f9fa", minHeight: "100vh", py: 4 }}>
@@ -437,114 +119,57 @@ export default function CheckoutScreen() {
           {/* Shipping Information Card */}
           <Card sx={{ mb: 3, borderRadius: 2 }}>
             <CardContent>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 3,
+                }}
+              >
                 <Typography variant="h6" fontWeight="bold">
                   🏠 Thông tin giao hàng
                 </Typography>
-                {deliveryAddresses.length > 0 && (
-                  <Chip
-                    label={`📌 ${deliveryAddresses.length} địa chỉ đã lưu`}
-                    size="small"
-                    color="primary"
-                    variant="outlined"
-                  />
-                )}
-              </Box>
-
-              {/* Saved Delivery Addresses Section */}
-              {deliveryAddresses.length > 0 && (
-                <Box sx={{ mb: 3, p: 2, bgcolor: "#f0f8ff", borderRadius: 1, border: "1px solid #b3d9ff" }}>
-                  <Typography variant="subtitle2" fontWeight={600} mb={2}>
-                    📌 Chọn một địa chỉ đã lưu:
-                  </Typography>
-                  <Stack spacing={1.5}>
-                    {deliveryAddresses.map((addr) => (
-                      <Paper
-                        key={addr.id}
-                        sx={{
-                          p: 1.5,
-                          cursor: "pointer",
-                          border: selectedSavedAddressId === addr.id ? "2px solid #1976d2" : "1px solid #ddd",
-                          borderRadius: 1,
-                          transition: "all 0.3s",
-                          backgroundColor: selectedSavedAddressId === addr.id ? "#e3f2fd" : "transparent",
-                          "&:hover": {
-                            bgcolor: "#e3f2fd",
-                            borderColor: "#1976d2",
-                            boxShadow: "0 2px 8px rgba(25, 118, 210, 0.1)",
-                          },
-                        }}
-                        onClick={() => handleSelectSavedAddress(addr)}
-                      >
-                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                          <Box sx={{ flex: 1 }}>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                              <Typography variant="body2" fontWeight={600}>
-                                {addr.recipientName}
-                              </Typography>
-                              {addr.isDefault && (
-                                <Chip label="Mặc định" size="small" color="success" variant="outlined" />
-                              )}
-                            </Box>
-                            <Typography variant="caption" color="textSecondary" sx={{ display: "block", mt: 0.5 }}>
-                              📞 {addr.phone}
-                            </Typography>
-                            <Typography variant="body2" sx={{ mt: 1, color: "#555" }}>
-                              {addr.fullAddress}
-                            </Typography>
-                          </Box>
-                          {selectedSavedAddressId === addr.id && (
-                            <Chip
-                              label="✓ Đã chọn"
-                              size="small"
-                              color="success"
-                              variant="filled"
-                              sx={{ ml: 1, flexShrink: 0 }}
-                            />
-                          )}
-                        </Box>
-                      </Paper>
-                    ))}
-                  </Stack>
-                  <Divider sx={{ my: 2 }} />
-                  <Typography variant="caption" color="textSecondary">
-                    💡 Nhấp vào một địa chỉ để sử dụng hoặc điền thông tin thủ công bên dưới
-                  </Typography>
-                </Box>
-              )}
-
-              {loadingSavedAddresses && (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-                  <CircularProgress size={20} />
-                  <Typography variant="caption">Đang tải danh sách địa chỉ đã lưu...</Typography>
-                </Box>
-              )}
-
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-                <Typography variant="h6" fontWeight="bold">
-                  🏠 Thông tin giao hàng
-                </Typography>
-                {previousAddresses.length > 0 && (
+                {listAddress.length > 0 && (
                   <Button
                     size="small"
-                    startIcon={showPreviousAddresses ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                    onClick={() => setShowPreviousAddresses(!showPreviousAddresses)}
-                    sx={{ textTransform: "none", fontSize: "0.85rem", color: "#1976d2" }}
+                    startIcon={
+                      showListAddresses ? (
+                        <ExpandLessIcon />
+                      ) : (
+                        <ExpandMoreIcon />
+                      )
+                    }
+                    onClick={() => setShowListAddresses(!showListAddresses)}
+                    sx={{
+                      textTransform: "none",
+                      fontSize: "0.85rem",
+                      color: "#1976d2",
+                    }}
                   >
                     <HistoryIcon sx={{ mr: 0.5, fontSize: "1rem" }} />
-                    {showPreviousAddresses ? "Ẩn" : "Xem"} địa chỉ cũ ({previousAddresses.length})
+                    {showListAddresses ? "Ẩn" : "Chọn"} địa chỉ khác (
+                    {listAddress.length})
                   </Button>
                 )}
               </Box>
 
-              {/* Previous Addresses Section */}
-              {showPreviousAddresses && previousAddresses.length > 0 && (
-                <Box sx={{ mb: 3, p: 2, bgcolor: "#f5f5f5", borderRadius: 1, border: "1px solid #ddd" }}>
+              {/* List Customer Delivery Addresses Section */}
+              {showListAddresses && listAddress.length > 0 && (
+                <Box
+                  sx={{
+                    mb: 3,
+                    p: 2,
+                    bgcolor: "#f5f5f5",
+                    borderRadius: 1,
+                    border: "1px solid #ddd",
+                  }}
+                >
                   <Typography variant="subtitle2" fontWeight={600} mb={2}>
-                    📋 Chọn một trong những địa chỉ đã giao hàng trước:
+                    📋 Chọn một trong những địa chỉ giao hàng của bạn:
                   </Typography>
                   <Stack spacing={1.5}>
-                    {previousAddresses.map((addr) => (
+                    {listAddress.map((addr) => (
                       <Paper
                         key={addr.id}
                         sx={{
@@ -559,18 +184,31 @@ export default function CheckoutScreen() {
                             boxShadow: "0 2px 8px rgba(25, 118, 210, 0.1)",
                           },
                         }}
-                        onClick={() => handleSelectPreviousAddress(addr)}
+                        onClick={() => handleSelecteAddress(addr)}
                       >
-                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "flex-start",
+                          }}
+                        >
                           <Box sx={{ flex: 1 }}>
                             <Typography variant="body2" fontWeight={600}>
-                              {addr.fullName || "Không rõ"}
+                              {addr.recipientName || "Không rõ"}
                             </Typography>
-                            <Typography variant="caption" color="textSecondary" sx={{ display: "block", mt: 0.5 }}>
-                              📞 {addr.phoneNumber}
+                            <Typography
+                              variant="caption"
+                              color="textSecondary"
+                              sx={{ display: "block", mt: 0.5 }}
+                            >
+                              📞 {addr.phone}
                             </Typography>
-                            <Typography variant="body2" sx={{ mt: 1, color: "#555" }}>
-                              {addr.shippingAddress}
+                            <Typography
+                              variant="body2"
+                              sx={{ mt: 1, color: "#555" }}
+                            >
+                              {addr.fullAddress}
                             </Typography>
                           </Box>
                           <Chip
@@ -584,17 +222,6 @@ export default function CheckoutScreen() {
                       </Paper>
                     ))}
                   </Stack>
-                  <Divider sx={{ my: 2 }} />
-                  <Typography variant="caption" color="textSecondary">
-                    💡 Nhấp vào một địa chỉ để sử dụng lại
-                  </Typography>
-                </Box>
-              )}
-
-              {loadingAddresses && (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-                  <CircularProgress size={20} />
-                  <Typography variant="caption">Đang tải lịch sử địa chỉ...</Typography>
                 </Box>
               )}
 
@@ -608,84 +235,14 @@ export default function CheckoutScreen() {
                   disabled={isLoading}
                 />
 
-                {/* Province & District Row */}
-                <Box
-                  sx={{ display: "flex", gap: 2.5, alignItems: "flex-start" }}
-                >
-                  {/* Province Selection */}
-                  <FormControl fullWidth size="small" sx={{ flex: 1 }}>
-                    <InputLabel sx={{ color: "#666" }}>
-                      Tỉnh/Thành Phố
-                    </InputLabel>
-                    <Select
-                      label="Tỉnh/Thành Phố"
-                      value={selectedProvince}
-                      onChange={(e) => {
-                        setSelectedProvince(e.target.value as string);
-                        setSelectedDistrict("");
-                      }}
-                      disabled={isLoading}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          "&:hover fieldset": {
-                            borderColor: "#1976d2",
-                          },
-                        },
-                      }}
-                    >
-                      <MenuItem value="">
-                        <em>-- Chọn Tỉnh/Thành Phố --</em>
-                      </MenuItem>
-                      {VIETNAM_PROVINCES.map((province) => (
-                        <MenuItem key={province.id} value={province.id}>
-                          {province.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                  {/* District Selection */}
-                  <FormControl
-                    fullWidth
-                    size="small"
-                    disabled={!selectedProvince || isLoading}
-                    sx={{ flex: 1 }}
-                  >
-                    <InputLabel>Quận/Huyện</InputLabel>
-                    <Select
-                      label="Quận/Huyện"
-                      value={selectedDistrict}
-                      onChange={(e) =>
-                        setSelectedDistrict(e.target.value as string)
-                      }
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          "&:hover fieldset": {
-                            borderColor: "#1976d2",
-                          },
-                        },
-                      }}
-                    >
-                      <MenuItem value="">
-                        <em>-- Chọn Quận/Huyện --</em>
-                      </MenuItem>
-                      {availableDistricts.map((district) => (
-                        <MenuItem key={district.id} value={district.id}>
-                          {district.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
-
-                {/* Street Address */}
+                {/*full address*/}
                 <TextField
                   fullWidth
                   size="small"
-                  label="Số nhà, đường phố"
+                  label="Địa chỉ"
                   value={streetAddress}
-                  onChange={(e) => setStreetAddress(e.target.value)}
-                  placeholder="VD: 123 Đường ABC"
+                  onChange={handleInputChange}
+                  placeholder="VD: 123, Xã Sơn Bình, Huyện Tam Đường, Tỉnh Lai Châu"
                   disabled={isLoading}
                   sx={{
                     "& .MuiOutlinedInput-root": {
@@ -707,42 +264,6 @@ export default function CheckoutScreen() {
                   type="tel"
                   disabled={isLoading}
                 />
-
-                {/* Display full address preview */}
-                {selectedProvince && selectedDistrict && (
-                  <Paper
-                    sx={{
-                      p: 2,
-                      backgroundColor: "#e3f2fd",
-                      borderRadius: 1,
-                      border: "1px solid #90caf9",
-                      boxShadow: "0 2px 4px rgba(25, 118, 210, 0.1)",
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      sx={{ color: "#1565c0", fontWeight: "600" }}
-                    >
-                      ✓ Địa chỉ giao hàng:
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ mt: 0.5, color: "#1565c0", fontWeight: "500" }}
-                    >
-                      {streetAddress ? `${streetAddress}, ` : ""}
-                      {
-                        VIETNAM_PROVINCES.find((p) => p.id === selectedProvince)
-                          ?.name
-                      }
-                      ,
-                      {
-                        availableDistricts.find(
-                          (d) => d.id === selectedDistrict
-                        )?.name
-                      }
-                    </Typography>
-                  </Paper>
-                )}
               </Stack>
             </CardContent>
           </Card>
@@ -778,8 +299,21 @@ export default function CheckoutScreen() {
                   label="💵 Thanh toán khi nhận hàng (COD)"
                   disabled={isLoading}
                 />
+                {qrCode && (
+                  <img
+                    src={qrCode}
+                    alt="QR Code Momo"
+                    style={{
+                      width: 250,
+                      height: 250,
+                      marginTop: 16,
+                      borderRadius: 8,
+                      border: "2px solid #ccc",
+                    }}
+                  />
+                )}{" "}
                 <FormControlLabel
-                  value="E_WALLET"
+                  value="MOMO"
                   control={<Radio />}
                   label="📱 Ví điện tử"
                   disabled={isLoading}
@@ -900,11 +434,19 @@ export default function CheckoutScreen() {
                 </Box>
 
                 {discount > 0 && (
-                  <Box display="flex" justifyContent="space-between" sx={{ color: "#d32f2f" }}>
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    sx={{ color: "#d32f2f" }}
+                  >
                     <Typography variant="body2" color="inherit">
                       Giảm giá
                     </Typography>
-                    <Typography variant="body2" fontWeight={500} color="inherit">
+                    <Typography
+                      variant="body2"
+                      fontWeight={500}
+                      color="inherit"
+                    >
                       -{formatCurrency(discount)}
                     </Typography>
                   </Box>
@@ -934,14 +476,22 @@ export default function CheckoutScreen() {
                   p: 2,
                   bgcolor: discount > 0 ? "#fff3e0" : "#e3f2fd",
                   borderRadius: 1,
-                  border: discount > 0 ? "2px solid #f57c00" : "2px solid #1976d2",
+                  border:
+                    discount > 0 ? "2px solid #f57c00" : "2px solid #1976d2",
                   mb: 2,
                 }}
               >
-                <Typography fontWeight="bold" color={discount > 0 ? "#e65100" : "#1565c0"}>
+                <Typography
+                  fontWeight="bold"
+                  color={discount > 0 ? "#e65100" : "#1565c0"}
+                >
                   Tổng cộng
                 </Typography>
-                <Typography variant="h6" fontWeight="bold" color={discount > 0 ? "#e65100" : "#1565c0"}>
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  color={discount > 0 ? "#e65100" : "#1565c0"}
+                >
                   {formatCurrency(finalTotal)}
                 </Typography>
               </Box>
@@ -961,7 +511,10 @@ export default function CheckoutScreen() {
                   fullWidth
                   variant="contained"
                   onClick={handleSubmitOrder}
-                  disabled={isLoading || ((cart?.items?.length || 0) === 0 && !directProduct)}
+                  disabled={
+                    isLoading ||
+                    ((cart?.items?.length || 0) === 0 && !directProduct)
+                  }
                   sx={{
                     bgcolor: "#00CFFF",
                     textTransform: "none",
@@ -976,7 +529,9 @@ export default function CheckoutScreen() {
                       <span>Đang xử lý...</span>
                     </Stack>
                   ) : (
-                    `✅ Xác nhận đặt hàng (${directProduct ? '1' : cart?.items?.length || 0} sản phẩm)`
+                    `✅ Xác nhận đặt hàng (${
+                      directProduct ? "1" : cart?.items?.length || 0
+                    } sản phẩm)`
                   )}
                 </Button>
               </Stack>
