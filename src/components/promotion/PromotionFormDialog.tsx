@@ -12,6 +12,10 @@ import {
   Alert,
   Chip,
   Stack,
+  RadioGroup,
+  Radio,
+  FormControl,
+  FormLabel,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import type { PromotionReadableDTO, CreatePromotionRequest, ProductOptionDTO } from '../../models/promotions/Promotion';
@@ -48,6 +52,7 @@ export const PromotionFormDialog = ({
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<ProductOptionDTO[]>([]);
   const [openProductModal, setOpenProductModal] = useState(false);
+  const [discountType, setDiscountType] = useState<'percentage' | 'amount'>('percentage');
 
   useEffect(() => {
     if (promotion) {
@@ -62,6 +67,12 @@ export const PromotionFormDialog = ({
         applicableProductOptionSkus: promotion.applicableProductOptions?.map(p => p.sku) || [],
         applicableProductOptionIds: undefined,
       });
+      // Set discount type based on existing data
+      if (promotion.discountPercentage) {
+        setDiscountType('percentage');
+      } else if (promotion.discountAmount) {
+        setDiscountType('amount');
+      }
       if (promotion.applicableProductOptions) {
         setSelectedProducts(promotion.applicableProductOptions);
       }
@@ -102,11 +113,37 @@ export const PromotionFormDialog = ({
     if (!formData.validTo) {
       newErrors.validTo = 'Ngày kết thúc không được để trống';
     }
-    if (formData.validFrom && formData.validTo && formData.validFrom >= formData.validTo) {
-      newErrors.validTo = 'Ngày kết thúc phải sau ngày bắt đầu';
+    
+    // Validate dates
+    if (formData.validFrom) {
+      const startDate = new Date(formData.validFrom);
+      const now = new Date();
+      
+      if (startDate <= now) {
+        newErrors.validFrom = 'Ngày bắt đầu phải sau thời gian hiện tại';
+      }
     }
+    
+    if (formData.validFrom && formData.validTo) {
+      const startDate = new Date(formData.validFrom);
+      const endDate = new Date(formData.validTo);
+      
+      if (endDate <= startDate) {
+        newErrors.validTo = 'Ngày kết thúc phải sau ngày bắt đầu';
+      }
+    }
+    
+    // Validate discount value
     if (formData.discountPercentage === undefined && formData.discountAmount === undefined) {
-      newErrors.discount = 'Phải nhập phần trăm hoặc tiền giảm giá';
+      if (discountType === 'percentage') {
+        newErrors.discount = 'Vui lòng nhập phần trăm giảm giá (0-100)';
+      } else {
+        newErrors.discount = 'Vui lòng nhập số tiền giảm giá';
+      }
+    } else if (discountType === 'percentage' && (formData.discountPercentage === undefined || formData.discountPercentage <= 0 || formData.discountPercentage > 100)) {
+      newErrors.discount = 'Phần trăm giảm giá phải từ 0 đến 100';
+    } else if (discountType === 'amount' && (formData.discountAmount === undefined || formData.discountAmount <= 0)) {
+      newErrors.discount = 'Số tiền giảm giá phải lớn hơn 0';
     }
 
     setErrors(newErrors);
@@ -115,12 +152,26 @@ export const PromotionFormDialog = ({
 
   const handleInputChange = (e: any) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'discountPercentage' || name === 'discountAmount' 
-        ? value ? parseFloat(value) : undefined 
-        : value,
-    }));
+    setFormData(prev => {
+      const updated = {
+        ...prev,
+        [name]: name === 'discountPercentage' || name === 'discountAmount' 
+          ? value ? parseFloat(value) : undefined 
+          : value,
+      };
+      
+      // Clear the other discount field when one is entered
+      if (name === 'discountPercentage' && value) {
+        updated.discountAmount = undefined;
+        setDiscountType('percentage');
+      } else if (name === 'discountAmount' && value) {
+        updated.discountPercentage = undefined;
+        setDiscountType('amount');
+      }
+      
+      return updated;
+    });
+    
     // Clear error for this field
     if (errors[name]) {
       setErrors(prev => {
@@ -244,30 +295,65 @@ export const PromotionFormDialog = ({
               rows={2}
             />
 
-            <TextField
-              label="Phần trăm giảm giá (%)"
-              name="discountPercentage"
-              type="number"
-              value={formData.discountPercentage || ''}
-              onChange={handleInputChange}
-              fullWidth
-              inputProps={{ min: 0, max: 100, step: 0.01 }}
-              placeholder="VD: 10"
-            />
+            {/* Discount Type Selection */}
+            <FormControl fullWidth>
+              <FormLabel>Kiểu giảm giá</FormLabel>
+              <RadioGroup
+                row
+                value={discountType}
+                onChange={(e) => {
+                  const newType = e.target.value as 'percentage' | 'amount';
+                  setDiscountType(newType);
+                  // Clear both discount fields
+                  setFormData(prev => ({
+                    ...prev,
+                    discountPercentage: undefined,
+                    discountAmount: undefined,
+                  }));
+                }}
+                sx={{ mt: 1 }}
+              >
+                <FormControlLabel
+                  value="percentage"
+                  control={<Radio />}
+                  label="Giảm theo phần trăm (%)"
+                />
+                <FormControlLabel
+                  value="amount"
+                  control={<Radio />}
+                  label="Giảm theo tiền (₫)"
+                />
+              </RadioGroup>
+            </FormControl>
 
-            <TextField
-              label="Số tiền giảm giá (₫)"
-              name="discountAmount"
-              type="number"
-              value={formData.discountAmount || ''}
-              onChange={handleInputChange}
-              fullWidth
-              inputProps={{ min: 0, step: 1 }}
-              placeholder="VD: 50000"
-            />
+            {discountType === 'percentage' && (
+              <TextField
+                label="Phần trăm giảm giá (%)"
+                name="discountPercentage"
+                type="number"
+                value={formData.discountPercentage || ''}
+                onChange={handleInputChange}
+                fullWidth
+                inputProps={{ min: 0, max: 100, step: 0.01 }}
+                placeholder="VD: 10"
+                error={!!errors.discount}
+                helperText={errors.discount || 'Nhập phần trăm từ 0 đến 100'}
+              />
+            )}
 
-            {errors.discount && (
-              <Alert severity="error">{errors.discount}</Alert>
+            {discountType === 'amount' && (
+              <TextField
+                label="Số tiền giảm giá (₫)"
+                name="discountAmount"
+                type="number"
+                value={formData.discountAmount || ''}
+                onChange={handleInputChange}
+                fullWidth
+                inputProps={{ min: 0, step: 1 }}
+                placeholder="VD: 50000"
+                error={!!errors.discount}
+                helperText={errors.discount || 'Nhập số tiền giảm giá'}
+              />
             )}
 
             <TextField
@@ -300,7 +386,7 @@ export const PromotionFormDialog = ({
                 fullWidth
                 onClick={() => setOpenProductModal(true)}
               >
-                Chọn sản phẩm áp dụng ({selectedProducts.length})
+                Chọn sản phẩm áp dụng (Đã chọn: {selectedProducts.length})<br></br>(Không chọn = áp dụng cho tất cả)
               </Button>
               {selectedProducts.length > 0 && (
                 <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: 'wrap' }}>

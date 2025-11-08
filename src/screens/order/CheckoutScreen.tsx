@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -22,6 +22,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import useCheckout from "./Checkout.hook";
 import { useNavigate } from "react-router-dom";
+import AddDeliveryForm from "../customerLayout/listAddress/AddDeliveryForm";
+
 
 export default function CheckoutScreen() {
   const navigate = useNavigate();
@@ -54,6 +56,9 @@ export default function CheckoutScreen() {
     discount,
     subtotal,
     finalTotal,
+    addAddress,
+    setOpenForm,
+    openForm,
   } = useCheckout();
 
   // Initialize form with customer data
@@ -232,7 +237,7 @@ export default function CheckoutScreen() {
                   name="receiverName"
                   value={formData.receiverName}
                   onChange={handleInputChange}
-                  disabled={isLoading}
+                  disabled={true}
                 />
 
                 {/*full address*/}
@@ -244,7 +249,7 @@ export default function CheckoutScreen() {
                   value={formData.shippingAddress}
                   onChange={handleInputChange}
                   placeholder="VD: 123, Xã Sơn Bình, Huyện Tam Đường, Tỉnh Lai Châu"
-                  disabled={isLoading}
+                  disabled={true}
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       "&:hover fieldset": {
@@ -263,7 +268,20 @@ export default function CheckoutScreen() {
                   onChange={handleInputChange}
                   placeholder="VD: 0987654321"
                   type="tel"
-                  disabled={isLoading}
+                  disabled={true}
+                />
+                <Button
+                  variant="outlined"
+                  onClick={() => setOpenForm(true)}
+                  sx={{ textTransform: "none" }}    
+                >
+                  Thêm địa chỉ giao hàng
+                </Button>
+                <AddDeliveryForm
+                  open={openForm}
+                  onClose={() => setOpenForm(false)}
+                  onSubmit={addAddress}
+                  initialData={null}
                 />
               </Stack>
             </CardContent>
@@ -316,7 +334,7 @@ export default function CheckoutScreen() {
                 <FormControlLabel
                   value="MOMO"
                   control={<Radio />}
-                  label="📱 Ví điện tử"
+                  label="📱 Ví điện tử MOMO"
                   disabled={isLoading}
                 />
               </RadioGroup>

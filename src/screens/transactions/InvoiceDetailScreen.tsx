@@ -357,8 +357,8 @@ const InvoiceDetailScreen: React.FC = () => {
                           }}
                         >
                           <TableCell sx={{ fontSize: '13px', py: 2 }}>
-                            <Typography sx={{ fontWeight: 600, fontSize: '13px', color: '#333' }}>{item.sku}</Typography>
-                            <Typography sx={{ fontSize: '12px', color: '#999', mt: 0.3 }}>{item.productName}</Typography>
+                            <Typography sx={{ fontWeight: 600, fontSize: '13px', color: '#333' }}>{item.productName}</Typography>
+                            <Typography sx={{ fontSize: '12px', color: '#999', mt: 0.3 }}>{item.sku}</Typography>
                           </TableCell>
                           <TableCell align="center" sx={{ fontSize: '13px', py: 2, fontWeight: 600 }}>
                             {item.quantity}

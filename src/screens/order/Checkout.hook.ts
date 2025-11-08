@@ -8,6 +8,9 @@ import type { CreateOrderRequest } from "../../models/orders/CreateOrderRequest"
 import { OrderApi } from "../../api/order/OrderApi";
 import { clearCart } from "../../store/cartSlice";
 import { MomoApi } from "../../api/MomoApi";
+import type { CreateCustomerDelivery } from "../../models/customer/CreateCustomerDelivery";
+import { set } from "lodash";
+
 
 const useCheckout = () => {
   const [error, setError] = useState<string | null>(null);
@@ -20,6 +23,8 @@ const useCheckout = () => {
   // Address states
   const [selectedProvince, setSelectedProvince] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [openForm, setOpenForm] = useState(false);
+
   // const [streetAddress, setStreetAddress] = useState("");
 
   //getListDelivery of Customer
@@ -29,6 +34,16 @@ const useCheckout = () => {
   const [listAddress, setListAddress] = useState<ReadableCustomerDelivery[]>(
     []
   );
+
+   const addAddress = async (data: CreateCustomerDelivery) => {
+    if (!customer?.id) return;
+
+    console.log("add delivery: ", data);
+
+    await CustomerDeliveryApi.add(customer.id, data);
+    await getAllAddress();
+    setOpenForm(false);
+  };
 
   const getAllAddress = async () => {
     if (!customer?.id) return;
@@ -351,6 +366,9 @@ const useCheckout = () => {
     discount,
     subtotal,
     finalTotal,
+    addAddress,
+    setOpenForm,
+    openForm,
   };
 };
 

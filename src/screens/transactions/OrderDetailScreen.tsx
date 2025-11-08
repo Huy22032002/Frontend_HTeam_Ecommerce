@@ -426,6 +426,14 @@ const OrderDetailScreen: React.FC = () => {
                 📍 {order.shippingAddress || '—'}
               </Typography>
             </Box>
+            <Box sx={{ mt: 2.5, pt: 2.5, borderTop: '1px solid #e8ebf0' }}>
+              <Typography sx={{ fontSize: '11px', color: '#999', mb: 0.6, textTransform: 'uppercase', fontWeight: 700, letterSpacing: 0.5 }}>
+                Ghi chú
+              </Typography>
+              <Typography sx={{ fontWeight: 500, fontSize: '14px', color: '#333', lineHeight: 1.6, backgroundColor: '#f9f9f9', p: 1.5, borderRadius: 1 }}>
+                📍 {order.notes || '—'}
+              </Typography>
+            </Box>
           </Paper>
 
           {/* Chi Tiết Sản Phẩm */}

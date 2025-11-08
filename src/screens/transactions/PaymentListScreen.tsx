@@ -32,7 +32,7 @@ const PaymentListScreen = () => {
   const { payments, total, loading, error, filters, setFilters } = usePayments({ page: 0, size: 10 });
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedPaymentId, setSelectedPaymentId] = React.useState<number | null>(null);
-  const [showFilters, setShowFilters] = React.useState(true);
+  const [showFilters, setShowFilters] = React.useState(false);
   const [page, setPage] = React.useState(0);
   const pageSize = filters.size || 10;
   const totalPages = Math.ceil(total / pageSize);
@@ -231,11 +231,11 @@ const PaymentListScreen = () => {
                     }}
                   >
                     <TableRow>
-                      <TableCell sx={{ fontWeight: "bold", width: "80px" }}>
+                      {/* <TableCell sx={{ fontWeight: "bold", width: "80px" }}>
                         Thao Tác
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell sx={{ fontWeight: "bold" }}>Mã Thanh Toán</TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>Mã Hóa Đơn</TableCell>
+                      {/* <TableCell sx={{ fontWeight: "bold" }}>Mã Hóa Đơn</TableCell> */}
                       <TableCell sx={{ fontWeight: "bold" }}>Mã Đơn Hàng</TableCell>
                       <TableCell sx={{ fontWeight: "bold" }}>Khách Hàng</TableCell>
                       <TableCell sx={{ fontWeight: "bold" }}>Ngày Tạo</TableCell>
@@ -252,7 +252,7 @@ const PaymentListScreen = () => {
                     {payments.length > 0 ? (
                       payments.map((p) => (
                         <TableRow key={p.id} hover>
-                          <TableCell>
+                          {/* <TableCell>
                             <IconButton
                               size="small"
                               onClick={(e) => handleMenuOpen(e, p.id)}
@@ -278,11 +278,11 @@ const PaymentListScreen = () => {
                                 Xoá
                               </MenuItem>
                             </Menu>
-                          </TableCell>
+                          </TableCell> */}
                           <TableCell sx={{ fontWeight: 600 }}>
                             {p.paymentCode}
                           </TableCell>
-                          <TableCell>{p.invoiceCode}</TableCell>
+                          {/* <TableCell>{p.invoiceCode}</TableCell> */}
                           <TableCell>{p.orderCode}</TableCell>
                           <TableCell>{p.customerName}</TableCell>
                           <TableCell>

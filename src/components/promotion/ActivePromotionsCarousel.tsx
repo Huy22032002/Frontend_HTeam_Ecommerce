@@ -61,7 +61,7 @@ const ActivePromotionsCarousel = () => {
         <Stack direction="row" alignItems="center" spacing={1} mb={3}>
           <DiscountIcon sx={{ color: '#FF6B6B', fontSize: 28 }} />
           <Typography variant="h4" fontWeight="bold">
-            🎉 Khuyến mãi đang chạy
+            🎉 Chương trình khuyến mãi
           </Typography>
         </Stack>
 

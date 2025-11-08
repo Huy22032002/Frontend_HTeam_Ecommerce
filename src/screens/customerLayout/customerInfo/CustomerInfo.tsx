@@ -72,20 +72,20 @@ const CustomerInfo = () => {
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-
-        <TextField
+        {phone && (<TextField
           label="Số điện thoại"
           value={phone}
           disabled
           helperText="Số điện thoại không thể thay đổi"
-        />
+        />)}
+        
 
-        <TextField
+        {emailAddress && <TextField
           label="Email"
           value={emailAddress}
           disabled
           helperText="Email không thể thay đổi"
-        />
+        />}
 
         <Box>
           <Typography mb={1}>Giới tính</Typography>
