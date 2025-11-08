@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import useVariantDetail from "./ProductVariantDetail.hook";
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from "react-router-dom";
 import { tokens } from "../../../theme/theme";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../store/store";
@@ -37,7 +37,9 @@ const ProductVariantDetail = () => {
 
   //get cart from redux
   const cart = useSelector((state: RootState) => state.cart);
-  const customer = useSelector((state: RootState) => state.customerAuth.customer);
+  const customer = useSelector(
+    (state: RootState) => state.customerAuth.customer
+  );
 
   const { variantId } = useParams();
 
@@ -59,27 +61,31 @@ const ProductVariantDetail = () => {
 
     // Log product view to backend
     console.log("VariantId from URL:", variantId);
-    
-    if (variantId) {
+
+    if (variantId && customer) {
       console.log("Logging product view - variantId:", variantId);
-      CustomerLogApi.logProductView(Number(variantId)).then(success => {
-        if (success) {
-          console.log("Product view logged successfully");
-        } else {
-          console.warn("Failed to log product view");
-        }
-      }).catch(err => {
-        console.error("Failed to log product view:", err);
-      });
+      CustomerLogApi.logProductView(Number(variantId))
+        .then((success) => {
+          if (success) {
+            console.log("Product view logged successfully");
+          } else {
+            console.warn("Failed to log product view");
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to log product view:", err);
+        });
     } else {
-      console.warn("Cannot log product view - missing sessionId or variantId", {variantId });
+      console.warn("Cannot log product view - missing sessionId or variantId", {
+        variantId,
+      });
     }
   }, [variantId]);
 
   const handleAddToCart = async () => {
     // Kiểm tra nếu khách hàng chưa đăng nhập
     if (!customer) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
 
@@ -100,13 +106,13 @@ const ProductVariantDetail = () => {
   const handleBuyNow = async () => {
     // Kiểm tra nếu khách hàng chưa đăng nhập
     if (!customer) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
 
     if (currentOption) {
       // Chuyển đến checkout với thông tin sản phẩm (không thêm giỏ hàng)
-      navigate('/checkout', {
+      navigate("/checkout", {
         state: {
           directProduct: {
             optionId: currentOption.id,
@@ -297,7 +303,10 @@ const ProductVariantDetail = () => {
               <Typography fontWeight={600} mb={1.5}>
                 🎉 Khuyến mãi
               </Typography>
-              <PromotionDisplay sku={currentOption?.sku || ""} optionId={currentOption?.id} />
+              <PromotionDisplay
+                sku={currentOption?.sku || ""}
+                optionId={currentOption?.id}
+              />
             </Box>
 
             {/* Info Cards */}
@@ -388,9 +397,7 @@ const ProductVariantDetail = () => {
                     <span>Đang xử lý...</span>
                   </Stack>
                 ) : (
-                  <>
-                    🛍️ Mua ngay
-                  </>
+                  <>🛍️ Mua ngay</>
                 )}
               </Button>
               <Button
@@ -525,7 +532,11 @@ const ProductVariantDetail = () => {
                     }}
                     sx={{
                       flex: "0 0 auto",
-                      width: { xs: "100%", sm: "calc(50% - 8px)", md: "calc(20% - 8px)" },
+                      width: {
+                        xs: "100%",
+                        sm: "calc(50% - 8px)",
+                        md: "calc(20% - 8px)",
+                      },
                       cursor: "pointer",
                       transition: "all 0.3s ease",
                       "&:hover": {
@@ -537,7 +548,10 @@ const ProductVariantDetail = () => {
                     <CardMedia
                       component="img"
                       height="200"
-                      src={product.options?.[0]?.images?.[0]?.productImageUrl ?? "/src/assets/laptop.png"}
+                      src={
+                        product.options?.[0]?.images?.[0]?.productImageUrl ??
+                        "/src/assets/laptop.png"
+                      }
                       alt={product.name}
                       sx={{
                         objectFit: "contain",
@@ -560,9 +574,14 @@ const ProductVariantDetail = () => {
                       >
                         {product.name}
                       </Typography>
-                      
+
                       {/* Price Section */}
-                      <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        alignItems="center"
+                        mb={1}
+                      >
                         {/* Sale Price */}
                         <Typography
                           variant="body2"
@@ -571,46 +590,56 @@ const ProductVariantDetail = () => {
                             color: "#FF6B6B",
                           }}
                         >
-                          {(product.options?.[0]?.availability?.salePrice || product.options?.[0]?.availability?.regularPrice)?.toLocaleString()}₫
+                          {(
+                            product.options?.[0]?.availability?.salePrice ||
+                            product.options?.[0]?.availability?.regularPrice
+                          )?.toLocaleString()}
+                          ₫
                         </Typography>
 
                         {/* Regular Price (if different from sale price) */}
-                        {product.options?.[0]?.availability?.salePrice && 
-                         product.options?.[0]?.availability?.salePrice !== product.options?.[0]?.availability?.regularPrice && (
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              textDecoration: "line-through",
-                              color: "#999",
-                            }}
-                          >
-                            {product.options?.[0]?.availability?.regularPrice?.toLocaleString()}₫
-                          </Typography>
-                        )}
+                        {product.options?.[0]?.availability?.salePrice &&
+                          product.options?.[0]?.availability?.salePrice !==
+                            product.options?.[0]?.availability
+                              ?.regularPrice && (
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                textDecoration: "line-through",
+                                color: "#999",
+                              }}
+                            >
+                              {product.options?.[0]?.availability?.regularPrice?.toLocaleString()}
+                              ₫
+                            </Typography>
+                          )}
                       </Stack>
 
                       {/* Discount Badge */}
-                      {product.options?.[0]?.availability?.salePrice && 
-                       product.options?.[0]?.availability?.salePrice < product.options?.[0]?.availability?.regularPrice && (
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: "#FF6B6B",
-                            fontWeight: "600",
-                            mb: 1,
-                            display: "block",
-                          }}
-                        >
-                          ✓ Giảm{" "}
-                          {Math.round(
-                            ((product.options?.[0]?.availability?.regularPrice -
-                              product.options?.[0]?.availability?.salePrice) /
-                              (product.options?.[0]?.availability?.regularPrice || 1)) *
-                              100
-                          )}
-                          %
-                        </Typography>
-                      )}
+                      {product.options?.[0]?.availability?.salePrice &&
+                        product.options?.[0]?.availability?.salePrice <
+                          product.options?.[0]?.availability?.regularPrice && (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: "#FF6B6B",
+                              fontWeight: "600",
+                              mb: 1,
+                              display: "block",
+                            }}
+                          >
+                            ✓ Giảm{" "}
+                            {Math.round(
+                              ((product.options?.[0]?.availability
+                                ?.regularPrice -
+                                product.options?.[0]?.availability?.salePrice) /
+                                (product.options?.[0]?.availability
+                                  ?.regularPrice || 1)) *
+                                100
+                            )}
+                            %
+                          </Typography>
+                        )}
 
                       <Button
                         size="small"

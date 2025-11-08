@@ -20,7 +20,7 @@ const useCheckout = () => {
   // Address states
   const [selectedProvince, setSelectedProvince] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [streetAddress, setStreetAddress] = useState("");
+  // const [streetAddress, setStreetAddress] = useState("");
 
   //getListDelivery of Customer
   const customer = useSelector(
@@ -44,7 +44,7 @@ const useCheckout = () => {
       receiverPhoneNumber: addr.phone || "",
       shippingAddress: addr.fullAddress || "",
     }));
-    setStreetAddress(addr.fullAddress || "");
+    // setStreetAddress(addr.fullAddress || "");
     setShowListAddresses(false);
   };
 
@@ -60,7 +60,7 @@ const useCheckout = () => {
           receiverPhoneNumber: defaultAddr.phone || "",
           shippingAddress: defaultAddr.fullAddress || "",
         }));
-        setStreetAddress(defaultAddr.fullAddress || "");
+        // setStreetAddress(defaultAddr.fullAddress || "");
       }
     }
   }, [listAddress]);
@@ -235,7 +235,7 @@ const useCheckout = () => {
 
         // Chuyển hướng sau 2 giây
         setTimeout(() => {
-          navigate("/order-history", { replace: true });
+          navigate("/customer/orders-history", { replace: true });
         }, 2000);
       }
     } catch (err: any) {
@@ -329,8 +329,8 @@ const useCheckout = () => {
     showListAddresses,
     setShowListAddresses,
     listAddress,
-    streetAddress,
-    setStreetAddress,
+    // streetAddress,
+    // setStreetAddress,
     //handle
     handleSelecteAddress,
     handleInputChange,

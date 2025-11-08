@@ -28,9 +28,18 @@ const useProductByCategory = () => {
     }
   };
 
-  const getListProductByCategoryId = async (categoryId: number, page: number = 0) => {
+  const getListProductByCategoryId = async (
+    categoryId: number,
+    page: number = 0
+  ) => {
     try {
-      const data = await ProductApi.getAllByCategoryId(categoryId, page, PRODUCTS_PER_PAGE);
+      const data = await ProductApi.getAllByCategoryId(
+        categoryId,
+        page,
+        PRODUCTS_PER_PAGE
+      );
+      console.log("data:", data);
+      console.log("firstProduct:", data?.content?.[0]);
 
       if (data?.content && Array.isArray(data.content)) {
         //category
