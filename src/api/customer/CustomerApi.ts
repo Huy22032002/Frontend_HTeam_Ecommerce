@@ -48,4 +48,14 @@ export const CustomerApi = {
       }
     );
   },
+  // Toggle customer blocked status (admin only)
+  toggleCustomerBlocked(id: number) {
+    return axios.put(
+      `${backendEndpoint}/api/admins/customers/${id}/toggle-blocked`,
+      {},
+      {
+        headers: getAuthHeader(),
+      }
+    );
+  },
 };
