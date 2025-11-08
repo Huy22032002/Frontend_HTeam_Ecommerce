@@ -30,16 +30,15 @@ export const loginFacebook = async (
     return loginResponse;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
-      console.error(
-        "OAuth2 Backend login failed",
-        err.response?.data || err.message
-      );
+      const errorData = err.response?.data as any;
+      const errorMessage = errorData?.errorMessage || errorData?.message || err.message || "Đăng nhập thất bại";
+      const error = new Error(errorMessage);
+      throw error;
     } else if (err instanceof Error) {
-      console.error("OAuth2 Backend login failed", err.message);
+      throw err;
     } else {
-      console.error("OAuth2 Backend login failed", String(err));
+      throw new Error("Lỗi không xác định");
     }
-    throw err;
   }
 };
 
@@ -62,8 +61,12 @@ export const login = async (authRequest: AuthRequest) => {
     return loginResponse;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
-      throw err.response?.data;
+      const errorData = err.response?.data as any;
+      const errorMessage = errorData?.errorMessage || errorData?.message || err.message || "Đăng nhập thất bại";
+      const error = new Error(errorMessage);
+      throw error;
     }
+    throw err;
   }
 };
 
@@ -91,16 +94,15 @@ export const loginGoogle = async (jwtGoogleToken: string) => {
     return loginResponse;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
-      console.error(
-        "OAuth2 Backend login failed",
-        err.response?.data || err.message
-      );
+      const errorData = err.response?.data as any;
+      const errorMessage = errorData?.errorMessage || errorData?.message || err.message || "Đăng nhập thất bại";
+      const error = new Error(errorMessage);
+      throw error;
     } else if (err instanceof Error) {
-      console.error("OAuth2 Backend login failed", err.message);
+      throw err;
     } else {
-      console.error("OAuth2 Backend login failed", String(err));
+      throw new Error("Lỗi không xác định");
     }
-    throw err;
   }
 };
 
