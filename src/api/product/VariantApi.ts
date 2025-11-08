@@ -108,12 +108,18 @@ export const VariantsApi = {
       );
       if (response.data) {
         console.log("filtered search results:", response.data);
-        return response.data;
+        const result = {
+          ...response.data,
+          totalElements: response.data.totalItems || response.data.totalElements || 0,
+          currentPage: (response.data.currentPage || 1) - 1, // Convert to 0-indexed for consistency
+        };
+        console.log("[searchWithFilters] Mapped result:", { total: result.totalElements, pages: result.totalPages });
+        return result;
       }
-      return { content: [], totalPages: 0, totalItems: 0, currentPage: 1 };
+      return { content: [], totalPages: 0, totalElements: 0, totalItems: 0, currentPage: 0 };
     } catch (error) {
       console.error("Failed to search products with filters:", error);
-      return { content: [], totalPages: 0, totalItems: 0, currentPage: 1 };
+      return { content: [], totalPages: 0, totalElements: 0, totalItems: 0, currentPage: 0 };
     }
   },
   updateVariant: async (variantId: number, data: any) => {

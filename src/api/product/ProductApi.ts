@@ -66,9 +66,9 @@ export const ProductApi = {
   getByIdAdmin: (id: number) =>
     axios.get(`${API_BASE}/admins/products/${id}`, { headers: getAuthHeader() }),
 
-  // Get product variant by id
+  // Get product variant by id (admin only)
   getVariantById: (variantId: number) =>
-    axios.get(`${API_BASE}/product/variant/${variantId}`, { headers: getAuthHeader() }),
+    axios.get(`${API_BASE}/admins/products/variants/${variantId}`, { headers: getAuthHeader() }),
 
   // Get product variant by id (public - no auth required)
   getVariantByIdPublic: (variantId: number) =>
@@ -84,26 +84,25 @@ export const ProductApi = {
 
   // Update variant
   updateVariant: (variantId: number, data: any) =>
-    axios.put(`${API_BASE}/admin/products/variants/${variantId}`, data, { headers: getAuthHeader() }),
+    axios.put(`${API_BASE}/admins/products/variants/${variantId}`, data, { headers: getAuthHeader() }),
 
   // Update all specs (replace)
   updateVariantSpecs: (variantId: number, specs: any) =>
-    axios.put(`${API_BASE}/admin/products/variants/${variantId}/specs`, specs, { headers: getAuthHeader() }),
+    axios.put(`${API_BASE}/admins/products/variants/${variantId}/specs`, specs, { headers: getAuthHeader() }),
 
   // Add individual spec (key-value pair)
   addSpecToVariant: (variantId: number, key: string, value: string) =>
-    axios.post(`${API_BASE}/admin/products/variants/${variantId}/specs/add`, null, {
-      params: { key, value },
+    axios.post(`${API_BASE}/admins/products/variants/${variantId}/specs/add`, { key, value }, {
       headers: getAuthHeader(),
     }),
 
   // Remove individual spec
   removeSpecFromVariant: (variantId: number, key: string) =>
-    axios.delete(`${API_BASE}/admin/products/variants/${variantId}/specs/${key}`, { headers: getAuthHeader() }),
+    axios.delete(`${API_BASE}/admins/products/variants/${variantId}/specs?key=${encodeURIComponent(key)}`, { headers: getAuthHeader() }),
 
   // Delete variant
   deleteVariant: (variantId: number) =>
-    axios.delete(`${API_BASE}/admin/products/variants/${variantId}`, { headers: getAuthHeader() }),
+    axios.delete(`${API_BASE}/admins/products/variants/${variantId}`, { headers: getAuthHeader() }),
 
   // ===== Admin endpoints for options =====
   // Create option for a variant
@@ -112,9 +111,9 @@ export const ProductApi = {
 
   // Update option
   updateOption: (optionId: number, data: any) =>
-    axios.put(`${API_BASE}/admin/products/variants/options/${optionId}`, data, { headers: getAuthHeader() }),
+    axios.put(`${API_BASE}/admins/products/variants/options/${optionId}`, data, { headers: getAuthHeader() }),
 
   // Delete option
   deleteOption: (optionId: number) =>
-    axios.delete(`${API_BASE}/admin/products/variants/options/${optionId}`, { headers: getAuthHeader() }),
+    axios.delete(`${API_BASE}/admins/products/variants/options/${optionId}`, { headers: getAuthHeader() }),
 };
