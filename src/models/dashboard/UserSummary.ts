@@ -9,6 +9,7 @@ export interface UserSummary {
   fullName: string;
   email: string;
   active?: boolean;
+  blocked?: boolean;
   role?: Role[];
   avatarUrl?: string;
   gender?: boolean;

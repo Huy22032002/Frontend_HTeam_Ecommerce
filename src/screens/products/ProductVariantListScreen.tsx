@@ -1,4 +1,5 @@
 import { useState, useEffect, Fragment } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   TextField,
@@ -40,11 +41,13 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { VariantsApi } from "../../api/product/VariantApi";
 import { VariantsOptionsApi } from "../../api/product/VariantOptionsApi";
 import { formatCurrency } from "../../utils/formatCurrency";
+import { ProductApi } from "../../api/product/ProductApi";
 
 interface ProductVariant {
   id: number;
   code: string;
   name: string;
+  specs?: Record<string, any> | null;
   options: OptionData[];
 }
 
@@ -108,6 +111,7 @@ const ProductVariantListScreen = () => {
     salePrice?: number;
     quantity?: number;
     productStatus?: boolean;
+    specs?: Record<string, any>;
   }>({
     open: false,
     type: "variant",
@@ -139,6 +143,8 @@ const ProductVariantListScreen = () => {
       code: product.code,
       name: product.name,
       options: product.options || [],
+      // include specs/specifications if present so UI can edit without extra fetch
+      specs: product.specs || product.specifications || {},
     }));
   };
 
@@ -153,14 +159,63 @@ const ProductVariantListScreen = () => {
     setExpandedRows(newExpanded);
   };
 
-  // Open edit variant dialog
-  const handleEditVariant = (variant: ProductVariant) => {
+  const navigate = useNavigate();
+
+  // Open edit variant: redirect to admin product edit screen (fetch productId if needed)
+  const handleEditVariant = async (variant: ProductVariant) => {
+    // First try to find product id on the variant object
+    const possibleProductId = (variant as any).productId || (variant as any).product?.id || (variant as any).productIdValue || null;
+    let productId = possibleProductId;
+
+    if (!productId) {
+      // Try to fetch variant detail to learn parent product id
+      try {
+        const resp = await ProductApi.getVariantById(variant.id);
+        console.log("[handleEditVariant] Fetch for productId - resp:", resp);
+        if (resp && resp.data) {
+          // Backend wraps response: { status, message, data: { id, productId, ... } }
+          const variantData = resp.data.data || resp.data;
+          productId = variantData.productId || variantData.product?.id || variantData.product_id || variantData.product?.productId || null;
+          console.log("[handleEditVariant] Found productId:", productId);
+        }
+      } catch (err) {
+        console.error("Failed to fetch variant detail to get product id:", err);
+      }
+    }
+
+    if (productId) {
+      console.log("[handleEditVariant] Redirecting to product edit page with productId:", productId);
+      navigate(`/admin/products/${productId}/edit`);
+      return;
+    }
+
+    // Fallback: open inline edit dialog if product id cannot be determined
+    // Fetch variant data to populate specs and code
+    let specs = (variant as any).specs || {};
+    let variantCode = variant.code || "";
+    let variantName = variant.name || "";
+    
+    try {
+      const resp = await ProductApi.getVariantById(variant.id);
+      if (resp && resp.data) {
+        // Backend wraps response in ApiResponse with "data" field
+        const variantData = resp.data.data || resp.data;
+        console.log("[handleEditVariant] variantData:", variantData);
+        specs = variantData.specs || variantData.specifications || {};
+        variantCode = variantData.code || variant.code || "";
+        variantName = variantData.name || variant.name || "";
+      }
+    } catch (err) {
+      console.error("Failed to fetch variant specs:", err);
+    }
+
     setEditDialog({
       open: true,
       type: "variant",
       variantId: variant.id,
-      name: variant.name,
-      code: variant.code,
+      name: variantName,
+      code: variantCode,
+      specs: specs,
     });
   };
 
@@ -183,6 +238,170 @@ const ProductVariantListScreen = () => {
   // Close edit dialog
   const handleCloseEditDialog = () => {
     setEditDialog({ open: false, type: "variant" });
+  };
+
+  // Specs dialog state (for editing specs of a variant)
+  const [specsDialogOpen, setSpecsDialogOpen] = useState(false);
+  const [specsDialogVariantId, setSpecsDialogVariantId] = useState<number | null>(null);
+  const [specKeyInput, setSpecKeyInput] = useState("");
+  const [specValueInput, setSpecValueInput] = useState("");
+  const [specsJsonInput, setSpecsJsonInput] = useState("");
+  const [specsInputMode, setSpecsInputMode] = useState<"individual" | "json">("individual");
+  const [currentSpecs, setCurrentSpecs] = useState<Record<string, any>>({});
+
+  const openSpecsDialog = async (variantId?: number) => {
+    if (!variantId) return;
+    setSpecsDialogVariantId(variantId);
+    setSpecsDialogOpen(true);
+    setSpecKeyInput("");
+    setSpecValueInput("");
+    setSpecsJsonInput("");
+    setSpecsInputMode("individual");
+
+    // Try to find the variant in local state first (we now store specs from API).
+    const local = variants.find((v) => v.id === variantId as number) as any;
+    if (local) {
+      const specs = local.specs || local.specifications || {};
+      setCurrentSpecs(specs || {});
+      return;
+    }
+
+    // Fallback: fetch variant details from API
+    try {
+      const resp = await ProductApi.getVariantById(variantId);
+      if (resp && resp.data) {
+        // Backend wraps response in ApiResponse with "data" field
+        const variantData = resp.data.data || resp.data;
+        const specs = variantData.specs || variantData.specifications || {};
+        setCurrentSpecs(specs || {});
+      } else {
+        setCurrentSpecs({});
+      }
+    } catch (err) {
+      console.error("Failed to fetch variant specs:", err);
+      setCurrentSpecs({});
+    }
+  };
+
+  const handleAddSpecToVariant = async (key: string, value: string, onSuccess?: () => void) => {
+    if (!specsDialogVariantId) {
+      console.error("No variantId set");
+      return;
+    }
+    try {
+      console.log(`[handleAddSpecToVariant] Adding spec to variant ${specsDialogVariantId}: key="${key}", value="${value}"`);
+      const result = await ProductApi.addSpecToVariant(specsDialogVariantId, key, value);
+      console.log("[handleAddSpecToVariant] API result:", result);
+      
+      if (result && result.data) {
+        // Handle nested response: result.data.data (ApiResponse wrapper) or result.data (direct)
+        const responseData = result.data.data || result.data;
+        console.log("[handleAddSpecToVariant] Extracted variant data:", responseData);
+        
+        const specs = responseData.specs || responseData.specifications || {};
+        console.log("[handleAddSpecToVariant] Updated specs:", specs);
+        
+        setCurrentSpecs(specs || {});
+        // update local variants state
+        setVariants((prev) => prev.map((v) => v.id === specsDialogVariantId ? { ...v, specs: specs || {} } : v));
+        
+        setNotification({ isOpen: true, type: "success", message: "Thêm thông số thành công" });
+        if (onSuccess) onSuccess();
+      } else {
+        console.warn("No data in response, using optimistic update");
+        // fallback to local update
+        setCurrentSpecs((s) => ({ ...s, [key]: value }));
+        setVariants((prev) => prev.map((v) => v.id === specsDialogVariantId ? { ...v, specs: { ...(v.specs || {}), [key]: value } } : v));
+        setNotification({ isOpen: true, type: "warning", message: "Thêm thành công (offline mode)" });
+        if (onSuccess) onSuccess();
+      }
+    } catch (err: any) {
+      console.error("Failed to add spec:", err);
+      const errorMsg = err?.response?.data?.errorMessage || err?.message || "Lỗi khi thêm thông số";
+      setNotification({ isOpen: true, type: "error", message: errorMsg });
+    }
+  };
+
+  const handleRemoveSpecFromVariant = async (key: string) => {
+    if (!specsDialogVariantId) {
+      console.error("No variantId set");
+      return;
+    }
+    try {
+      console.log(`[handleRemoveSpecFromVariant] Removing spec from variant ${specsDialogVariantId}: key="${key}"`);
+      const result = await ProductApi.removeSpecFromVariant(specsDialogVariantId, key);
+      console.log("[handleRemoveSpecFromVariant] API result:", result);
+      
+      if (result && result.data) {
+        // Handle nested response: result.data.data or result.data
+        const responseData = result.data.data || result.data;
+        console.log("[handleRemoveSpecFromVariant] Extracted variant data:", responseData);
+        
+        const specs = responseData.specs || responseData.specifications || {};
+        console.log("[handleRemoveSpecFromVariant] Updated specs:", specs);
+        
+        setCurrentSpecs(specs || {});
+        setVariants((prev) => prev.map((v) => v.id === specsDialogVariantId ? { ...v, specs: specs || {} } : v));
+        setNotification({ isOpen: true, type: "success", message: "Xoá thông số thành công" });
+      } else {
+        console.warn("No data in response, using optimistic update");
+        setCurrentSpecs((s) => {
+          const copy = { ...s };
+          delete copy[key];
+          return copy;
+        });
+        setVariants((prev) => prev.map((v) => v.id === specsDialogVariantId ? { ...v, specs: ((): any => { const c = { ...(v.specs || {}) }; delete c[key]; return c; })() } : v));
+        setNotification({ isOpen: true, type: "warning", message: "Xoá thành công (offline mode)" });
+      }
+    } catch (err: any) {
+      console.error("Failed to remove spec:", err);
+      const errorMsg = err?.response?.data?.errorMessage || err?.message || "Lỗi khi xoá thông số";
+      setNotification({ isOpen: true, type: "error", message: errorMsg });
+    }
+  };
+
+  const handleAddSpecsFromJsonForVariant = async (jsonText: string) => {
+    if (!specsDialogVariantId) {
+      console.error("No variantId set");
+      return;
+    }
+    try {
+      const specsObj = JSON.parse(jsonText);
+      if (typeof specsObj !== "object" || Array.isArray(specsObj)) {
+        alert("JSON phải là object (ví dụ: {\"key1\": \"value1\"})");
+        return;
+      }
+
+      console.log(`[handleAddSpecsFromJsonForVariant] Updating specs for variant ${specsDialogVariantId}:`, specsObj);
+      const result = await ProductApi.updateVariantSpecs(specsDialogVariantId, specsObj);
+      console.log("[handleAddSpecsFromJsonForVariant] API result:", result);
+      
+      if (result && result.data) {
+        // Handle nested response: result.data.data or result.data
+        const responseData = result.data.data || result.data;
+        console.log("[handleAddSpecsFromJsonForVariant] Extracted variant data:", responseData);
+        
+        const specs = responseData.specs || responseData.specifications || {};
+        console.log("[handleAddSpecsFromJsonForVariant] Updated specs:", specs);
+        
+        setCurrentSpecs(specs || {});
+        setVariants((prev) => prev.map((v) => v.id === specsDialogVariantId ? { ...v, specs: specs || {} } : v));
+        setNotification({ isOpen: true, type: "success", message: "Cập nhật thông số thành công" });
+      } else {
+        console.warn("No data in response, using optimistic update");
+        setCurrentSpecs((s) => ({ ...s, ...specsObj }));
+        setVariants((prev) => prev.map((v) => v.id === specsDialogVariantId ? { ...v, specs: { ...(v.specs || {}), ...specsObj } } : v));
+        setNotification({ isOpen: true, type: "warning", message: "Cập nhật thành công (offline mode)" });
+      }
+      
+      setSpecsJsonInput("");
+      setSpecsDialogOpen(false);
+    } catch (err: any) {
+      const errorMsg = err?.response?.data?.errorMessage || err?.message || "JSON không hợp lệ hoặc lỗi khi cập nhật specs";
+      alert(errorMsg);
+      console.error("Invalid JSON or update failed:", err);
+      setNotification({ isOpen: true, type: "error", message: errorMsg });
+    }
   };
 
   // Handle save edit
@@ -378,7 +597,10 @@ const ProductVariantListScreen = () => {
         let processedVariants = processVariants(response.content);
         // Note: Filters are already applied by API, but we can apply additional client-side filters if needed
         setVariants(processedVariants);
-        setTotalItems(response.totalElements || 0);
+        // Handle both Spring Data naming (totalElements) and custom naming (totalItems)
+        const total = response.totalElements || response.totalItems || response.total || 0;
+        setTotalItems(total);
+        console.log("[fetchVariants] Response:", { total, totalElements: response.totalElements, totalItems: response.totalItems, pageSize, calculatedPages: Math.ceil(total / pageSize) });
       } else {
         setError("Không thể tải danh sách biến thể");
         setVariants([]);
@@ -434,7 +656,7 @@ const ProductVariantListScreen = () => {
             sx={{ textTransform: "none" }}
             onClick={() => {
               // Navigate to create product screen
-              window.location.href = "/admin/products/create";
+              window.location.href = "/admin/create-product";
             }}
           >
             + Thêm sản phẩm
@@ -1000,10 +1222,9 @@ const ProductVariantListScreen = () => {
                   label="Code"
                   fullWidth
                   value={editDialog.code || ""}
-                  onChange={(e) =>
-                    setEditDialog({ ...editDialog, code: e.target.value })
-                  }
+                  disabled
                   size="small"
+                  helperText="Mã variant không thể chỉnh sửa"
                 />
                 <TextField
                   label="Tên Variant"
@@ -1016,6 +1237,33 @@ const ProductVariantListScreen = () => {
                   multiline
                   rows={2}
                 />
+                <Box>
+                  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                    Thông số hiện tại (Specs):
+                  </Typography>
+                  <Paper sx={{ p: 2, bgcolor: "#f5f5f5", mb: 2 }}>
+                    {editDialog.specs && Object.keys(editDialog.specs).length > 0 ? (
+                      <Stack spacing={1}>
+                        {Object.entries(editDialog.specs).map(([key, value]) => (
+                          <Typography key={key} variant="body2">
+                            <strong>{key}:</strong> {String(value)}
+                          </Typography>
+                        ))}
+                      </Stack>
+                    ) : (
+                      <Typography variant="body2" color="textSecondary">
+                        Không có thông số nào
+                      </Typography>
+                    )}
+                  </Paper>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => openSpecsDialog(editDialog.variantId)}
+                  >
+                    Chỉnh sửa thông số (Specs)
+                  </Button>
+                </Box>
               </>
             ) : (
               <>
@@ -1161,6 +1409,107 @@ const ProductVariantListScreen = () => {
           >
             Xoá
           </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Specs Dialog (edit specs for a variant) */}
+      <Dialog
+        open={specsDialogOpen}
+        onClose={() => {
+          setSpecsDialogOpen(false);
+          setSpecKeyInput("");
+          setSpecValueInput("");
+          setSpecsJsonInput("");
+          setSpecsInputMode("individual");
+          setCurrentSpecs({});
+        }}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 2 } }}
+      >
+        <DialogTitle>Chỉnh sửa thông số kỹ thuật</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} pt={2}>
+            <Stack direction="row" spacing={1}>
+              <Button
+                variant={specsInputMode === "individual" ? "contained" : "outlined"}
+                size="small"
+                onClick={() => setSpecsInputMode("individual")}
+                sx={{ flex: 1 }}
+              >
+                Thêm từng cái
+              </Button>
+              <Button
+                variant={specsInputMode === "json" ? "contained" : "outlined"}
+                size="small"
+                onClick={() => setSpecsInputMode("json")}
+                sx={{ flex: 1 }}
+              >
+                Paste JSON
+              </Button>
+            </Stack>
+
+            {Object.keys(currentSpecs || {}).length > 0 && (
+              <Box sx={{ mb: 2, p: 2, bgcolor: "#f5f5f5", borderRadius: 1 }}>
+                {Object.entries(currentSpecs).map(([key, value]) => (
+                  <Box key={key} display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                    <Typography variant="body2">
+                      <strong>{key}:</strong> {String(value)}
+                    </Typography>
+                    <IconButton size="small" color="error" onClick={() => handleRemoveSpecFromVariant(key)}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                ))}
+              </Box>
+            )}
+
+            {specsInputMode === "individual" ? (
+              <>
+                <TextField label="Khóa (Key)" placeholder="ví dụ: Loại CPU" value={specKeyInput} onChange={(e) => setSpecKeyInput(e.target.value)} fullWidth />
+                <TextField label="Giá trị (Value)" placeholder="ví dụ: Intel Core i9" value={specValueInput} onChange={(e) => setSpecValueInput(e.target.value)} fullWidth />
+                <Button 
+                  variant="contained" 
+                  onClick={async () => {
+                    if (specKeyInput && specValueInput) {
+                      await handleAddSpecToVariant(specKeyInput, specValueInput, () => {
+                        setNotification({ isOpen: true, type: "success", message: "Thêm thông số thành công" });
+                      });
+                      setSpecKeyInput("");
+                      setSpecValueInput("");
+                    } else {
+                      alert("Vui lòng nhập cả khóa và giá trị");
+                    }
+                  }}
+                >
+                  Thêm Spec
+                </Button>
+              </>
+            ) : (
+              <>
+                <TextField label="JSON" placeholder='Ví dụ: {"Loại CPU": "Intel Core i9", "RAM": "16GB"}' multiline rows={6} value={specsJsonInput} onChange={(e) => setSpecsJsonInput(e.target.value)} fullWidth variant="outlined" />
+                <Typography variant="caption" color="textSecondary">Định dạng: {"{"}"khóa1": "giá trị1", "khóa2": "giá trị2"{"}"}</Typography>
+                <Button variant="contained" onClick={() => {
+                  if (specsJsonInput.trim()) {
+                    handleAddSpecsFromJsonForVariant(specsJsonInput);
+                  } else {
+                    alert("Vui lòng nhập JSON");
+                  }
+                }}>
+                  Cập nhật Specs
+                </Button>
+              </>
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            setSpecsDialogOpen(false);
+            setSpecKeyInput("");
+            setSpecValueInput("");
+            setSpecsJsonInput("");
+            setSpecsInputMode("individual");
+            setCurrentSpecs({});
+          }}>Đóng</Button>
         </DialogActions>
       </Dialog>
         </Box>

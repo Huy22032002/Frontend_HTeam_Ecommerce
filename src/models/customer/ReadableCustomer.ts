@@ -7,5 +7,6 @@ export interface ReadableCustomer {
   username: string;
   phone: string;
   anonymous: boolean;
+  blocked: boolean;
   roles: string[];
 }

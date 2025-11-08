@@ -6,8 +6,10 @@ export interface Customer {
   username: string;
   name?: string;
   email?: string;
+  emailAddress?: string;
   phone?: string;
   address?: string;
+  blocked?: boolean;
   [key: string]: any;
 }
 
@@ -54,5 +56,9 @@ export const useCustomers = (page = 0, size = 20) => {
     loadCustomers();
   };
 
-  return { customers, loading, error, reload, totalElements, totalPages };
+  const refetch = () => {
+    loadCustomers();
+  };
+
+  return { customers, loading, error, reload, refetch, totalElements, totalPages };
 };

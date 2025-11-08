@@ -57,6 +57,8 @@ export const UserApi = {
   resetPassword: (oldPassword: string, newPassword: string) =>
     axios.post(`${ADMIN_API}/reset-password`, { oldPassword, newPassword, }, { headers: getAuthHeader() }),
 
-  
+  // Cập nhật trạng thái blocked/unblocked của người dùng
+  toggleUserBlocked: (id: number) =>
+    axios.put(`${ADMIN_API}/${id}/toggle-blocked`, {}, { headers: getAuthHeader() }),
 
 };

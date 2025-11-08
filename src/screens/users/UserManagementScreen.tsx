@@ -51,6 +51,12 @@ const UserManagementScreen = () => {
   const [selectedUserName, setSelectedUserName] = useState('');
   const [selectedUserCurrentStatus, setSelectedUserCurrentStatus] = useState(false);
 
+  // Dialog state for block confirmation
+  const [blockDialogOpen, setBlockDialogOpen] = useState(false);
+  const [selectedBlockUserId, setSelectedBlockUserId] = useState<number | null>(null);
+  const [selectedBlockUserName, setSelectedBlockUserName] = useState('');
+  const [selectedBlockUserCurrentStatus, setSelectedBlockUserCurrentStatus] = useState(false);
+
   // Dialog state for create user
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newUserForm, setNewUserForm] = useState({
@@ -113,11 +119,52 @@ const UserManagementScreen = () => {
     }
   };
 
+  // Handle block user click
+  const handleBlockClick = (userId: number, userName: string, currentBlockedStatus: boolean) => {
+    setSelectedBlockUserId(userId);
+    setSelectedBlockUserName(userName);
+    setSelectedBlockUserCurrentStatus(currentBlockedStatus);
+    setBlockDialogOpen(true);
+  };
+
+  // Handle confirm block/unblock
+  const handleConfirmBlock = async () => {
+    if (!selectedBlockUserId) return;
+
+    try {
+      const response = await UserApi.toggleUserBlocked(selectedBlockUserId);
+      setBlockDialogOpen(false);
+      
+      // Update local state instead of reloading
+      const updatedUser = response.data;
+      setUsers(prevUsers =>
+        prevUsers.map(u =>
+          Number(u.id) === selectedBlockUserId
+            ? { ...u, blocked: updatedUser.blocked }
+            : u
+        )
+      );
+      
+      console.log(`✅ User ${selectedBlockUserName} blocked status updated to: ${updatedUser.blocked ? 'Blocked' : 'Unblocked'}`);
+      alert(updatedUser.blocked ? `✅ Đã chặn người dùng ${selectedBlockUserName}` : `✅ Đã bỏ chặn người dùng ${selectedBlockUserName}`);
+    } catch (error) {
+      console.error('Error toggling user blocked status:', error);
+      alert('Không thể cập nhật trạng thái chặn người dùng');
+    }
+  };
+
   const getStatusChip = (isActive: boolean) => {
     if (isActive) {
       return <Chip label="✓ Hoạt động" color="success" size="small" variant="filled" />;
     }
     return <Chip label="✗ Vô hiệu" color="error" size="small" variant="outlined" />;
+  };
+
+  const getBlockedStatusChip = (isBlocked: boolean) => {
+    if (isBlocked) {
+      return <Chip label="🚫 Bị chặn" color="error" size="small" variant="filled" />;
+    }
+    return <Chip label="✓ Bình thường" color="success" size="small" variant="outlined" />;
   };
 
   // Check if user has SUPERADMIN role
@@ -332,6 +379,7 @@ const UserManagementScreen = () => {
                 <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Email</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Role</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Trạng thái</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Trạng thái chặn</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Ngày tạo</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#fff', textAlign: 'center' }}>
                   Thao tác
@@ -364,21 +412,37 @@ const UserManagementScreen = () => {
                   <TableCell sx={{ color: '#000' }}>{user.email}</TableCell>
                   <TableCell sx={{ color: '#000' }}>{getRoleNames(user.role)}</TableCell>
                   <TableCell sx={{ color: '#000' }}>{getStatusChip(user.active ?? true)}</TableCell>
+                  <TableCell sx={{ color: '#000' }}>{getBlockedStatusChip(user.blocked ?? false)}</TableCell>
                   <TableCell sx={{ color: '#000' }}>{formatCreatedDate(user.createdAt)}</TableCell>
                   <TableCell align="center" sx={{ color: '#000' }}>
-                    <IconButton
-                      size="small"
-                      onClick={() =>
-                        handleToggleClick(Number(user.id), user.fullName, user.active ?? true)
-                      }
-                      disabled={hasSuperAdminRole(user)}
-                      title={hasSuperAdminRole(user) ? 'Không thể chỉnh SUPERADMIN' : (user.active ? 'Vô hiệu hóa' : 'Kích hoạt')}
-                      sx={{
-                        color: hasSuperAdminRole(user) ? '#ccc' : (user.active ? '#4caf50' : '#ff9800'),
-                      }}
-                    >
-                      {user.active ? <ToggleOnIcon /> : <ToggleOffIcon />}
-                    </IconButton>
+                    <Stack direction="row" spacing={1} justifyContent="center">
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          handleToggleClick(Number(user.id), user.fullName, user.active ?? true)
+                        }
+                        disabled={hasSuperAdminRole(user)}
+                        title={hasSuperAdminRole(user) ? 'Không thể chỉnh SUPERADMIN' : (user.active ? 'Vô hiệu hóa' : 'Kích hoạt')}
+                        sx={{
+                          color: hasSuperAdminRole(user) ? '#ccc' : (user.active ? '#4caf50' : '#ff9800'),
+                        }}
+                      >
+                        {user.active ? <ToggleOnIcon /> : <ToggleOffIcon />}
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          handleBlockClick(Number(user.id), user.fullName, user.blocked ?? false)
+                        }
+                        disabled={hasSuperAdminRole(user)}
+                        title={hasSuperAdminRole(user) ? 'Không thể chặn SUPERADMIN' : (user.blocked ? 'Bỏ chặn' : 'Chặn')}
+                        sx={{
+                          color: hasSuperAdminRole(user) ? '#ccc' : (user.blocked ? '#f44336' : '#2196f3'),
+                        }}
+                      >
+                        {user.blocked ? '🚫' : '👤'}
+                      </IconButton>
+                    </Stack>
                   </TableCell>
                 </TableRow>
               ))}
@@ -406,7 +470,6 @@ const UserManagementScreen = () => {
       )}
 
       {/* Toggle Status Confirmation Dialog */}
-      {/* Toggle Status Confirmation Dialog */}
       <Dialog open={toggleDialogOpen} onClose={() => setToggleDialogOpen(false)}>
         <DialogTitle sx={{ color: colors.blueAccent[400], fontWeight: 600 }}>
           🔄 Cập nhật trạng thái người dùng
@@ -428,6 +491,41 @@ const UserManagementScreen = () => {
           </Button>
           <Button onClick={handleConfirmToggle} color="success" variant="contained">
             Xác nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Block User Confirmation Dialog */}
+      <Dialog open={blockDialogOpen} onClose={() => setBlockDialogOpen(false)}>
+        <DialogTitle sx={{ color: colors.blueAccent[400], fontWeight: 600 }}>
+          🚫 {selectedBlockUserCurrentStatus ? 'Bỏ chặn' : 'Chặn'} người dùng
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Bạn có chắc chắn muốn {selectedBlockUserCurrentStatus ? 'bỏ chặn' : 'chặn'} người dùng{' '}
+            <strong>{selectedBlockUserName}</strong> không?
+            <br />
+            {selectedBlockUserCurrentStatus ? (
+              <span style={{ color: colors.blueAccent[400], marginTop: '8px', display: 'block' }}>
+                Người dùng sẽ có thể đăng nhập lại bình thường.
+              </span>
+            ) : (
+              <span style={{ color: '#f44336', marginTop: '8px', display: 'block' }}>
+                ⚠️ Người dùng sẽ không thể đăng nhập và sẽ nhận được thông báo chặn tài khoản.
+              </span>
+            )}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setBlockDialogOpen(false)} color="primary">
+            Hủy
+          </Button>
+          <Button 
+            onClick={handleConfirmBlock} 
+            color={selectedBlockUserCurrentStatus ? 'success' : 'error'} 
+            variant="contained"
+          >
+            {selectedBlockUserCurrentStatus ? 'Bỏ chặn' : 'Chặn'}
           </Button>
         </DialogActions>
       </Dialog>
