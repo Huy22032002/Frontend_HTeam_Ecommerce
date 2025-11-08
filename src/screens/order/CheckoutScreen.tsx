@@ -501,11 +501,11 @@ export default function CheckoutScreen() {
                 <Button
                   fullWidth
                   variant="outlined"
-                  onClick={() => navigate("/cart")}
+                  onClick={() => navigate(-1)}
                   disabled={isLoading}
                   sx={{ textTransform: "none" }}
                 >
-                  ← Quay lại giỏ hàng
+                  ← Quay lại
                 </Button>
                 <Button
                   fullWidth

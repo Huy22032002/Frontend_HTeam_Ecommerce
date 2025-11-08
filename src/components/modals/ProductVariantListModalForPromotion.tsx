@@ -30,7 +30,7 @@ import { formatCurrency } from '../../utils/formatCurrency';
 
 interface VariantRowProps {
   variant: ProductVariants;
-  selectedOptions: Set<number>;
+  selectedOptions: Set<string>;
   onToggleOption: (option: ProductOption, variant: ProductVariants) => void;
   loading?: boolean;
 }
@@ -76,7 +76,7 @@ const VariantRow: React.FC<VariantRowProps> = ({
               ) : variant.options && variant.options.length > 0 ? (
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 2 }}>
                   {variant.options.map((option) => {
-                    const isSelected = selectedOptions.has(option.id || 0);
+                    const isSelected = selectedOptions.has(option.sku || '');
                     return (
                       <Paper
                         key={option.sku}
@@ -160,7 +160,7 @@ const VariantRow: React.FC<VariantRowProps> = ({
 interface ProductVariantListModalForPromotionProps {
   open: boolean;
   onClose: () => void;
-  onApply: (selectedOptionIds: number[]) => void;
+  onApply: (selectedOptionSkus: string[]) => void;
   productId?: number;
 }
 
@@ -174,7 +174,7 @@ const ProductVariantListModalForPromotion: React.FC<ProductVariantListModalForPr
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [selectedOptions, setSelectedOptions] = useState<Set<number>>(new Set());
+  const [selectedOptions, setSelectedOptions] = useState<Set<string>>(new Set());
 
   // Fetch danh sách products
   const fetchVariants = async () => {
@@ -214,13 +214,13 @@ const ProductVariantListModalForPromotion: React.FC<ProductVariantListModalForPr
   );
 
   const handleToggleOption = (_option: ProductOption, _variant: ProductVariants) => {
-    const optionId = _option.id || 0;
+    const optionSku = _option.sku || '';
     const newSelected = new Set(selectedOptions);
     
-    if (newSelected.has(optionId)) {
-      newSelected.delete(optionId);
+    if (newSelected.has(optionSku)) {
+      newSelected.delete(optionSku);
     } else {
-      newSelected.add(optionId);
+      newSelected.add(optionSku);
     }
     
     setSelectedOptions(newSelected);

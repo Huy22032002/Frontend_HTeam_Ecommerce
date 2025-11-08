@@ -5,7 +5,6 @@ import { setItemPromotion, removeItemPromotion } from '../../store/cartSlice';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import CheckIcon from '@mui/icons-material/Check';
 import type { RootState } from '../../store/store';
-import { useEffect } from 'react';
 
 interface PromotionDisplayProps {
   sku: string;
@@ -21,15 +20,8 @@ const PromotionDisplay = ({ sku, optionId }: PromotionDisplayProps) => {
   const itemId = optionId || 0;
   const appliedPromotion = itemPromotionsRedux[itemId];
 
-  // Clear promotion when component unmounts (user leaves the page)
-  useEffect(() => {
-    return () => {
-      if (appliedPromotion && itemId !== 0) {
-        // Only clear for "Mua ngay" (optionId), not for cart items
-        dispatch(removeItemPromotion({ itemId }));
-      }
-    };
-  }, [itemId, appliedPromotion, dispatch]);
+  // Note: DO NOT clear promotions on unmount - they should persist through navigation
+  // Users should be able to apply a promotion on product detail screen and see it in checkout
 
   if (loading) {
     return (

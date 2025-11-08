@@ -29,6 +29,7 @@ export interface CreatePromotionRequest {
   validTo: string;
   isActive: boolean;
   applicableProductOptionIds?: number[];
+  applicableProductOptionSkus?: string[];
 }
 
 export interface UpdatePromotionRequest {
@@ -40,4 +41,5 @@ export interface UpdatePromotionRequest {
   validTo: string;
   isActive: boolean;
   applicableProductOptionIds?: number[];
+  applicableProductOptionSkus?: string[];
 }

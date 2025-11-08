@@ -294,8 +294,8 @@ const PromotionListScreen = () => {
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
                     {selectedPromotion.applicableProductOptions.map((p) => (
                       <Chip
-                        key={p.id}
-                        label={`${p.code} - ${p.name}`}
+                        key={p.sku}
+                        label={`${p.sku} - ${p.name}`}
                         size="small"
                         variant="outlined"
                       />

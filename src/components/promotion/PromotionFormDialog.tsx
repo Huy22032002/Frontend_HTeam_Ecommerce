@@ -59,7 +59,8 @@ export const PromotionFormDialog = ({
         validFrom: promotion.validFrom?.replace('Z', '').slice(0, 16) || '',
         validTo: promotion.validTo?.replace('Z', '').slice(0, 16) || '',
         isActive: promotion.isActive,
-        applicableProductOptionIds: promotion.applicableProductOptions?.map(p => p.id) || [],
+        applicableProductOptionSkus: promotion.applicableProductOptions?.map(p => p.sku) || [],
+        applicableProductOptionIds: undefined,
       });
       if (promotion.applicableProductOptions) {
         setSelectedProducts(promotion.applicableProductOptions);
@@ -78,7 +79,8 @@ export const PromotionFormDialog = ({
       validFrom: '',
       validTo: '',
       isActive: true,
-      applicableProductOptionIds: [],
+      applicableProductOptionSkus: [],
+      applicableProductOptionIds: undefined,
     });
     setSelectedProducts([]);
     setErrors({});
@@ -136,28 +138,28 @@ export const PromotionFormDialog = ({
     }));
   };
 
-  const handleProductsApply = (selectedOptionIds: number[]) => {
+  const handleProductsApply = (selectedOptionSkus: string[]) => {
     setFormData(prev => ({
       ...prev,
-      applicableProductOptionIds: selectedOptionIds,
+      applicableProductOptionSkus: selectedOptionSkus,
+      applicableProductOptionIds: undefined, // Clear ID-based lookup
     }));
-    // Cập nhật danh sách hiển thị (tạm thời hiển thị ID, sẽ load chi tiết từ API nếu cần)
-    setSelectedProducts(selectedOptionIds.map(id => ({
-      id,
-      sku: '',
+    // Cập nhật danh sách hiển thị (tạm thời hiển thị SKU)
+    setSelectedProducts(selectedOptionSkus.map(sku => ({
+      id: 0,
+      sku,
       code: '',
       name: '',
       value: '',
     })));
   };
 
-  const handleRemoveProduct = (productId: number) => {
-    const newIds = (formData.applicableProductOptionIds || []).filter(id => id !== productId);
+  const handleRemoveProduct = (sku: string) => {
     setFormData(prev => ({
       ...prev,
-      applicableProductOptionIds: newIds,
+      applicableProductOptionSkus: (prev.applicableProductOptionSkus || []).filter(s => s !== sku),
     }));
-    setSelectedProducts(prev => prev.filter(p => p.id !== productId));
+    setSelectedProducts(prev => prev.filter(p => p.sku !== sku));
   };
 
   const handleSave = async () => {
@@ -304,9 +306,9 @@ export const PromotionFormDialog = ({
                 <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: 'wrap' }}>
                   {selectedProducts.map((product) => (
                     <Chip
-                      key={product.id}
-                      label={product.code || `ID: ${product.id}`}
-                      onDelete={() => handleRemoveProduct(product.id)}
+                      key={product.sku}
+                      label={product.sku || `ID: ${product.id}`}
+                      onDelete={() => handleRemoveProduct(product.sku)}
                       variant="outlined"
                     />
                   ))}
