@@ -24,4 +24,10 @@ export const CustomerAdminApi = {
   // Lấy chi tiết khách hàng theo id
   getById: (id: number) =>
     axios.get(`${API_BASE}/${id}`, { headers: getAuthHeader() }),
+
+  // Toggle trạng thái chặn khách hàng
+  toggleCustomerBlocked: (id: number) =>
+    axios.put(`${API_BASE}/${id}/toggle-blocked`, {}, {
+      headers: getAuthHeader(),
+    }),
 };
