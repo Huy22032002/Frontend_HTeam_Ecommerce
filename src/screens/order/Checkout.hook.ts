@@ -48,6 +48,23 @@ const useCheckout = () => {
     setShowListAddresses(false);
   };
 
+  //lay ra address ban đầu mặc định
+  useEffect(() => {
+    if (listAddress.length > 0) {
+      // Lấy địa chỉ mặc định
+      const defaultAddr = listAddress.find((addr) => addr.isDefault);
+      if (defaultAddr) {
+        setFormData((prev) => ({
+          ...prev,
+          receiverName: defaultAddr.recipientName || "",
+          receiverPhoneNumber: defaultAddr.phone || "",
+          shippingAddress: defaultAddr.fullAddress || "",
+        }));
+        setStreetAddress(defaultAddr.fullAddress || "");
+      }
+    }
+  }, [listAddress]);
+
   const location = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
