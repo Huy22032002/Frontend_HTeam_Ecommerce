@@ -30,10 +30,10 @@ export default function CheckoutScreen() {
     qrCode,
     //state address
     listAddress,
-    streetAddress,
+    // streetAddress,
     showListAddresses,
     setShowListAddresses,
-    setStreetAddress,
+    // setStreetAddress,
     //handle
     handleInputChange,
     handleSubmitOrder,
@@ -68,7 +68,7 @@ export default function CheckoutScreen() {
           receiverPhoneNumber: defaultAddr.phone || "",
         }));
 
-        setStreetAddress(defaultAddr.fullAddress || "");
+        // setStreetAddress(defaultAddr.fullAddress || "");
       }
     }
   }, [listAddress]);
@@ -240,7 +240,8 @@ export default function CheckoutScreen() {
                   fullWidth
                   size="small"
                   label="Địa chỉ"
-                  value={streetAddress}
+                  name="shippingAddress"
+                  value={formData.shippingAddress}
                   onChange={handleInputChange}
                   placeholder="VD: 123, Xã Sơn Bình, Huyện Tam Đường, Tỉnh Lai Châu"
                   disabled={isLoading}
