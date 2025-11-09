@@ -295,7 +295,7 @@ const PromotionListScreen = () => {
                     {selectedPromotion.applicableProductOptions.map((p) => (
                       <Chip
                         key={p.sku}
-                        label={`${p.sku} - ${p.name}`}
+                        label={`${p.sku}`}
                         size="small"
                         variant="outlined"
                       />

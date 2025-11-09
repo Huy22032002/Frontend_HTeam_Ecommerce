@@ -50,7 +50,7 @@ const InvoiceListScreen = () => {
   return (
     <Box>
       <Typography variant="h4" fontWeight={600} mb={2}>Danh sách Hóa đơn</Typography>
-      <Box display="flex" flexWrap="wrap" gap={2} mb={2} alignItems="center">
+      {/* <Box display="flex" flexWrap="wrap" gap={2} mb={2} alignItems="center">
         <TextField
           name="search"
           size="small"
@@ -79,7 +79,7 @@ const InvoiceListScreen = () => {
           onChange={handleTextFieldChange}
         />
         <Button variant="outlined">Xuất file</Button>
-      </Box>
+      </Box> */}
 
       {loading ? (
         <Box display="flex" justifyContent="center" mt={4}>

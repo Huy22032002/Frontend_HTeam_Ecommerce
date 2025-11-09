@@ -156,8 +156,8 @@ const ProductsByCategory = () => {
         {categoryName || ""}
       </Typography>
 
-      {/* list manufacturers  */}
-      <ManufacturerTabs items={manufacturers} />
+      {/* list manufacturers 
+      <ManufacturerTabs items={manufacturers} /> */}
 
       <Box display="flex" flexDirection="row" sx={{ width: "100%", gap: 2 }}>
         {/* left : sideBarFilter */}
@@ -200,7 +200,10 @@ const ProductsByCategory = () => {
                 count={totalPages}
                 page={currentPage}
                 onChange={(_event, page) => {
-                  getListProductByCategoryId(Number(categoryId), page - 1);
+                  getListProductWithFilters({
+                    ...filters,
+                    page: page - 1,
+                  });
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
                 color="primary"

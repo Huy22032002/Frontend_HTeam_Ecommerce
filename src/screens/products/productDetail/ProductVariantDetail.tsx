@@ -222,6 +222,9 @@ const ProductVariantDetail = () => {
             <Typography variant="body2" color="textSecondary" mb={2}>
               SKU: {currentOption?.sku}
             </Typography>
+            <Typography variant="body1" color="textSecondary" mb={3}>
+              Còn hàng: {currentOption?.availability?.quantity > 0 ? "✅" : "❌"}
+            </Typography>
 
             {/* Rating */}
             <Stack direction="row" spacing={1} alignItems="center" mb={2}>

@@ -92,9 +92,9 @@ const OrderHistoryScreen = () => {
   const handleCancelOrder = async () => {
     if (!selectedOrder) return;
 
-    // Kiểm tra trạng thái - chỉ cho phép huỷ khi PROCESSING hoặc PAID
-    if (!['PROCESSING', 'PAID'].includes(selectedOrder.status)) {
-      setCancelRestrictionMessage('Chỉ có thể hủy đơn hàng ở trạng thái "Đang xử lý" hoặc "Đã thanh toán". Đơn hàng hiện tại không thể hủy.');
+    // Kiểm tra trạng thái - chỉ cho phép huỷ khi PENDING
+    if (!['PENDING'].includes(selectedOrder.status)) {
+      setCancelRestrictionMessage('Chỉ có thể hủy đơn hàng ở trạng thái "Đang chờ". Đơn hàng hiện tại không thể hủy.');
       setOpenCancelRestrictionDialog(true);
       return;
     }
@@ -127,7 +127,7 @@ const OrderHistoryScreen = () => {
     }
   };
 
-  const canCancelOrder = selectedOrder && ['PROCESSING','PENDING','APPROVED', 'PAID'].includes(selectedOrder.status);
+  const canCancelOrder = selectedOrder && ['PENDING'].includes(selectedOrder.status);
 
   const handleReceiveOrder = async () => {
     if (!selectedOrder) return;
@@ -348,6 +348,14 @@ const OrderHistoryScreen = () => {
                       </Box>
                       <Box display="flex" justifyContent="space-between">
                         <Typography variant="body2" color="textSecondary">
+                          Khách hàng:
+                        </Typography>
+                        <Typography variant="body2" fontWeight={600}>
+                          {selectedOrder.customerName}
+                        </Typography>
+                      </Box>
+                      <Box display="flex" justifyContent="space-between">
+                        <Typography variant="body2" color="textSecondary">
                           Ngày tạo:
                         </Typography>
                         <Typography variant="body2" fontWeight={600}>
@@ -371,10 +379,13 @@ const OrderHistoryScreen = () => {
                   {selectedOrder.shippingAddress && (
                     <Box>
                       <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                        Địa chỉ giao hàng
+                        Thông tin giao hàng
                       </Typography>
                       <Typography variant="body2" sx={{ pl: 2 }}>
                         {selectedOrder.shippingAddress}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary" sx={{ pl: 2 }}>
+                        {selectedOrder.receiverName} - {selectedOrder.receiverPhoneNumber}
                       </Typography>
                     </Box>
                   )}
