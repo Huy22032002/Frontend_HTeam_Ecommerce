@@ -21,7 +21,6 @@ import Footer from "./components/Footer";
 import ProductVariantDetail from "./screens/products/productDetail/ProductVariantDetail";
 import CartScreen from "./screens/cart/Cartscreen";
 import CheckoutScreen from "./screens/order/CheckoutScreen";
-import OrderHistoryScreen from "./screens/customerLayout/orderHistory/OrderHistoryScreen";
 import SearchScreen from "./screens/search/SearchScreen";
 import OtpScreen from "./screens/signup/OtpScreen";
 import SetPasswordScreen from "./screens/signup/setPassword/SetPasswordScreen";
@@ -29,6 +28,7 @@ import PromotionProductsScreen from "./screens/promotions/PromotionProductsScree
 import CustomerLayout from "./screens/customerLayout/CustomerLayout";
 import ListAddress from "./screens/customerLayout/listAddress/ListAddress";
 import CustomerInfo from "./screens/customerLayout/customerInfo/CustomerInfo";
+import OrderHistoryScreen from "./screens/customerLayout/orderHistory/OrderHistoryScreen";
 
 function AppContent() {
   const location = useLocation();

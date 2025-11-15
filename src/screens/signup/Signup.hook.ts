@@ -20,12 +20,13 @@ const useSignup = () => {
   const handleSignUpPhone = async () => {
     if (!phone || error) return;
 
-    const res = await OTPApi.sendOtp(phone);
-    if (res !== null) {
-      // Chuyển sang màn OTP Screen và truyền phone
+    try {
+      const res = await OTPApi.sendOtp(phone);
+      console.log(res);
       navigate("/otp", { state: { phone } });
-    } else {
-      setError("Gửi OTP thất bại! Vui lòng thử lại.");
+    } catch (error: any) {
+      console.error("Lỗi gửi OTP:", error);
+      setError(error.message);
     }
   };
 

@@ -64,10 +64,14 @@ const SignupScreen = () => {
           onChange={(e) => {
             setPhone(e.target.value);
             if (!e.target.value) {
-              setError("Vui lòng nhập email");
+              setError("Vui lòng nhập số điện thoại");
             } else if (!validatePhone(e.target.value)) {
               setError("Số điện thoại không hợp lệ!");
-            } else {
+            } else if (
+              error === "Vui lòng nhập số điện thoại" ||
+              error === "Số điện thoại không hợp lệ!"
+            ) {
+              // chỉ clear nếu lỗi hiện tại là do input
               setError("");
             }
           }}
