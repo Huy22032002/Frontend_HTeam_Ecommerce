@@ -8,14 +8,24 @@ import type { CartItem } from "../../../models/cart/CartItem";
 import { useDispatch, useSelector } from "react-redux";
 import { setCart } from "../../../store/cartSlice";
 import type { RootState } from "../../../store/store";
+import type {
+  CreateReviewDto,
+  ReadableProductReview,
+} from "../../../models/products/ProductReview";
+import { ReviewApi } from "../../../api/review/ProductReviewApi";
+import { CloudApi } from "../../../api/CloudApi";
 
 const useVariantDetail = () => {
   const dispatch = useDispatch();
-  const customer = useSelector((state: RootState) => state.customerAuth?.customer);
+  const customer = useSelector(
+    (state: RootState) => state.customerAuth?.customer
+  );
   const currentCart = useSelector((state: RootState) => state.cart.cart);
 
   const [variant, setVariant] = useState<ProductVariants | null>(null);
-  const [recommendedProducts, setRecommendedProducts] = useState<ProductVariants[]>([]);
+  const [recommendedProducts, setRecommendedProducts] = useState<
+    ProductVariants[]
+  >([]);
   const [currentOption, setCurrentOption] = useState<ProductOption | null>(
     null
   );
@@ -26,7 +36,7 @@ const useVariantDetail = () => {
     if (data) {
       setVariant(data);
       setCurrentOption(data.options?.[0]);
-      
+
       // Set recommended products từ response, lọc ra sản phẩm hiện tại
       if (data.recommendedProducts && Array.isArray(data.recommendedProducts)) {
         const filtered = data.recommendedProducts.filter(
@@ -36,14 +46,20 @@ const useVariantDetail = () => {
       } else {
         setRecommendedProducts([]);
       }
-      
+
       console.log("cur option: ", data.options?.[0]);
-      console.log("recommended products (filtered): ", data.recommendedProducts);
+      console.log(
+        "recommended products (filtered): ",
+        data.recommendedProducts
+      );
     }
   };
 
   //cart
-  const addOptionsToCart = async (cartCode: string | undefined, option: ProductOption | undefined) => {
+  const addOptionsToCart = async (
+    cartCode: string | undefined,
+    option: ProductOption | undefined
+  ) => {
     if (!option?.id) {
       console.error("Option chưa có id, không thể thêm vào giỏ hàng");
       return;
@@ -114,6 +130,104 @@ const useVariantDetail = () => {
     }
   };
 
+  //reviews
+  const [reviews, setReviews] = useState<ReadableProductReview[]>([]);
+  const [isLoadingReview, setIsLoadingReview] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [filter, setFilter] = useState("ALL");
+
+  const loadReviews = async () => {
+    if (!currentOption || currentOption.id === undefined) {
+      setReviews([]); // tránh treo UI
+      setTotalPages(1);
+      setIsLoadingReview(false);
+      return;
+    }
+    setIsLoadingReview(true);
+
+    try {
+      const data = await ReviewApi.getListByProductOptionId(
+        currentOption.id,
+        page - 1 // nếu API hỗ trợ phân trang
+      );
+
+      if (data && Array.isArray(data.content)) {
+        let filtered = data.content;
+
+        if (filter === "WITH_IMAGES") {
+          filtered = filtered.filter(
+            (r) => r.imageUrls && r.imageUrls.length > 0
+          );
+        } else if (filter === "5_STAR") {
+          filtered = filtered.filter((r) => r.reviewRating === 5);
+        } else if (filter === "4_STAR") {
+          filtered = filtered.filter((r) => r.reviewRating === 4);
+        } else if (filter === "3_STAR") {
+          filtered = filtered.filter((r) => r.reviewRating === 3);
+        } else if (filter === "2_STAR") {
+          filtered = filtered.filter((r) => r.reviewRating === 2);
+        } else if (filter === "1_STAR") {
+          filtered = filtered.filter((r) => r.reviewRating === 1);
+        }
+
+        setReviews(filtered);
+        setTotalPages(data.totalPages || 1);
+      }
+    } catch (err) {
+      console.error(err);
+      setReviews([]);
+      setTotalPages(1);
+    } finally {
+      setIsLoadingReview(false);
+    }
+  };
+  //check can review
+  const [canReview, setCanReview] = useState(false);
+  const checkCanReview = async () => {
+    if (customer?.id == undefined || currentOption?.sku == undefined) return;
+
+    const result = await ReviewApi.checkCanReview(
+      customer?.id,
+      currentOption?.sku
+    );
+    setCanReview(result);
+  };
+
+  //tạo review
+  const [openCreateReview, setOpenCreateReview] = useState(false);
+  const handleCreateReview = async (data: CreateReviewDto) => {
+    if (!data) return;
+    setIsLoadingReview(true);
+    try {
+      //upload hinh len cloud
+      if (data.files) {
+        const formData = new FormData();
+        formData.append("folder", "reviews");
+        data.files.forEach((file) => formData.append("file", file));
+
+        const imgUrls = await CloudApi.uploadImages(formData);
+        if (imgUrls == null) {
+          alert("Loi ko upload dc hinh");
+          return;
+        }
+        console.log("list url img uploaded: ", imgUrls);
+
+        data.images = imgUrls ?? [];
+      }
+
+      const readableReview = await ReviewApi.createReview(data);
+      //response.data la ReadableReview
+      if (readableReview) {
+        setReviews((prev) => [readableReview, ...prev]); // Thêm review mới lên đầu
+      }
+    } catch (err: any) {
+      throw new Error(err.message);
+    } finally {
+      setIsLoadingReview(false);
+    }
+  };
+
   return {
     //productVariant
     getProductVariant,
@@ -128,6 +242,23 @@ const useVariantDetail = () => {
     addOptionsToCart,
     isLoading,
     setIsLoading,
+    //review
+    canReview,
+    checkCanReview,
+    openCreateReview,
+    setOpenCreateReview,
+    handleCreateReview,
+    reviews,
+    isLoadingReview,
+    setIsLoadingReview,
+    setReviews,
+    loadReviews,
+    page,
+    setPage,
+    filter,
+    setFilter,
+    totalPages,
+    setTotalPages,
   };
 };
 

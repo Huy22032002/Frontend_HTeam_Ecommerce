@@ -13,6 +13,10 @@ import {
   Rating,
   Alert,
   Container,
+  Tabs,
+  Tab,
+  Grid,
+  Pagination,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import useVariantDetail from "./ProductVariantDetail.hook";
@@ -24,9 +28,14 @@ import type { ProductImage } from "../../../models/products/ProductVariantOption
 import PromotionDisplay from "../../../components/promotion/PromotionDisplay";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import CreateIcon from "@mui/icons-material/Create";
 import SecurityIcon from "@mui/icons-material/Security";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import CircleIcon from "@mui/icons-material/Circle";
+
 import { CustomerLogApi } from "../../../api/customer/CustomerLogApi";
+import CreateReviewModal from "../../../components/review/CreateReviewModal";
+import ImageModalGallery from "../../../components/ImageGallery";
 
 const ProductVariantDetail = () => {
   const theme = useTheme();
@@ -54,10 +63,26 @@ const ProductVariantDetail = () => {
     addOptionsToCart,
     isLoading,
     setIsLoading,
+    //review
+    checkCanReview,
+    canReview,
+    openCreateReview,
+    setOpenCreateReview,
+    handleCreateReview,
+    reviews,
+    loadReviews,
+    page,
+    setPage,
+    filter,
+    setFilter,
+    totalPages,
+    isLoadingReview,
   } = useVariantDetail();
 
   useEffect(() => {
-    if (variantId) getProductVariant(Number(variantId));
+    if (variantId) {
+      getProductVariant(Number(variantId));
+    }
 
     // Log product view to backend
     console.log("VariantId from URL:", variantId);
@@ -81,6 +106,11 @@ const ProductVariantDetail = () => {
       });
     }
   }, [variantId]);
+
+  useEffect(() => {
+    loadReviews();
+    checkCanReview();
+  }, [filter, page, currentOption]);
 
   const handleAddToCart = async () => {
     // Kiểm tra nếu khách hàng chưa đăng nhập
@@ -222,15 +252,49 @@ const ProductVariantDetail = () => {
             <Typography variant="body2" color="textSecondary" mb={2}>
               SKU: {currentOption?.sku}
             </Typography>
-            <Typography variant="body1" color="textSecondary" mb={3}>
-              Còn hàng: {currentOption?.availability?.quantity > 0 ? "✅" : "❌"}
-            </Typography>
+            {/* Stock status */}
+            <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+              <CircleIcon
+                fontSize="small"
+                color={
+                  (currentOption?.availability?.quantity ?? 0) > 0
+                    ? "success"
+                    : "error"
+                }
+              />
+              <Typography
+                variant="body1"
+                sx={{ fontWeight: 500 }}
+                color={
+                  (currentOption?.availability?.quantity ?? 0) > 0
+                    ? "success.main"
+                    : "error.main"
+                }
+              >
+                {(currentOption?.availability?.quantity ?? 0) > 0
+                  ? "Còn hàng"
+                  : "Hết hàng"}
+              </Typography>
+            </Stack>
 
             {/* Rating */}
             <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-              <Rating value={4} readOnly size="small" />
-              <Typography variant="body2" color="textSecondary">
-                (12 đánh giá)
+              <Typography variant="body2" color="text.secondary">
+                {currentOption?.reviewAvg || "Chưa có đánh giá"}
+              </Typography>
+              <Rating
+                value={
+                  currentOption?.reviewAvg ? Number(currentOption.reviewAvg) : 0
+                }
+                readOnly
+                precision={0.5}
+                size="small"
+              />
+              <Typography variant="body2" color="text.secondary">
+                •
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {currentOption?.reviewCount || "0"} đánh giá
               </Typography>
             </Stack>
 
@@ -417,7 +481,7 @@ const ProductVariantDetail = () => {
                   borderColor: colors.primary[100],
                   color: colors.primary[100],
                   "&:hover": {
-                    bgcolor: colors.primary[500],
+                    bgcolor: colors.primary[700],
                     borderColor: colors.primary[100],
                   },
                 }}
@@ -493,27 +557,224 @@ const ProductVariantDetail = () => {
           </CardContent>
         </Card>
 
-        {/* Reviews Section */}
-        <Card sx={{ mt: 4, borderRadius: 2 }}>
-          <CardContent>
-            <Typography variant="h5" fontWeight="bold" mb={3}>
-              ⭐ Đánh giá sản phẩm
-            </Typography>
-            <Box
+        {/* Reviews */}
+        <Box sx={{ mt: 6, borderRadius: 2 }}>
+          <Typography variant="h5" fontWeight="bold" mb={3}>
+            ⭐ Đánh giá sản phẩm
+          </Typography>
+          <Box sx={{ mb: 2, display: "flex" }}>
+            {canReview ? (
+              <Button
+                startIcon={<CreateIcon />}
+                variant="contained"
+                size="small"
+                onClick={() => setOpenCreateReview(true)}
+              >
+                Viết đánh giá
+              </Button>
+            ) : (
+              <Button variant="outlined" size="small" disabled>
+                Bạn chưa mua sản phẩm hoặc đã đánh giá rồi!
+              </Button>
+            )}
+          </Box>
+
+          {/* Modal Create Review */}
+          {customer && openCreateReview && currentOption && (
+            <CreateReviewModal
+              customerId={customer.id}
+              sku={currentOption?.sku}
+              open={openCreateReview}
+              onCreateReview={handleCreateReview}
+              onClose={() => setOpenCreateReview(false)}
+            />
+          )}
+
+          {/* Filter Review */}
+          <Tabs
+            value={filter}
+            onChange={(e, v) => setFilter(v)}
+            centered
+            sx={{
+              "& .MuiTabs-indicator": {
+                backgroundColor: "primary.main", // màu underline indicator
+                height: 3,
+              },
+            }}
+          >
+            <Tab
+              value={"ALL"}
+              label="Tất cả"
               sx={{
-                textAlign: "center",
-                p: 4,
-                bgcolor: colors.primary[400],
-                borderRadius: 1,
+                textTransform: "none",
+                fontWeight: 500,
+                color: "text.secondary",
+                "&.Mui-selected": {
+                  color: "primary.main",
+                },
+                "&:hover": {
+                  color: "primary.light",
+                  opacity: 1,
+                },
               }}
-            >
-              <Typography variant="body1" color="textSecondary">
-                Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá sản phẩm
-                này!
-              </Typography>
-            </Box>
-          </CardContent>
-        </Card>
+            />
+            <Tab
+              sx={{
+                textTransform: "none",
+                fontWeight: 500,
+                color: "text.secondary",
+                "&.Mui-selected": {
+                  color: "primary.main",
+                },
+                "&:hover": {
+                  color: "primary.light",
+                  opacity: 1,
+                },
+              }}
+              value={"5_STAR"}
+              label="5 sao"
+            />
+            <Tab
+              sx={{
+                textTransform: "none",
+                fontWeight: 500,
+                color: "text.secondary",
+                "&.Mui-selected": {
+                  color: "primary.main",
+                },
+                "&:hover": {
+                  color: "primary.light",
+                  opacity: 1,
+                },
+              }}
+              value={"4_STAR"}
+              label="4 sao"
+            />
+            <Tab
+              sx={{
+                textTransform: "none",
+                fontWeight: 500,
+                color: "text.secondary",
+                "&.Mui-selected": {
+                  color: "primary.main",
+                },
+                "&:hover": {
+                  color: "primary.light",
+                  opacity: 1,
+                },
+              }}
+              value={"3_STAR"}
+              label="3 sao"
+            />
+            <Tab
+              sx={{
+                textTransform: "none",
+                fontWeight: 500,
+                color: "text.secondary",
+                "&.Mui-selected": {
+                  color: "primary.main",
+                },
+                "&:hover": {
+                  color: "primary.light",
+                  opacity: 1,
+                },
+              }}
+              value={"2_STAR"}
+              label="2 sao"
+            />
+            <Tab
+              sx={{
+                textTransform: "none",
+                fontWeight: 500,
+                color: "text.secondary",
+                "&.Mui-selected": {
+                  color: "primary.main",
+                },
+                "&:hover": {
+                  color: "primary.light",
+                  opacity: 1,
+                },
+              }}
+              value={"1_STAR"}
+              label="1 sao"
+            />
+            <Tab
+              sx={{
+                textTransform: "none",
+                fontWeight: 500,
+                color: "text.secondary",
+                "&.Mui-selected": {
+                  color: "primary.main",
+                },
+                "&:hover": {
+                  color: "primary.light",
+                  opacity: 1,
+                },
+              }}
+              value="WITH_IMAGES"
+              label="Có hình ảnh"
+            />
+          </Tabs>
+          {/* Loading */}
+          {isLoadingReview && (
+            <Stack alignItems="center" mt={2} mb={2}>
+              <CircularProgress size={24} />
+              <Typography mt={1}>Đang tải các bài đánh giá...</Typography>
+            </Stack>
+          )}
+
+          {/* No review */}
+          {!isLoadingReview && reviews.length === 0 && (
+            <Typography variant="body1" color="textSecondary" mt={2}>
+              Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá sản phẩm này!
+            </Typography>
+          )}
+
+          {/* Danh sách reviews */}
+          {!isLoadingReview &&
+            reviews.map((r) => (
+              <Card key={r.id} sx={{ mt: 2, borderRadius: 2, boxShadow: 2 }}>
+                <CardContent>
+                  {/* Header: Rating + Customer Name + Date */}
+                  <Stack direction="row" alignItems="center" spacing={2} mb={1}>
+                    <Rating
+                      value={r.reviewRating}
+                      readOnly
+                      precision={0.5}
+                      size="small"
+                    />
+                    <Typography variant="body2" color="textSecondary">
+                      {r.customerName} -{" "}
+                      {r.reviewDate
+                        ? new Date(r.reviewDate).toLocaleDateString()
+                        : ""}
+                    </Typography>
+                  </Stack>
+
+                  {/* Comment */}
+                  <Typography variant="body1" sx={{ mb: 1 }}>
+                    {r.comment}
+                  </Typography>
+
+                  {/* Images */}
+                  {r.imageUrls && r.imageUrls.length > 0 && (
+                    <ImageModalGallery
+                      imageUrls={r.imageUrls}
+                      thumbnailSize={80}
+                    />
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          {/* Pagination */}
+          <Box mt={1}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={(e, v) => setPage(v)}
+            />
+          </Box>
+        </Box>
 
         {/* Recommended Products Section */}
         {recommendedProducts && recommendedProducts.length > 0 && (

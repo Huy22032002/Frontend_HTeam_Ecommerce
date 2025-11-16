@@ -92,14 +92,22 @@ const Footer = () => {
 
       {/* Dòng bản quyền */}
       <Divider sx={{ my: 4 }} />
-      <Typography
-        variant="body2"
-        textAlign="center"
-        sx={{ color: colors.grey[500] }}
-      >
-        © HEcommerce 2025 — Trang bán hàng uy tín tại Việt Nam. Điện thoại:
-        0868661275.
-      </Typography>
+      <Box display={"flex"} flexDirection={"column"}>
+        <Typography
+          variant="body2"
+          textAlign="center"
+          sx={{ color: colors.grey[500] }}
+        >
+          © HEcommerce — Trang bán hàng uy tín tại Việt Nam.
+        </Typography>
+        <Typography
+          variant="body2"
+          textAlign="center"
+          sx={{ color: colors.grey[500] }}
+        >
+          Điện thoại: 0868661273
+        </Typography>
+      </Box>
     </Box>
   );
 };

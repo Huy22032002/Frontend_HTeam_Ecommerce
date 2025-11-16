@@ -15,9 +15,12 @@ export const OTPApi = {
         { params: { phone } }
       );
       return response.data;
-    } catch (error) {
-      console.error("Failed to send OTP:", error);
-      return null;
+    } catch (error: any) {
+      if (error.response) {
+        throw new Error(error.response.data);
+      }
+      // (network, server chết,…)
+      throw new Error("Không thể kết nối tới server");
     }
   },
   verifyOtp: async (phone: string, code: string) => {

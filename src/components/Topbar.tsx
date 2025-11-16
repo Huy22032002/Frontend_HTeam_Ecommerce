@@ -22,10 +22,16 @@ import { login } from "../store/customerSlice";
 import CartPopup from "./cart/CartPopup";
 import { CartApi } from "../api/cart/cartApi";
 import { setCart } from "../store/cartSlice";
+import NotificationPopup from "./notìication/NotificationPopup";
 
 const Topbar: React.FC = () => {
   //redux
   const dispatch = useDispatch();
+
+  //notification
+  const [openNotification, setOpenNotification] = useState(false);
+
+  //---------------------------------------------------------
 
   //cart from reduux
   const cart = useSelector((state: RootState) => state.cart.cart);
@@ -137,9 +143,18 @@ const Topbar: React.FC = () => {
       {/* right box */}
       {/*  ICON */}
       <Box display="flex" gap={2}>
-        <IconButton>
-          <NotificationsOutlinedIcon />
-        </IconButton>
+        {/* notifications */}
+        {user && (
+          <IconButton onClick={() => setOpenNotification((prev) => !prev)}>
+            <NotificationsOutlinedIcon />
+          </IconButton>
+        )}
+        {openNotification && (
+          <NotificationPopup
+            open={openNotification}
+            onClose={() => setOpenNotification(false)}
+          />
+        )}
 
         <IconButton onClick={colorMode.toggleColorMode}>
           {theme.palette.mode === "dark" ? (
