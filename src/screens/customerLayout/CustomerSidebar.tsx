@@ -11,8 +11,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
-import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined";
-
+import RateReviewIcon from "@mui/icons-material/RateReview";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useDispatch } from "react-redux";
 import { logout } from "../../store/customerSlice";
@@ -30,9 +29,9 @@ const menu = [
   },
   { label: "Sổ địa chỉ", to: "addresses", icon: <LocationOnOutlinedIcon /> },
   {
-    label: "Thông báo",
-    to: "notifications",
-    icon: <NotificationsOutlinedIcon />,
+    label: "Đánh giá của tôi",
+    to: "reviews",
+    icon: <RateReviewIcon />,
   },
 ];
 

@@ -25,7 +25,6 @@ import {
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CancelIcon from "@mui/icons-material/Cancel";
 import type { RootState } from "../../../store/store";
 import { useOrderHistory } from "../../../hooks/useOrderHistory";
@@ -93,8 +92,10 @@ const OrderHistoryScreen = () => {
     if (!selectedOrder) return;
 
     // Kiểm tra trạng thái - chỉ cho phép huỷ khi PENDING
-    if (!['PENDING'].includes(selectedOrder.status)) {
-      setCancelRestrictionMessage('Chỉ có thể hủy đơn hàng ở trạng thái "Đang chờ". Đơn hàng hiện tại không thể hủy.');
+    if (!["PENDING"].includes(selectedOrder.status)) {
+      setCancelRestrictionMessage(
+        'Chỉ có thể hủy đơn hàng ở trạng thái "Đang chờ". Đơn hàng hiện tại không thể hủy.'
+      );
       setOpenCancelRestrictionDialog(true);
       return;
     }
@@ -105,8 +106,8 @@ const OrderHistoryScreen = () => {
       if (response.status === 200) {
         setSnackbar({
           open: true,
-          message: '✅ Hủy đơn hàng thành công!',
-          severity: 'success',
+          message: "✅ Hủy đơn hàng thành công!",
+          severity: "success",
         });
         setOpenDialog(false);
         // Refresh lịch sử đơn hàng
@@ -115,19 +116,21 @@ const OrderHistoryScreen = () => {
         }, 1500);
       }
     } catch (error: any) {
-      console.error('Lỗi khi hủy đơn hàng:', error);
-      const errorMessage = error?.response?.data?.message || 'Hủy đơn hàng thất bại';
+      console.error("Lỗi khi hủy đơn hàng:", error);
+      const errorMessage =
+        error?.response?.data?.message || "Hủy đơn hàng thất bại";
       setSnackbar({
         open: true,
         message: `❌ ${errorMessage}`,
-        severity: 'error',
+        severity: "error",
       });
     } finally {
       setCancelLoading(false);
     }
   };
 
-  const canCancelOrder = selectedOrder && ['PENDING'].includes(selectedOrder.status);
+  const canCancelOrder =
+    selectedOrder && ["PENDING"].includes(selectedOrder.status);
 
   const handleReceiveOrder = async () => {
     if (!selectedOrder) return;
@@ -135,24 +138,25 @@ const OrderHistoryScreen = () => {
     try {
       setCancelLoading(true);
       // Use the same API to update status to DELIVERED
-      await OrderApi.updateOrderStatus(selectedOrder.id, 'DELIVERED');
-      
+      await OrderApi.updateOrderStatus(selectedOrder.id, "DELIVERED");
+
       setSnackbar({
         open: true,
-        message: '✅ Xác nhận nhận hàng thành công!',
-        severity: 'success',
+        message: "✅ Xác nhận nhận hàng thành công!",
+        severity: "success",
       });
 
       // Close dialog and refresh
       setOpenDialog(false);
       window.location.reload();
     } catch (error: any) {
-      console.error('Lỗi khi xác nhận nhận hàng:', error);
-      const errorMessage = error?.response?.data?.message || 'Lỗi khi xác nhận nhận hàng';
+      console.error("Lỗi khi xác nhận nhận hàng:", error);
+      const errorMessage =
+        error?.response?.data?.message || "Lỗi khi xác nhận nhận hàng";
       setSnackbar({
         open: true,
         message: `❌ ${errorMessage}`,
-        severity: 'error',
+        severity: "error",
       });
     } finally {
       setCancelLoading(false);
@@ -233,12 +237,17 @@ const OrderHistoryScreen = () => {
                 <Table sx={{ minWidth: 700 }}>
                   <TableHead
                     sx={{
-                      bgcolor: theme.palette.mode === "dark" ? "#1e1e1e" : "#f5f5f5",
+                      bgcolor:
+                        theme.palette.mode === "dark" ? "#1e1e1e" : "#f5f5f5",
                     }}
                   >
                     <TableRow>
-                      <TableCell sx={{ fontWeight: "bold" }}>Mã đơn hàng</TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>Ngày tạo</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>
+                        Mã đơn hàng
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>
+                        Ngày tạo
+                      </TableCell>
                       <TableCell sx={{ fontWeight: "bold" }} align="right">
                         Tổng tiền
                       </TableCell>
@@ -256,14 +265,20 @@ const OrderHistoryScreen = () => {
                         key={order.id}
                         sx={{
                           "&:hover": {
-                            bgcolor: theme.palette.mode === "dark" ? "#2a2a2a" : "#f9f9f9",
+                            bgcolor:
+                              theme.palette.mode === "dark"
+                                ? "#2a2a2a"
+                                : "#f9f9f9",
                           },
                         }}
                       >
                         <TableCell
                           sx={{
                             fontWeight: 600,
-                            color: theme.palette.mode === "dark" ? "#00CFFF" : "#1976d2",
+                            color:
+                              theme.palette.mode === "dark"
+                                ? "#00CFFF"
+                                : "#1976d2",
                             cursor: "pointer",
                             "&:hover": { textDecoration: "underline" },
                           }}
@@ -272,13 +287,16 @@ const OrderHistoryScreen = () => {
                           {order.orderCode}
                         </TableCell>
                         <TableCell>
-                          {new Date(order.createdAt).toLocaleDateString("vi-VN", {
-                            year: "numeric",
-                            month: "2-digit",
-                            day: "2-digit",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                          {new Date(order.createdAt).toLocaleDateString(
+                            "vi-VN",
+                            {
+                              year: "numeric",
+                              month: "2-digit",
+                              day: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }
+                          )}
                         </TableCell>
                         <TableCell align="right" sx={{ fontWeight: 600 }}>
                           {formatCurrency(order.total)}
@@ -298,7 +316,10 @@ const OrderHistoryScreen = () => {
                             onClick={() => handleViewDetails(order)}
                             sx={{
                               textTransform: "none",
-                              color: theme.palette.mode === "dark" ? "#00CFFF" : "#1976d2",
+                              color:
+                                theme.palette.mode === "dark"
+                                  ? "#00CFFF"
+                                  : "#1976d2",
                             }}
                           >
                             Xem chi tiết
@@ -334,7 +355,11 @@ const OrderHistoryScreen = () => {
                 <Stack spacing={2}>
                   {/* Order Info */}
                   <Box>
-                    <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                    <Typography
+                      variant="subtitle2"
+                      fontWeight="bold"
+                      gutterBottom
+                    >
                       Thông tin đơn hàng
                     </Typography>
                     <Stack spacing={1} sx={{ pl: 2 }}>
@@ -359,7 +384,9 @@ const OrderHistoryScreen = () => {
                           Ngày tạo:
                         </Typography>
                         <Typography variant="body2" fontWeight={600}>
-                          {new Date(selectedOrder.createdAt).toLocaleDateString("vi-VN")}
+                          {new Date(selectedOrder.createdAt).toLocaleDateString(
+                            "vi-VN"
+                          )}
                         </Typography>
                       </Box>
                       <Box display="flex" justifyContent="space-between">
@@ -378,26 +405,45 @@ const OrderHistoryScreen = () => {
                   {/* Shipping Address */}
                   {selectedOrder.shippingAddress && (
                     <Box>
-                      <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight="bold"
+                        gutterBottom
+                      >
                         Thông tin giao hàng
                       </Typography>
                       <Typography variant="body2" sx={{ pl: 2 }}>
                         {selectedOrder.shippingAddress}
                       </Typography>
-                      <Typography variant="body2" color="textSecondary" sx={{ pl: 2 }}>
-                        {selectedOrder.receiverName} - {selectedOrder.receiverPhoneNumber}
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        sx={{ pl: 2 }}
+                      >
+                        {selectedOrder.receiverName} -{" "}
+                        {selectedOrder.receiverPhoneNumber}
                       </Typography>
                     </Box>
                   )}
 
                   {/* Items */}
                   <Box>
-                    <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                    <Typography
+                      variant="subtitle2"
+                      fontWeight="bold"
+                      gutterBottom
+                    >
                       Sản phẩm ({selectedOrder.items?.length || 0})
                     </Typography>
-                    <Stack spacing={1} sx={{ pl: 2, maxHeight: 200, overflowY: "auto" }}>
+                    <Stack
+                      spacing={1}
+                      sx={{ pl: 2, maxHeight: 200, overflowY: "auto" }}
+                    >
                       {selectedOrder.items?.map((item, index) => (
                         <Box
+                          onClick={() => {
+                            navigate(`/product/${item.variantId}`);
+                          }}
                           key={index}
                           display="flex"
                           justifyContent="space-between"
@@ -410,22 +456,42 @@ const OrderHistoryScreen = () => {
                           }}
                         >
                           <Box flex={1}>
-                            <Typography variant="body2" fontWeight={600}>
+                            <Typography
+                              sx={{
+                                "&:hover": {
+                                  textDecoration: "underline",
+                                  cursor: "pointer",
+                                },
+                              }}
+                              variant="body2"
+                              fontWeight={600}
+                            >
                               {item.productName || item.sku}
                             </Typography>
                             <Typography variant="caption" color="textSecondary">
                               SKU: {item.sku}
                             </Typography>
-                            <Typography variant="caption" color="textSecondary" display="block">
+                            <Typography
+                              variant="caption"
+                              color="textSecondary"
+                              display="block"
+                            >
                               Số lượng: {item.quantity}
                             </Typography>
                             {item.promotionId && (
                               <Box sx={{ mt: 0.5 }}>
-                                <Typography variant="caption" sx={{ color: "#d32f2f", fontWeight: 600 }}>
+                                <Typography
+                                  variant="caption"
+                                  sx={{ color: "#d32f2f", fontWeight: 600 }}
+                                >
                                   ✓ Khuyến mãi áp dụng
                                 </Typography>
                                 {item.discountAmount && (
-                                  <Typography variant="caption" display="block" sx={{ color: "#d32f2f" }}>
+                                  <Typography
+                                    variant="caption"
+                                    display="block"
+                                    sx={{ color: "#d32f2f" }}
+                                  >
                                     Giảm: {formatCurrency(item.discountAmount)}
                                   </Typography>
                                 )}
@@ -440,7 +506,11 @@ const OrderHistoryScreen = () => {
                               <Typography
                                 variant="caption"
                                 display="block"
-                                sx={{ color: "#d32f2f", fontWeight: 600, textAlign: "right" }}
+                                sx={{
+                                  color: "#d32f2f",
+                                  fontWeight: 600,
+                                  textAlign: "right",
+                                }}
                               >
                                 -{formatCurrency(item.discountAmount)}
                               </Typography>
@@ -454,7 +524,11 @@ const OrderHistoryScreen = () => {
                   {/* Notes */}
                   {selectedOrder.notes && (
                     <Box>
-                      <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight="bold"
+                        gutterBottom
+                      >
                         Ghi chú
                       </Typography>
                       <Typography variant="body2" sx={{ pl: 2 }}>
@@ -467,29 +541,47 @@ const OrderHistoryScreen = () => {
                   <Box
                     sx={{
                       p: 2,
-                      bgcolor: theme.palette.mode === "dark" ? "#1e1e1e" : "#f5f5f5",
+                      bgcolor:
+                        theme.palette.mode === "dark" ? "#1e1e1e" : "#f5f5f5",
                       borderRadius: 1,
                     }}
                   >
                     <Stack spacing={1}>
-                      <Box display="flex" justifyContent="space-between" alignItems="center">
+                      <Box
+                        display="flex"
+                        justifyContent="space-between"
+                        alignItems="center"
+                      >
                         <Typography variant="body2" color="textSecondary">
                           Tạm tính:
                         </Typography>
                         <Typography variant="body2">
-                          {formatCurrency((selectedOrder.total || 0) + (selectedOrder.totalDiscount || 0))}
+                          {formatCurrency(
+                            (selectedOrder.total || 0) +
+                              (selectedOrder.totalDiscount || 0)
+                          )}
                         </Typography>
                       </Box>
-                      {selectedOrder.totalDiscount && selectedOrder.totalDiscount > 0 && (
-                        <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ color: "#d32f2f" }}>
-                          <Typography variant="body2" color="inherit">
-                            Giảm giá:
-                          </Typography>
-                          <Typography variant="body2" fontWeight={600} color="inherit">
-                            -{formatCurrency(selectedOrder.totalDiscount)}
-                          </Typography>
-                        </Box>
-                      )}
+                      {selectedOrder.totalDiscount &&
+                        selectedOrder.totalDiscount > 0 && (
+                          <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="center"
+                            sx={{ color: "#d32f2f" }}
+                          >
+                            <Typography variant="body2" color="inherit">
+                              Giảm giá:
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              fontWeight={600}
+                              color="inherit"
+                            >
+                              -{formatCurrency(selectedOrder.totalDiscount)}
+                            </Typography>
+                          </Box>
+                        )}
                       <Box
                         display="flex"
                         justifyContent="space-between"
@@ -506,7 +598,11 @@ const OrderHistoryScreen = () => {
                           variant="h6"
                           fontWeight="bold"
                           sx={{
-                            color: selectedOrder.totalDiscount && selectedOrder.totalDiscount > 0 ? "#d32f2f" : "#1976d2",
+                            color:
+                              selectedOrder.totalDiscount &&
+                              selectedOrder.totalDiscount > 0
+                                ? "#d32f2f"
+                                : "#1976d2",
                           }}
                         >
                           {formatCurrency(selectedOrder.total)}
@@ -517,7 +613,7 @@ const OrderHistoryScreen = () => {
                 </Stack>
               </DialogContent>
               <DialogActions sx={{ p: 2, gap: 1 }}>
-                {selectedOrder.status === 'SHIPPING' && (
+                {selectedOrder.status === "SHIPPING" && (
                   <Button
                     onClick={handleReceiveOrder}
                     disabled={cancelLoading}
@@ -540,7 +636,10 @@ const OrderHistoryScreen = () => {
                     {cancelLoading ? "Đang hủy..." : "Hủy đơn hàng"}
                   </Button>
                 )}
-                <Button onClick={handleCloseDialog} sx={{ textTransform: "none" }}>
+                <Button
+                  onClick={handleCloseDialog}
+                  sx={{ textTransform: "none" }}
+                >
                   Đóng
                 </Button>
               </DialogActions>
@@ -567,13 +666,16 @@ const OrderHistoryScreen = () => {
             <Typography variant="body1" sx={{ color: "#666", mb: 2 }}>
               {cancelRestrictionMessage}
             </Typography>
-            <Typography variant="body2" sx={{ color: "#999", fontStyle: "italic" }}>
+            <Typography
+              variant="body2"
+              sx={{ color: "#999", fontStyle: "italic" }}
+            >
               Please contact customer support for assistance.
             </Typography>
           </DialogContent>
           <DialogActions sx={{ p: 2 }}>
-            <Button 
-              onClick={() => setOpenCancelRestrictionDialog(false)} 
+            <Button
+              onClick={() => setOpenCancelRestrictionDialog(false)}
               variant="contained"
               color="primary"
               sx={{ textTransform: "none" }}
