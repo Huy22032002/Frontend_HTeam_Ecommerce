@@ -21,6 +21,7 @@ export interface CreateOrderRequest {
   receiverPhoneNumber?: string; // Số điện thoại người nhận hàng
   totalAmount?: number; // Tổng tiền (tính toán lại ở BE)
   customerCartCode?: string; // Mã giỏ hàng (nếu có)
+  voucherCode?: string; //voucher code (optional)
 }
 
 // Response khi tạo đơn hàng thành công

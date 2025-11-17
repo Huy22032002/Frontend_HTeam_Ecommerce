@@ -9,10 +9,30 @@ import { OrderApi } from "../../api/order/OrderApi";
 import { clearCart } from "../../store/cartSlice";
 import { MomoApi } from "../../api/MomoApi";
 import type { CreateCustomerDelivery } from "../../models/customer/CreateCustomerDelivery";
-import { set } from "lodash";
-
+import type { Voucher } from "../../models/vouchers/Voucher";
+import { VoucherApi } from "../../api/voucher/VoucherApi";
 
 const useCheckout = () => {
+  //voucher
+  const [vouchers, setVoucher] = useState<Voucher[]>([]);
+  const [voucherModalOpen, setVoucherModalOpen] = useState(false);
+  const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
+  const getAvailableVouchers = async () => {
+    if (!customer) return;
+    const data = await VoucherApi.getByCustomerId(customer.id);
+    if (data) {
+      setVoucher(
+        data.filter(
+          (voucher) =>
+            voucher.minOrder <= finalTotal && voucher.status === "ACTIVE"
+        )
+      );
+    }
+  };
+  const voucherDiscount = selectedVoucher?.value ? selectedVoucher.value : 0;
+
+  //----------------
+
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -25,8 +45,6 @@ const useCheckout = () => {
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [openForm, setOpenForm] = useState(false);
 
-  // const [streetAddress, setStreetAddress] = useState("");
-
   //getListDelivery of Customer
   const customer = useSelector(
     (state: RootState) => state.customerAuth?.customer
@@ -35,7 +53,7 @@ const useCheckout = () => {
     []
   );
 
-   const addAddress = async (data: CreateCustomerDelivery) => {
+  const addAddress = async (data: CreateCustomerDelivery) => {
     if (!customer?.id) return;
 
     console.log("add delivery: ", data);
@@ -196,6 +214,7 @@ const useCheckout = () => {
         shippingAddress: formData.shippingAddress,
         receiverName: formData.receiverName,
         receiverPhoneNumber: formData.receiverPhoneNumber,
+        voucherCode: selectedVoucher?.code,
         totalAmount,
         ...(directProduct ? {} : { customerCartCode: cart?.cartCode || "" }),
       };
@@ -308,10 +327,11 @@ const useCheckout = () => {
   };
 
   const discount = calculateTotalDiscount();
-  const finalTotal = subtotal - discount;
+  const finalTotal = subtotal - discount - voucherDiscount;
 
   useEffect(() => {
     getAllAddress();
+    getAvailableVouchers();
   }, []);
 
   // Polling: Kiểm tra trạng thái đơn hàng mỗi 3s
@@ -369,6 +389,13 @@ const useCheckout = () => {
     addAddress,
     setOpenForm,
     openForm,
+    //voucher
+    vouchers,
+    getAvailableVouchers,
+    selectedVoucher,
+    setSelectedVoucher,
+    voucherModalOpen,
+    setVoucherModalOpen,
   };
 };
 

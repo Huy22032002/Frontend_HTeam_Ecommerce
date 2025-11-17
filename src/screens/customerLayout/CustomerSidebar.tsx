@@ -12,6 +12,7 @@ import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import RateReviewIcon from "@mui/icons-material/RateReview";
+import CardGiftcardIcon from "@mui/icons-material/CardGiftcard";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useDispatch } from "react-redux";
 import { logout } from "../../store/customerSlice";
@@ -32,6 +33,11 @@ const menu = [
     label: "Đánh giá của tôi",
     to: "reviews",
     icon: <RateReviewIcon />,
+  },
+  {
+    label: "Voucher của tôi",
+    to: "vouchers",
+    icon: <CardGiftcardIcon />,
   },
 ];
 

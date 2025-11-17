@@ -15,6 +15,9 @@ export const mapNotificationRoute = (n: Notification): string | null => {
     case "NEW_USER_REGISTERED":
       return `/admin/users`;
 
+    case "NEW_VOUCHER":
+      return `/customer/vouchers`;
+
     default:
       return null;
   }

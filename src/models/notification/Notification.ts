@@ -6,6 +6,7 @@ export interface Notification {
   message: string;
   type:
     | "CART_EXPIRED"
+    | "NEW_VOUCHER"
     | "ORDER_SUCCESS"
     | "PRODUCT_OUT_OF_STOCK"
     | "SYSTEM_ALERT"

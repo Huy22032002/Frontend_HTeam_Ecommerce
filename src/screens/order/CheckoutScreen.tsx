@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   Box,
   Typography,
@@ -20,10 +20,11 @@ import { formatCurrency } from "../../utils/formatCurrency";
 import HistoryIcon from "@mui/icons-material/History";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+
 import useCheckout from "./Checkout.hook";
 import { useNavigate } from "react-router-dom";
 import AddDeliveryForm from "../customerLayout/listAddress/AddDeliveryForm";
-
+import VoucherDialog from "../../components/voucher/VoucherDialog";
 
 export default function CheckoutScreen() {
   const navigate = useNavigate();
@@ -59,6 +60,12 @@ export default function CheckoutScreen() {
     addAddress,
     setOpenForm,
     openForm,
+    //voucher
+    vouchers,
+    selectedVoucher,
+    setSelectedVoucher,
+    voucherModalOpen,
+    setVoucherModalOpen,
   } = useCheckout();
 
   // Initialize form with customer data
@@ -273,7 +280,7 @@ export default function CheckoutScreen() {
                 <Button
                   variant="outlined"
                   onClick={() => setOpenForm(true)}
-                  sx={{ textTransform: "none" }}    
+                  sx={{ textTransform: "none" }}
                 >
                   Thêm địa chỉ giao hàng
                 </Button>
@@ -288,6 +295,44 @@ export default function CheckoutScreen() {
           </Card>
 
           <Divider sx={{ my: 3 }} />
+
+          {/* vouchers */}
+          <Box
+            sx={{
+              my: 2,
+              p: 2,
+              borderRadius: 2,
+              border: "1px dashed #ffbb8b",
+              bgcolor: "#fff8f0",
+              cursor: "pointer",
+            }}
+            onClick={() => setVoucherModalOpen(true)}
+          >
+            <Button sx={{ fontWeight: 600, color: "#ff5f00" }}>
+              Chọn voucher
+            </Button>
+
+            {selectedVoucher ? (
+              <Typography sx={{ mt: 1, fontSize: 14 }}>
+                Đang áp dụng:{" "}
+                <span style={{ color: "#ff5f00", fontWeight: 600 }}>
+                  {selectedVoucher.code}
+                </span>
+              </Typography>
+            ) : (
+              <Typography sx={{ mt: 1, fontSize: 13, color: "#666" }}>
+                Chưa chọn voucher
+              </Typography>
+            )}
+          </Box>
+
+          <VoucherDialog
+            onSelectVoucher={(v) => setSelectedVoucher(v)}
+            onClose={() => setVoucherModalOpen(false)}
+            vouchers={vouchers}
+            open={voucherModalOpen}
+            selectedVoucher={selectedVoucher}
+          />
 
           {/* Payment Method Card */}
           <Card sx={{ mb: 3, borderRadius: 2 }}>
@@ -467,6 +512,25 @@ export default function CheckoutScreen() {
                       color="inherit"
                     >
                       -{formatCurrency(discount)}
+                    </Typography>
+                  </Box>
+                )}
+
+                {selectedVoucher && (
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    sx={{ color: "#d32f2f" }}
+                  >
+                    <Typography variant="body2" color="inherit">
+                      Voucher #{selectedVoucher.code}
+                    </Typography>{" "}
+                    <Typography
+                      variant="body2"
+                      fontWeight={500}
+                      color="inherit"
+                    >
+                      -{formatCurrency(selectedVoucher.value)}
                     </Typography>
                   </Box>
                 )}

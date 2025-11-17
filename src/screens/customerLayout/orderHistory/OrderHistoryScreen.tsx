@@ -582,6 +582,46 @@ const OrderHistoryScreen = () => {
                             </Typography>
                           </Box>
                         )}
+                      {/* Voucher (neu co) */}
+                      {selectedOrder.voucherCode &&
+                        selectedOrder.voucherDiscount && (
+                          <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="center"
+                            sx={{ color: "#d32f2f" }}
+                          >
+                            <Typography
+                              variant="body2"
+                              color="textSecondary"
+                              sx={{
+                                fontWeight: 500,
+                                fontStyle: "italic",
+                                display: "flex",
+                                alignItems: "center",
+                                color: "#d32f2f",
+                              }}
+                            >
+                              Voucher:{" "}
+                              <span
+                                style={{
+                                  marginLeft: 4,
+                                  color: "#1976d2",
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {selectedOrder.voucherCode || "Không có"}
+                              </span>
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              fontWeight={600}
+                              color="inherit"
+                            >
+                              -{formatCurrency(selectedOrder.voucherDiscount)}
+                            </Typography>
+                          </Box>
+                        )}
                       <Box
                         display="flex"
                         justifyContent="space-between"
