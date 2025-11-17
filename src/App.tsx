@@ -30,6 +30,7 @@ import ListAddress from "./screens/customerLayout/listAddress/ListAddress";
 import CustomerInfo from "./screens/customerLayout/customerInfo/CustomerInfo";
 import OrderHistoryScreen from "./screens/customerLayout/orderHistory/OrderHistoryScreen";
 import CustomerReviewScreen from "./screens/customerLayout/review/CustomerReviewScreen";
+import VoucherScreen from "./screens/customerLayout/voucher/VoucherScreen";
 
 function AppContent() {
   const location = useLocation();
@@ -55,8 +56,9 @@ function AppContent() {
             <Route path="orders-history" element={<OrderHistoryScreen />} />
             <Route path="addresses" element={<ListAddress />} />
             <Route path="reviews" element={<CustomerReviewScreen />} />
+            <Route path="vouchers" element={<VoucherScreen />} />
           </Route>
-          ;
+
           <Route path="/search" element={<SearchScreen />} />
           <Route path="/all-products" element={<SearchScreen />} />
           <Route
