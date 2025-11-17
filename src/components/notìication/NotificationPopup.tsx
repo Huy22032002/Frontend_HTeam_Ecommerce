@@ -10,19 +10,24 @@ import {
   Tabs,
   Typography,
 } from "@mui/material";
+
 import React, { useEffect, useRef, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import DoneIcon from "@mui/icons-material/Done";
 import type { Notification } from "../../models/notification/Notification";
 import useNotifications from "../../hooks/useNotification";
-import { useNavigate } from "react-router-dom";
 
 type NotificationPopupProps = {
   open: boolean;
   onClose: () => void;
+  onUpdateUnread: (count: number) => void;
 };
 
-const NotificationPopup = ({ open, onClose }: NotificationPopupProps) => {
+const NotificationPopup = ({
+  open,
+  onClose,
+  onUpdateUnread,
+}: NotificationPopupProps) => {
   const popupRef = useRef<HTMLDivElement>(null);
 
   //state
@@ -37,8 +42,6 @@ const NotificationPopup = ({ open, onClose }: NotificationPopupProps) => {
   //tab : All & Unread
   const [tab, setTab] = useState(0);
   const listToRender = tab === 0 ? notifications : unreadNotifications;
-
-  const navigate = useNavigate();
 
   const handleClickOutside = (event: MouseEvent) => {
     if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
@@ -59,8 +62,10 @@ const NotificationPopup = ({ open, onClose }: NotificationPopupProps) => {
       const all = await getAllByCustomerId();
       const unread = await getUnreadCustomerNotifications();
 
-      setNotifications(all);
-      setUnreadNotifications(unread);
+      setNotifications(all || []);
+      setUnreadNotifications(unread || []);
+
+      onUpdateUnread(unread?.length || 0); // báo lên Topbar
     };
 
     fetchData();
@@ -142,14 +147,17 @@ const NotificationPopup = ({ open, onClose }: NotificationPopupProps) => {
                 borderRadius: 0.5,
               }}
               onClick={async () => {
-                await markAsRead(noti.id); // gọi API
-                // cập nhật state
+                await markAsRead(noti.id);
+
                 setNotifications((prev) =>
                   prev.map((n) => (n.id === noti.id ? { ...n, read: true } : n))
                 );
-                setUnreadNotifications((prev) =>
-                  prev.filter((n) => n.id !== noti.id)
-                );
+
+                setUnreadNotifications((prev) => {
+                  const updated = prev.filter((n) => n.id !== noti.id);
+                  onUpdateUnread(updated.length); // cập nhật topbar
+                  return updated;
+                });
               }}
             >
               <ListItemText

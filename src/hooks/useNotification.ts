@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { NotificationApi } from "../api/notification/NotificationApi";
 import { useSelector } from "react-redux";
 import type { RootState } from "../store/store";
@@ -61,10 +61,6 @@ const useNotifications = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    getUnreadCustomerNotifications();
-  }, [customerId]);
 
   return {
     error,
