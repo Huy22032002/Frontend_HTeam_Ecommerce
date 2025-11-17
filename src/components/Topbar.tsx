@@ -23,13 +23,43 @@ import CartPopup from "./cart/CartPopup";
 import { CartApi } from "../api/cart/cartApi";
 import { setCart } from "../store/cartSlice";
 import NotificationPopup from "./notìication/NotificationPopup";
+import Badge from "@mui/material/Badge";
+import useNotifications from "../hooks/useNotification";
 
 const Topbar: React.FC = () => {
   //redux
   const dispatch = useDispatch();
 
+  //customer info
+  const user = useSelector((state: RootState) => state.customerAuth.customer);
+
+  const getCustomerById = async () => {
+    const id = localStorage.getItem("id");
+    if (id != null) {
+      const data = await CustomerApi.getById(id);
+      //save to Redux toolkit
+      if (data) {
+        dispatch(login(data));
+      }
+    }
+  };
+
+  //-------------------
+
   //notification
   const [openNotification, setOpenNotification] = useState(false);
+  const { getUnreadCustomerNotifications } = useNotifications();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchUnread = async () => {
+      const unread = await getUnreadCustomerNotifications();
+      setUnreadCount(unread.length);
+    };
+    fetchUnread();
+  }, [user]);
 
   //---------------------------------------------------------
 
@@ -48,20 +78,6 @@ const Topbar: React.FC = () => {
 
   //navigate
   const navigate = useNavigate();
-
-  //customer info
-  const user = useSelector((state: RootState) => state.customerAuth.customer);
-
-  const getCustomerById = async () => {
-    const id = localStorage.getItem("id");
-    if (id != null) {
-      const data = await CustomerApi.getById(id);
-      //save to Redux toolkit
-      if (data) {
-        dispatch(login(data));
-      }
-    }
-  };
 
   const [openCartPopup, setOpenCartPopup] = useState(false);
 
@@ -146,13 +162,24 @@ const Topbar: React.FC = () => {
         {/* notifications */}
         {user && (
           <IconButton onClick={() => setOpenNotification((prev) => !prev)}>
-            <NotificationsOutlinedIcon />
+            <Badge
+              badgeContent={unreadCount}
+              color="error"
+              overlap="circular"
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+            >
+              <NotificationsOutlinedIcon />
+            </Badge>
           </IconButton>
         )}
         {openNotification && (
           <NotificationPopup
             open={openNotification}
             onClose={() => setOpenNotification(false)}
+            onUpdateUnread={(newCount) => setUnreadCount(newCount)}
           />
         )}
 
