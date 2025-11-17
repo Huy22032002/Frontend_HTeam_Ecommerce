@@ -16,6 +16,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import DoneIcon from "@mui/icons-material/Done";
 import type { Notification } from "../../models/notification/Notification";
 import useNotifications from "../../hooks/useNotification";
+import { mapNotificationRoute } from "../../utils/mapNotificationRoute";
+import { useNavigate } from "react-router-dom";
 
 type NotificationPopupProps = {
   open: boolean;
@@ -47,6 +49,14 @@ const NotificationPopup = ({
     if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
       onClose();
     }
+  };
+
+  const navigate = useNavigate();
+  //navigate base on Notification type
+  const handleNavigate = (n: Notification) => {
+    const route = mapNotificationRoute(n);
+
+    if (route) navigate(route);
   };
 
   useEffect(() => {
@@ -158,6 +168,8 @@ const NotificationPopup = ({
                   onUpdateUnread(updated.length); // cập nhật topbar
                   return updated;
                 });
+
+                handleNavigate(noti);
               }}
             >
               <ListItemText
@@ -209,7 +221,9 @@ const NotificationPopup = ({
               backgroundColor: "action.hover",
             },
           }}
-          onClick={() => {}}
+          onClick={() => {
+            alert("tinh nang dang phat trien");
+          }}
         >
           Đánh dấu tất cả đã đọc
         </Button>
