@@ -14,11 +14,11 @@ export interface OrderFilters {
   size?: number;
   search?: string;
   status?: string;
-  date?: string;
-  debtOnly?: boolean;
-  channel?: string;
-  closer?: string;
-  branch?: string;
+  startDate?: string;
+  endDate?: string;
+  minAmount?: string;
+  maxAmount?: string;
+  paymentStatus?: string;
 }
 
 export const OrderApi = {
@@ -88,4 +88,20 @@ export const OrderApi = {
       { status },
       { headers: getAuthHeader() }
     ),
+
+  // Xuất danh sách đơn hàng ra Excel theo filter
+  exportToExcel: (filters: OrderFilters) => {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        params.append(key, String(value));
+      }
+    });
+
+    return axios.get(`${API_BASE}/export/excel?${params.toString()}`, {
+      headers: getAuthHeader(),
+      responseType: "blob",
+    });
+  },
 };
+

@@ -46,4 +46,20 @@ export const InvoiceApi = {
 
   cancel: (invoiceId: string | number) =>
     axios.patch(`${API_BASE}/${invoiceId}/cancel`, {}, { headers: getAuthHeader() }),
+
+  // Xuất danh sách hóa đơn ra Excel theo filter
+  exportToExcel: (filters: InvoiceFilters) => {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params.append(key, String(value));
+      }
+    });
+
+    return axios.get(`${API_BASE}/export/excel?${params.toString()}`, {
+      headers: getAuthHeader(),
+      responseType: "blob",
+    });
+  },
 };
+
