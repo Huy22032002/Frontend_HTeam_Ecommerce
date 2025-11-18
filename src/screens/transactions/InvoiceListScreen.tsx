@@ -4,14 +4,18 @@ import SearchIcon from '@mui/icons-material/Search';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { useInvoices } from '../../hooks/useInvoices';
 import { useNavigate } from 'react-router-dom';
+import { InvoiceApi } from '../../api/invoice/InvoiceApi';
+import { downloadExcelFile } from '../../utils/exportToExcel';
 
 const InvoiceListScreen = () => {
   const { invoices, loading, error, filters, setFilters } = useInvoices({ page: 0, size: 20 });
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedInvoiceId, setSelectedInvoiceId] = React.useState<number | null>(null);
+  const [exporting, setExporting] = React.useState(false);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>, invoiceId: number) => {
     setAnchorEl(event.currentTarget);
@@ -33,23 +37,52 @@ const InvoiceListScreen = () => {
     handleMenuClose();
   };
 
-  const handleTextFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
-  };
-  
-  const handleSelectChange = (e: SelectChangeEvent<string>) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters(prev => ({ ...prev, search: e.target.value }));
+  const handleExportToExcel = async () => {
+    try {
+      setExporting(true);
+      const response = await InvoiceApi.exportToExcel(filters);
+      
+      // Get filename from Content-Disposition header or use default
+      const contentDisposition = response.headers["content-disposition"];
+      let filename = "Hoa_don.xlsx";
+      if (contentDisposition) {
+        try {
+          filename = contentDisposition
+            .split("filename=")[1]
+            .split('"')[1] || filename;
+        } catch (e) {
+          // Use default filename if parsing fails
+        }
+      }
+      
+      downloadExcelFile(response.data, filename);
+    } catch (error) {
+      console.error("Lỗi khi xuất file:", error);
+      alert("Lỗi khi xuất file Excel");
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
     <Box>
-      <Typography variant="h4" fontWeight={600} mb={2}>Danh sách Hóa đơn</Typography>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
+        <Typography variant="h4" fontWeight={600}>Danh sách Hóa đơn</Typography>
+        <Button
+          variant="contained"
+          color="success"
+          startIcon={<FileDownloadIcon />}
+          onClick={handleExportToExcel}
+          disabled={exporting || loading}
+        >
+          {exporting ? "Đang xuất..." : "Xuất Excel"}
+        </Button>
+      </Box>
       {/* <Box display="flex" flexWrap="wrap" gap={2} mb={2} alignItems="center">
         <TextField
           name="search"

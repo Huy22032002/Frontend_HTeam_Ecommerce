@@ -112,6 +112,34 @@ const OrderDetailScreen: React.FC = () => {
     return transitions[currentStatus]?.includes(nextStatus) || false;
   };
 
+  // Check if payment is completed (SUCCESS status)
+  const isPaymentCompleted = (): boolean => {
+    if (!order?.deposits || order.deposits.length === 0) {
+      return false;
+    }
+    // Check if any deposit has SUCCESS status
+    return order.deposits.some((deposit: any) => deposit.status === 'SUCCESS');
+  };
+
+  // Get payment status message for tooltip
+  const getPaymentStatusMessage = (): string => {
+    if (!order?.deposits || order.deposits.length === 0) {
+      return 'Chưa có thông tin thanh toán';
+    }
+    
+    const lastDeposit = order.deposits[0]; // Get latest deposit
+    switch (lastDeposit.status) {
+      case 'SUCCESS':
+        return 'Đã thanh toán thành công';
+      case 'PENDING':
+        return 'Chờ xử lý thanh toán';
+      case 'FAILED':
+        return 'Thanh toán thất bại';
+      default:
+        return 'Trạng thái thanh toán: ' + lastDeposit.status;
+    }
+  };
+
   const handleUpdateOrderStatus = async (newStatus: string) => {
     if (!orderId || !order) return;
 
@@ -436,6 +464,91 @@ const OrderDetailScreen: React.FC = () => {
             </Box>
           </Paper>
 
+          {/* Thông Tin Thanh Toán */}
+          <Paper sx={{ p: 3, mb: 2, backgroundColor: 'white', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', borderLeft: '4px solid #1565c0' }}>
+            <Typography sx={{ fontSize: '13px', fontWeight: 700, mb: 2.5, color: '#1565c0', display: 'flex', alignItems: 'center', gap: 0.8 }}>
+              💳 THÔNG TIN THANH TOÁN
+            </Typography>
+            {order.deposits && order.deposits.length > 0 ? (
+              <Box>
+                {order.deposits.map((transaction: any, idx: number) => (
+                  <Box 
+                    key={idx}
+                    sx={{ 
+                      p: 2, 
+                      mb: 1.5, 
+                      backgroundColor: '#f9f9f9', 
+                      borderRadius: 1,
+                      borderLeft: `4px solid ${transaction.status === 'SUCCESS' ? '#4CAF50' : transaction.status === 'PENDING' ? '#ff9800' : '#f44336'}`
+                    }}
+                  >
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr 1fr' }, gap: 1.5 }}>
+                      <Box>
+                        <Typography sx={{ fontSize: '10px', color: '#999', fontWeight: 700, mb: 0.3 }}>
+                          LOẠI THANH TOÁN
+                        </Typography>
+                        <Typography sx={{ fontWeight: 600, fontSize: '13px', color: '#333' }}>
+                          {transaction.paymentType || 'N/A'}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography sx={{ fontSize: '10px', color: '#999', fontWeight: 700, mb: 0.3 }}>
+                          TRẠNG THÁI
+                        </Typography>
+                        <Chip
+                          size="small"
+                          label={
+                            transaction.status === 'SUCCESS' ? '✓ Thành công' :
+                            transaction.status === 'PENDING' ? '⏳ Chờ xử lý' :
+                            transaction.status === 'FAILED' ? '✗ Thất bại' :
+                            transaction.status
+                          }
+                          color={
+                            transaction.status === 'SUCCESS' ? 'success' :
+                            transaction.status === 'PENDING' ? 'warning' :
+                            'error'
+                          }
+                          variant="outlined"
+                          sx={{ fontWeight: 600 }}
+                        />
+                      </Box>
+                      <Box>
+                        <Typography sx={{ fontSize: '10px', color: '#999', fontWeight: 700, mb: 0.3 }}>
+                          SỐ TIỀN
+                        </Typography>
+                        <Typography sx={{ fontWeight: 700, fontSize: '13px', color: '#1976d2' }}>
+                          {formatCurrency(transaction.amount)}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography sx={{ fontSize: '10px', color: '#999', fontWeight: 700, mb: 0.3 }}>
+                          NGÀY GIAO DỊCH
+                        </Typography>
+                        <Typography sx={{ fontWeight: 500, fontSize: '12px', color: '#666' }}>
+                          {transaction.transactionDate ? new Date(transaction.transactionDate).toLocaleDateString('vi-VN') : 'N/A'}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    {transaction.details && (
+                      <Box sx={{ mt: 1.5, pt: 1.5, borderTop: '1px solid #e0e0e0' }}>
+                        <Typography sx={{ fontSize: '10px', color: '#999', fontWeight: 700, mb: 0.3 }}>
+                          CHI TIẾT
+                        </Typography>
+                        <Typography sx={{ fontSize: '12px', color: '#666', fontStyle: 'italic' }}>
+                          {transaction.details}
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
+                ))}
+              </Box>
+            ) : (
+              <Typography sx={{ fontSize: '13px', color: '#999', fontStyle: 'italic' }}>
+                Chưa có thông tin thanh toán
+              </Typography>
+            )}
+          </Paper>
+
           {/* Chi Tiết Sản Phẩm */}
           <Paper sx={{ backgroundColor: 'white', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
             <Box sx={{ p: 3, pb: 0, borderBottom: '2px solid #f5f7fa' }}>
@@ -529,7 +642,16 @@ const OrderDetailScreen: React.FC = () => {
             </Box>
 
             {/* Action Buttons */}
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end', flexDirection: 'column' }}>
+              {/* Payment Warning - Show if trying to ship without payment */}
+              {order.status === 'PROCESSING' && !isPaymentCompleted() && (
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                  ⚠️ <strong>Thanh toán chưa hoàn thành!</strong> Không thể giao hàng cho ĐVVC khi chưa thanh toán thành công. 
+                  {getPaymentStatusMessage() && ` (${getPaymentStatusMessage()})`}
+                </Alert>
+              )}
+
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               {/* Status Transition Buttons */}
               {order.status === 'PENDING' && (
                 <>
@@ -565,7 +687,8 @@ const OrderDetailScreen: React.FC = () => {
                   variant="contained"
                   color="primary"
                   onClick={() => handleUpdateOrderStatus('SHIPPING')}
-                  disabled={updatingStatus}
+                  disabled={updatingStatus || !isPaymentCompleted()}
+                  title={!isPaymentCompleted() ? getPaymentStatusMessage() : 'Giao cho ĐVVC'}
                   sx={{ textTransform: 'none' }}
                 >
                   📦 Giao ĐVVC
@@ -673,6 +796,7 @@ const OrderDetailScreen: React.FC = () => {
               >
                 Quay lại
               </Button>
+              </Box>
             </Box>
           </Paper>
         </Box>

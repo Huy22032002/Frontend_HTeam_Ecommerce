@@ -9,12 +9,15 @@ export function useOrders(initialFilters: OrderFilters = {}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<any>(null);
   const [filters, setFilters] = useState<OrderFilters>(initialFilters);
+  const [prevSearchFilter, setPrevSearchFilter] = useState<string>('');
 
   // Debounced fetch function
   const fetchOrders = useCallback(debounce((currentFilters: OrderFilters) => {
     setLoading(true);
+    console.log('Fetching orders with filters:', currentFilters);
     OrderApi.getAll(currentFilters)
       .then(res => {
+        console.log('Response data:', res.data);
         if (res.data && res.data.content) {
           setOrders(res.data.content);
           setTotal(res.data.totalElements || 0);
@@ -26,13 +29,28 @@ export function useOrders(initialFilters: OrderFilters = {}) {
           setTotal(0);
         }
       })
-      .catch(setError)
+      .catch(err => {
+        console.error('Error fetching orders:', err);
+        setError(err);
+      })
       .finally(() => setLoading(false));
-  }, 300), []); // 300ms debounce delay
+  }, 500), []); // 500ms debounce delay
 
   useEffect(() => {
-    fetchOrders(filters);
-  }, [filters, fetchOrders]);
+    // Check if any filter changed (excluding page/size for now)
+    const currentSearchKey = `${filters.search}|${filters.status}|${filters.startDate}|${filters.endDate}|${filters.minAmount}|${filters.maxAmount}`;
+    
+    // If search filters changed (not pagination), reset to page 0
+    if (currentSearchKey !== prevSearchFilter) {
+      setPrevSearchFilter(currentSearchKey);
+      // Reset to page 0 when filters change
+      const filtersWithPage0 = { ...filters, page: 0 };
+      fetchOrders(filtersWithPage0);
+    } else {
+      // Just pagination change
+      fetchOrders(filters);
+    }
+  }, [filters, fetchOrders, prevSearchFilter]);
 
   return { orders, total, loading, error, filters, setFilters };
 }

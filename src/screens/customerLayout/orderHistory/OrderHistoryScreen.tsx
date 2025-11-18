@@ -537,6 +537,67 @@ const OrderHistoryScreen = () => {
                     </Box>
                   )}
 
+                  {/* Payment Status */}
+                  {selectedOrder.deposits && selectedOrder.deposits.length > 0 && (
+                    <Box>
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight="bold"
+                        gutterBottom
+                      >
+                        💳 Thông tin thanh toán
+                      </Typography>
+                      <Stack spacing={1} sx={{ pl: 2 }}>
+                        {selectedOrder.deposits.map((transaction: any, idx: number) => (
+                          <Box
+                            key={idx}
+                            sx={{
+                              p: 1.5,
+                              bgcolor: theme.palette.mode === "dark" ? "#2a2a2a" : "#f9f9f9",
+                              borderRadius: 1,
+                              borderLeft: `3px solid ${
+                                transaction.status === "SUCCESS" ? "#4CAF50" :
+                                transaction.status === "PENDING" ? "#ff9800" :
+                                "#f44336"
+                              }`,
+                            }}
+                          >
+                            <Box display="flex" justifyContent="space-between" mb={0.5}>
+                              <Typography variant="caption" color="textSecondary">
+                                {transaction.paymentType || "N/A"}
+                              </Typography>
+                              <Chip
+                                size="small"
+                                label={
+                                  transaction.status === "SUCCESS" ? "✓ Thành công" :
+                                  transaction.status === "PENDING" ? "⏳ Chờ xử lý" :
+                                  "✗ Thất bại"
+                                }
+                                color={
+                                  transaction.status === "SUCCESS" ? "success" :
+                                  transaction.status === "PENDING" ? "warning" :
+                                  "error"
+                                }
+                                variant="outlined"
+                                sx={{ height: 20, fontSize: "11px" }}
+                              />
+                            </Box>
+                            <Box display="flex" justifyContent="space-between">
+                              <Typography variant="caption" color="textSecondary">
+                                {transaction.transactionDate
+                                  ? new Date(transaction.transactionDate).toLocaleDateString("vi-VN")
+                                  : "N/A"}
+                              </Typography>
+                              <Typography variant="caption" fontWeight={600} sx={{ color: "#1976d2" }}>
+                                {formatCurrency(transaction.amount)}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        ))}
+                      </Stack>
+                    </Box>
+                  )}
+
                   {/* Total */}
                   <Box
                     sx={{
