@@ -223,7 +223,7 @@ const ProductVariantDetail = () => {
               SKU: {currentOption?.sku}
             </Typography>
             <Typography variant="body1" color="textSecondary" mb={3}>
-              Còn hàng: {currentOption?.availability?.quantity > 0 ? "✅" : "❌"}
+              Còn hàng: {(currentOption?.availability?.quantity ?? 0) > 0 ? "✅" : "❌"}
             </Typography>
 
             {/* Rating */}

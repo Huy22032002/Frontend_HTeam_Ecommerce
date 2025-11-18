@@ -281,7 +281,7 @@ export default function CheckoutScreen() {
                   open={openForm}
                   onClose={() => setOpenForm(false)}
                   onSubmit={addAddress}
-                  initialData={null}
+                  initialData={undefined}
                 />
               </Stack>
             </CardContent>
