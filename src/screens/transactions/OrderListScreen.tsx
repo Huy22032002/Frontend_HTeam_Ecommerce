@@ -18,6 +18,7 @@ import {
   IconButton,
   Menu,
   Button,
+  TablePagination,
   type SelectChangeEvent,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
@@ -30,7 +31,7 @@ import { useOrders } from "../../hooks/useOrders";
 
 const OrderListScreen = () => {
   const navigate = useNavigate();
-  const { orders, loading, error, filters, setFilters } = useOrders({
+  const { orders, total, loading, error, filters, setFilters } = useOrders({
     page: 0,
     size: 20,
   });
@@ -38,6 +39,8 @@ const OrderListScreen = () => {
   const [selectedOrderId, setSelectedOrderId] = React.useState<string | null>(
     null
   );
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(20);
 
   const handleMenuOpen = (
     event: React.MouseEvent<HTMLButtonElement>,
@@ -81,6 +84,20 @@ const OrderListScreen = () => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters((prev) => ({ ...prev, search: e.target.value }));
+  };
+
+  const handlePageChange = (event: unknown, newPage: number) => {
+    setPage(newPage);
+    setFilters((prev) => ({ ...prev, page: newPage, size: rowsPerPage }));
+  };
+
+  const handleRowsPerPageChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const newRowsPerPage = parseInt(event.target.value, 10);
+    setRowsPerPage(newRowsPerPage);
+    setPage(0);
+    setFilters((prev) => ({ ...prev, page: 0, size: newRowsPerPage }));
   };
 
   const getStatusLabel = (status: string | undefined | null) => {
@@ -211,78 +228,93 @@ const OrderListScreen = () => {
       ) : error ? (
         <Typography color="error">Lỗi: {String(error)}</Typography>
       ) : (
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell width={80} sx={{ whiteSpace: "nowrap" }}>
-                Thao tác
-              </TableCell>
-              <TableCell width={100} sx={{ whiteSpace: "nowrap" }}>
-                Mã
-              </TableCell>
-              <TableCell width={150}>Khách hàng</TableCell>
-              <TableCell
-                width={120}
-                align="right"
-                sx={{ whiteSpace: "nowrap" }}
-              >
-                Tổng
-              </TableCell>
-              <TableCell width={120} sx={{ whiteSpace: "nowrap" }}>
-                Trạng thái
-              </TableCell>
-              <TableCell width={120} sx={{ whiteSpace: "nowrap" }}>
-                Ngày
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {orders.map((o) => (
-              <TableRow key={o.id} hover>
-                <TableCell>
-                  <IconButton
-                    size="small"
-                    onClick={(e) => handleMenuOpen(e, o.id)}
-                  >
-                    <MoreVertIcon fontSize="small" />
-                  </IconButton>
-                  <Menu
-                    anchorEl={selectedOrderId === o.id ? anchorEl : null}
-                    open={selectedOrderId === o.id && Boolean(anchorEl)}
-                    onClose={handleMenuClose}
-                  >
-                    <MenuItem onClick={() => handleViewDetail(o.id)}>
-                      <VisibilityIcon fontSize="small" sx={{ mr: 1 }} /> Xem chi
-                      tiết
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => handleCancelOrder(o.id)}
-                      sx={{ color: "error.main" }}
-                    >
-                      <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Huỷ đơn
-                      hàng
-                    </MenuItem>
-                  </Menu>
+        <Paper>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell width={80} sx={{ whiteSpace: "nowrap" }}>
+                  Thao tác
                 </TableCell>
-                <TableCell>DH-{o.id}</TableCell>
-                <TableCell>{o.customerName}</TableCell>
-                <TableCell align="right">
-                  {(o.total || 0).toLocaleString()}₫
+                <TableCell width={100} sx={{ whiteSpace: "nowrap" }}>
+                  Mã
                 </TableCell>
-                <TableCell>
-                  <Chip
-                    size="small"
-                    color={getStatusColor(o.status)}
-                    label={getStatusLabel(o.status)}
-                  />
+                <TableCell width={150}>Khách hàng</TableCell>
+                <TableCell
+                  width={120}
+                  align="right"
+                  sx={{ whiteSpace: "nowrap" }}
+                >
+                  Tổng
                 </TableCell>
-                <TableCell>
-                  {new Date(o.createdAt).toLocaleDateString()}
+                <TableCell width={120} sx={{ whiteSpace: "nowrap" }}>
+                  Trạng thái
+                </TableCell>
+                <TableCell width={120} sx={{ whiteSpace: "nowrap" }}>
+                  Ngày
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {orders.map((o) => (
+                <TableRow key={o.id} hover>
+                  <TableCell>
+                    <IconButton
+                      size="small"
+                      onClick={(e) => handleMenuOpen(e, o.id)}
+                    >
+                      <MoreVertIcon fontSize="small" />
+                    </IconButton>
+                    <Menu
+                      anchorEl={selectedOrderId === o.id ? anchorEl : null}
+                      open={selectedOrderId === o.id && Boolean(anchorEl)}
+                      onClose={handleMenuClose}
+                    >
+                      <MenuItem onClick={() => handleViewDetail(o.id)}>
+                        <VisibilityIcon fontSize="small" sx={{ mr: 1 }} /> Xem
+                        chi tiết
+                      </MenuItem>
+                      <MenuItem
+                        onClick={() => handleCancelOrder(o.id)}
+                        sx={{ color: "error.main" }}
+                      >
+                        <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Huỷ đơn
+                        hàng
+                      </MenuItem>
+                    </Menu>
+                  </TableCell>
+                  <TableCell>DH-{o.id}</TableCell>
+                  <TableCell>{o.customerName}</TableCell>
+                  <TableCell align="right">
+                    {(o.total || 0).toLocaleString()}₫
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      size="small"
+                      color={getStatusColor(o.status)}
+                      label={getStatusLabel(o.status)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {new Date(o.createdAt).toLocaleDateString()}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <TablePagination
+            rowsPerPageOptions={[10, 20, 50]}
+            component="div"
+            count={total}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handlePageChange}
+            onRowsPerPageChange={handleRowsPerPageChange}
+            labelRowsPerPage="Số hàng mỗi trang:"
+            labelDisplayedRows={({ from, to, count }) =>
+              `${from}-${to} của ${count}`
+            }
+          />
+        </Paper>
       )}
     </Box>
   );
