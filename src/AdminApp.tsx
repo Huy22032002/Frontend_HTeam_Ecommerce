@@ -34,6 +34,8 @@ import PromotionListScreen from "./screens/promotions/PromotionListScreen";
 import InvoiceListScreen from "./screens/transactions/InvoiceListScreen";
 import PaymentListScreen from "./screens/transactions/PaymentListScreen";
 import CreateOrderScreen from "./screens/admin/CreateOrderScreen";
+import FlashSaleScreen from "./screens/admin/flashsale/FlashSaleScreen";
+import CreateFlashSaleScreen from "./screens/admin/flashsale/CreateFlashSaleScreen";
 
 function AdminAppContent() {
   return (
@@ -54,10 +56,22 @@ function AdminAppContent() {
               <Route path="products" element={<ProductListScreen />} />
               <Route path="create-product" element={<CreateProductScreen />} />
               <Route path="products/:id/edit" element={<EditProductScreen />} />
-              <Route path="product-variants" element={<ProductVariantListScreen />} />
-              <Route path="manufacturers" element={<ManufacturerListScreen />} />
-              <Route path="manufacturers/create" element={<CreateManufacturerScreen />} />
-              <Route path="manufacturers/:id/edit" element={<EditManufacturerScreen />} />
+              <Route
+                path="product-variants"
+                element={<ProductVariantListScreen />}
+              />
+              <Route
+                path="manufacturers"
+                element={<ManufacturerListScreen />}
+              />
+              <Route
+                path="manufacturers/create"
+                element={<CreateManufacturerScreen />}
+              />
+              <Route
+                path="manufacturers/:id/edit"
+                element={<EditManufacturerScreen />}
+              />
               <Route path="categories" element={<CategoryListScreen />} />
               <Route path="orders" element={<OrderListScreen />} />
               <Route path="orders/create" element={<CreateOrderScreen />} />
@@ -75,6 +89,12 @@ function AdminAppContent() {
               <Route path="warranty" element={<WarrantyScreen />} />
               <Route path="pages" element={<PageListScreen />} />
               <Route path="promotions" element={<PromotionListScreen />} />
+              <Route path="flash-sale" element={<FlashSaleScreen />} />
+              <Route
+                path="flash-sale/create"
+                element={<CreateFlashSaleScreen />}
+              />
+
               {/* Redirect root /admin to dashboard */}
               <Route path="*" element={<DashboardScreen />} />
             </Routes>

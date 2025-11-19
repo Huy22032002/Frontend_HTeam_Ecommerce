@@ -25,6 +25,7 @@ import useCheckout from "./Checkout.hook";
 import { useNavigate } from "react-router-dom";
 import AddDeliveryForm from "../customerLayout/listAddress/AddDeliveryForm";
 import VoucherDialog from "../../components/voucher/VoucherDialog";
+import ErrorPopup from "../../components/ErrorPopup";
 
 export default function CheckoutScreen() {
   const navigate = useNavigate();
@@ -45,11 +46,13 @@ export default function CheckoutScreen() {
     formData,
     setFormData,
     //error
+    errorApi,
     successMessage,
     setSuccessMessage,
     isLoading,
     error,
     setError,
+    setErrorApi,
     //direct product & cart
     directProduct,
     cart,
@@ -96,6 +99,13 @@ export default function CheckoutScreen() {
 
   return (
     <Box sx={{ bgcolor: "#f8f9fa", minHeight: "100vh", py: 4 }}>
+      {errorApi && (
+        <ErrorPopup
+          errorMessage={errorApi}
+          open={!!errorApi}
+          onClose={() => setErrorApi(null)}
+        />
+      )}
       <Stack
         direction={{ xs: "column", md: "row" }}
         spacing={4}

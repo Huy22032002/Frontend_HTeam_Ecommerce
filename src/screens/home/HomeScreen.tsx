@@ -28,6 +28,7 @@ import SecurityIcon from "@mui/icons-material/Security";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import SearchIcon from "@mui/icons-material/Search";
+import FlashSaleHome from "../../components/flashSale/FlashSaleHome";
 
 const HomeScreen = () => {
   const theme = useTheme();
@@ -60,7 +61,7 @@ const HomeScreen = () => {
   useEffect(() => {
     getAllCategories();
     getAllSuggestProducts();
-    
+
     // Kiểm tra xem customer có đăng nhập không
     const token = localStorage.getItem("token");
     if (token) {
@@ -77,6 +78,10 @@ const HomeScreen = () => {
         {/* Banner Section */}
         <Box sx={{ width: "100%", mb: 6, borderRadius: 2, overflow: "hidden" }}>
           <BannerSlider />
+        </Box>
+
+        <Box onClick={() => navigate("/flash-sale")} mb={6}>
+          <FlashSaleHome />
         </Box>
 
         {/* Features Section */}
@@ -165,7 +170,14 @@ const HomeScreen = () => {
         </Stack>
 
         {/* Highlight Categories Section */}
-        <Card sx={{ borderRadius: 2, mb: 6, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", overflow: "hidden" }}>
+        <Card
+          sx={{
+            borderRadius: 2,
+            mb: 6,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            overflow: "hidden",
+          }}
+        >
           <CardContent sx={{ p: 4, overflow: "hidden" }}>
             <Stack direction="row" alignItems="center" spacing={1} mb={3}>
               <TrendingUpIcon sx={{ color: "#FF6B6B", fontSize: 28 }} />
@@ -177,7 +189,12 @@ const HomeScreen = () => {
             <Box
               sx={{
                 display: "grid",
-                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "1fr 1fr 1fr", lg: "1fr 1fr 1fr 1fr" },
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "1fr 1fr",
+                  md: "1fr 1fr 1fr",
+                  lg: "1fr 1fr 1fr 1fr",
+                },
                 gap: 3,
               }}
             >
@@ -202,36 +219,57 @@ const HomeScreen = () => {
         <ActivePromotionsCarousel />
 
         {/* Recommendations Section for Logged-in Customers */}
-        {!searchTerm.trim() && isLoggedIn && (recommendedProducts.length > 0 || isLoadingRecommendations) && (
-          <Card sx={{ borderRadius: 2, mb: 6, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", overflow: "hidden" }}>
-            <CardContent sx={{ p: 4, overflow: "hidden" }}>
-              <Stack direction="row" alignItems="center" spacing={1} mb={3}>
-                <Box sx={{ fontSize: 28 }}>⭐</Box>
-                <Typography variant="h4" fontWeight="bold">
-                  Gợi ý dành cho bạn
-                </Typography>
-              </Stack>
-              
-              {isLoadingRecommendations ? (
-                <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-                  <CircularProgress />
-                </Box>
-              ) : recommendedProducts.length > 0 ? (
-                <ProductVariantList
-                  data={recommendedProducts as ProductVariants[]}
-                  onItemClick={(item) => navigate(`/product/${item.id}`)}
-                />
-              ) : (
-                <Typography variant="body1" color="textSecondary" sx={{ py: 2 }}>
-                  Không có gợi ý nào. Hãy duyệt thêm sản phẩm để nhận gợi ý!
-                </Typography>
-              )}
-            </CardContent>
-          </Card>
-        )}
+        {!searchTerm.trim() &&
+          isLoggedIn &&
+          (recommendedProducts.length > 0 || isLoadingRecommendations) && (
+            <Card
+              sx={{
+                borderRadius: 2,
+                mb: 6,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                overflow: "hidden",
+              }}
+            >
+              <CardContent sx={{ p: 4, overflow: "hidden" }}>
+                <Stack direction="row" alignItems="center" spacing={1} mb={3}>
+                  <Box sx={{ fontSize: 28 }}>⭐</Box>
+                  <Typography variant="h4" fontWeight="bold">
+                    Gợi ý dành cho bạn
+                  </Typography>
+                </Stack>
+
+                {isLoadingRecommendations ? (
+                  <Box
+                    sx={{ display: "flex", justifyContent: "center", py: 4 }}
+                  >
+                    <CircularProgress />
+                  </Box>
+                ) : recommendedProducts.length > 0 ? (
+                  <ProductVariantList
+                    data={recommendedProducts as ProductVariants[]}
+                    onItemClick={(item) => navigate(`/product/${item.id}`)}
+                  />
+                ) : (
+                  <Typography
+                    variant="body1"
+                    color="textSecondary"
+                    sx={{ py: 2 }}
+                  >
+                    Không có gợi ý nào. Hãy duyệt thêm sản phẩm để nhận gợi ý!
+                  </Typography>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
         {/* Top Searches Section */}
-        <Card sx={{ borderRadius: 2, mb: 6, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+        <Card
+          sx={{
+            borderRadius: 2,
+            mb: 6,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          }}
+        >
           <CardContent sx={{ p: 4 }}>
             <Typography variant="h4" fontWeight="bold" mb={3}>
               🔍 Tìm sản phẩm
@@ -269,7 +307,11 @@ const HomeScreen = () => {
             />
 
             {/* Top Searches Chips */}
-            <Typography variant="body2" color="textSecondary" sx={{ mt: 3, mb: 2 }}>
+            <Typography
+              variant="body2"
+              color="textSecondary"
+              sx={{ mt: 3, mb: 2 }}
+            >
               Tìm kiếm nhiều nhất:
             </Typography>
             <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
@@ -302,7 +344,13 @@ const HomeScreen = () => {
         {/* Search Results Section */}
         {searchTerm.trim() && (
           <Box mb={6}>
-            <Card sx={{ borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", overflow: "hidden" }}>
+            <Card
+              sx={{
+                borderRadius: 2,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                overflow: "hidden",
+              }}
+            >
               <CardContent sx={{ p: 4, overflow: "hidden" }}>
                 <Stack direction="row" alignItems="center" spacing={1} mb={3}>
                   <Typography variant="h4" fontWeight="bold">
@@ -310,9 +358,11 @@ const HomeScreen = () => {
                   </Typography>
                   {isSearching && <CircularProgress size={24} />}
                 </Stack>
-                
+
                 {isSearching ? (
-                  <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                  <Box
+                    sx={{ display: "flex", justifyContent: "center", py: 4 }}
+                  >
                     <CircularProgress />
                   </Box>
                 ) : searchResults.length > 0 ? (
@@ -345,56 +395,71 @@ const HomeScreen = () => {
         )}
 
         {/* Suggested Products Section */}
-        {!searchTerm.trim() && suggestProducts && Array.isArray(suggestProducts) && suggestProducts.length > 0 && (
-          <Box>
-            <Card sx={{ borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", overflow: "hidden" }}>
-              <CardContent sx={{ p: 4, overflow: "hidden" }}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between" mb={3}>
-                  <Typography variant="h4" fontWeight="bold">
-                    💡 Các sản phẩm nổi bật
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    onClick={() => navigate("/all-products")}
-                    sx={{
-                      bgcolor: "primary.main",
-                      textTransform: "none",
-                      fontWeight: 600,
-                      "&:hover": {
-                        bgcolor: "primary.dark",
-                      },
-                    }}
+        {!searchTerm.trim() &&
+          suggestProducts &&
+          Array.isArray(suggestProducts) &&
+          suggestProducts.length > 0 && (
+            <Box>
+              <Card
+                sx={{
+                  borderRadius: 2,
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  overflow: "hidden",
+                }}
+              >
+                <CardContent sx={{ p: 4, overflow: "hidden" }}>
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    mb={3}
                   >
-                    Xem toàn bộ sản phẩm
-                  </Button>
-                </Stack>
-                <ProductVariantList
-                  data={suggestProducts as ProductVariants[]}
-                  onItemClick={(item) => navigate(`/product/${item.id}`)}
-                />
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-                    <Pagination
-                      count={totalPages}
-                      page={currentPage}
-                      onChange={(_event, page) => {
-                        getAllSuggestProducts(page - 1);
-                        window.scrollTo({ top: 0, behavior: "smooth" });
+                    <Typography variant="h4" fontWeight="bold">
+                      💡 Các sản phẩm nổi bật
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      onClick={() => navigate("/all-products")}
+                      sx={{
+                        bgcolor: "primary.main",
+                        textTransform: "none",
+                        fontWeight: 600,
+                        "&:hover": {
+                          bgcolor: "primary.dark",
+                        },
                       }}
-                      color="primary"
-                      size="large"
-                    />
-                  </Box>
-                )}
-              </CardContent>
-            </Card>
-          </Box>
-        )}
+                    >
+                      Xem toàn bộ sản phẩm
+                    </Button>
+                  </Stack>
+                  <ProductVariantList
+                    data={suggestProducts as ProductVariants[]}
+                    onItemClick={(item) => navigate(`/product/${item.id}`)}
+                  />
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <Box
+                      sx={{ display: "flex", justifyContent: "center", mt: 4 }}
+                    >
+                      <Pagination
+                        count={totalPages}
+                        page={currentPage}
+                        onChange={(_event, page) => {
+                          getAllSuggestProducts(page - 1);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                        color="primary"
+                        size="large"
+                      />
+                    </Box>
+                  )}
+                </CardContent>
+              </Card>
+            </Box>
+          )}
       </Container>
     </Box>
   );
 };
 
 export default HomeScreen;
-

@@ -34,6 +34,8 @@ const useCheckout = () => {
   //----------------
 
   const [error, setError] = useState<string | null>(null);
+  const [errorApi, setErrorApi] = useState(null);
+
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -274,12 +276,10 @@ const useCheckout = () => {
       }
     } catch (err: any) {
       const errorMessage =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Có lỗi xảy ra khi tạo đơn hàng";
-      setError(errorMessage);
-      console.error("Checkout error:", err);
-    } finally {
+        typeof err?.response?.data === "string"
+          ? err.response.data
+          : err?.response?.data?.message || "Lỗi khi tạo order";
+      setErrorApi(errorMessage);
       setIsLoading(false);
     }
   };
@@ -374,6 +374,8 @@ const useCheckout = () => {
     formData,
     setFormData,
     //error
+    errorApi,
+    setErrorApi,
     successMessage,
     setSuccessMessage,
     isLoading,

@@ -31,6 +31,7 @@ import CustomerInfo from "./screens/customerLayout/customerInfo/CustomerInfo";
 import OrderHistoryScreen from "./screens/customerLayout/orderHistory/OrderHistoryScreen";
 import CustomerReviewScreen from "./screens/customerLayout/review/CustomerReviewScreen";
 import VoucherScreen from "./screens/customerLayout/voucher/VoucherScreen";
+import FlashSaleScreen from "./screens/flashsale/FlashSaleScreen";
 
 function AppContent() {
   const location = useLocation();
@@ -60,6 +61,7 @@ function AppContent() {
           </Route>
 
           <Route path="/search" element={<SearchScreen />} />
+          <Route path="/flash-sale" element={<FlashSaleScreen />} />
           <Route path="/all-products" element={<SearchScreen />} />
           <Route
             path="/product-category/:categoryId"

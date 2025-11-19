@@ -48,7 +48,7 @@ export const ReviewApi = {
     size = 4
   ): Promise<PagedResponse<ReadableProductReview>> => {
     const response = await axios.get(
-      `${backendEndpoint}/api/customers/product/${optionId}/reviews`,
+      `${backendEndpoint}/api/public/product/${optionId}/reviews`,
       {
         params: { page, size },
         headers: getAuthHeader(),

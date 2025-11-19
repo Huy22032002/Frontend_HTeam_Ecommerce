@@ -13,6 +13,8 @@ export interface ProductOption {
   price: number;
   images?: ProductImage[];
   image?: ProductImage[];
+  name?: string; //name variant
+  variantId?: number; //id variant
 }
 
 export interface ProductImage {

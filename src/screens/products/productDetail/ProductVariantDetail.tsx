@@ -15,7 +15,6 @@ import {
   Container,
   Tabs,
   Tab,
-  Grid,
   Pagination,
 } from "@mui/material";
 import { useEffect, useState } from "react";
@@ -36,6 +35,8 @@ import CircleIcon from "@mui/icons-material/Circle";
 import { CustomerLogApi } from "../../../api/customer/CustomerLogApi";
 import CreateReviewModal from "../../../components/review/CreateReviewModal";
 import ImageModalGallery from "../../../components/ImageGallery";
+import FlashSaleCountdown from "../../../components/flashSale/FlashSaleCountDown";
+import type { FlashSaleItemDTO } from "../../../models/flashSale/FlashSaleItemDTO";
 
 const ProductVariantDetail = () => {
   const theme = useTheme();
@@ -77,6 +78,9 @@ const ProductVariantDetail = () => {
     setFilter,
     totalPages,
     isLoadingReview,
+    //flash sale
+    getFlashSaleItemBySku,
+    flashSale,
   } = useVariantDetail();
 
   useEffect(() => {
@@ -107,7 +111,14 @@ const ProductVariantDetail = () => {
     }
   }, [variantId]);
 
+  //disable Buy now and AddtoCart neu flashSale co soldQuantity > limitQuantity
+  const isFlashSaleSoldOut = (item: FlashSaleItemDTO | null) => {
+    if (!item) return;
+    return (item.soldQuantity ?? 0) >= (item.limitQuantity ?? 0);
+  };
+
   useEffect(() => {
+    getFlashSaleItemBySku();
     loadReviews();
     checkCanReview();
   }, [filter, page, currentOption]);
@@ -141,6 +152,15 @@ const ProductVariantDetail = () => {
     }
 
     if (currentOption) {
+      // Lấy giá cuối cùng ưu tiên Flash Sale
+      const flashPrice = flashSale?.flashPrice; // lấy flash sale nếu có
+      const finalPrice =
+        flashPrice !== undefined && flashPrice !== null
+          ? flashPrice
+          : currentOption.availability?.salePrice ??
+            currentOption.availability?.regularPrice ??
+            0;
+
       // Chuyển đến checkout với thông tin sản phẩm (không thêm giỏ hàng)
       navigate("/checkout", {
         state: {
@@ -148,7 +168,7 @@ const ProductVariantDetail = () => {
             optionId: currentOption.id,
             sku: currentOption.sku,
             quantity: 1,
-            currentPrice: currentOption.availability?.salePrice || 0,
+            currentPrice: finalPrice,
             name: variant?.name,
             images: currentOption.images,
           },
@@ -329,7 +349,7 @@ const ProductVariantDetail = () => {
             </Box>
 
             {/* Price Section */}
-            <Card
+            {/* <Card
               sx={{
                 bgcolor: "#fff",
                 p: 2.5,
@@ -363,18 +383,65 @@ const ProductVariantDetail = () => {
                   sx={{ fontWeight: 600 }}
                 />
               </Stack>
+            </Card> */}
+
+            <Card
+              sx={{
+                bgcolor: "#fff",
+                p: 2.5,
+                mb: 3,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              }}
+            >
+              <Stack direction="row" spacing={2} alignItems="baseline">
+                {flashSale && (
+                  <FlashSaleCountdown endTime={flashSale.endTime} />
+                )}
+                <Typography variant="h3" fontWeight="bold" color="#FF6B6B">
+                  {flashSale
+                    ? flashSale.flashPrice.toLocaleString() + "₫"
+                    : currentOption?.availability?.salePrice?.toLocaleString() +
+                      "₫"}
+                </Typography>
+
+                {!flashSale && currentOption?.availability?.salePrice && (
+                  <Typography
+                    variant="h6"
+                    sx={{ textDecoration: "line-through", color: "#999" }}
+                  >
+                    {currentOption.availability.regularPrice.toLocaleString()}₫
+                  </Typography>
+                )}
+
+                {flashSale && currentOption?.availability?.regularPrice && (
+                  <Chip
+                    label={`-${Math.round(
+                      ((currentOption.availability.regularPrice -
+                        flashSale.flashPrice) /
+                        currentOption.availability.regularPrice) *
+                        100
+                    )}%`}
+                    color="error"
+                    variant="filled"
+                    size="small"
+                    sx={{ fontWeight: 600 }}
+                  />
+                )}
+              </Stack>
             </Card>
 
             {/* Promotions */}
-            <Box mb={3}>
-              <Typography fontWeight={600} mb={1.5}>
-                🎉 Khuyến mãi
-              </Typography>
-              <PromotionDisplay
-                sku={currentOption?.sku || ""}
-                optionId={currentOption?.id}
-              />
-            </Box>
+            {!flashSale && (
+              <Box mb={3}>
+                <Typography fontWeight={600} mb={1.5}>
+                  🎉 Khuyến mãi
+                </Typography>
+                <PromotionDisplay
+                  sku={currentOption?.sku || ""}
+                  optionId={currentOption?.id}
+                />
+              </Box>
+            )}
 
             {/* Info Cards */}
             <Stack spacing={2} mb={3}>
@@ -446,7 +513,9 @@ const ProductVariantDetail = () => {
                 variant="contained"
                 size="large"
                 fullWidth
-                disabled={isLoading || !currentOption}
+                disabled={
+                  isLoading || isFlashSaleSoldOut(flashSale) || !currentOption
+                }
                 sx={{
                   bgcolor: "#FF6B6B",
                   py: 1.5,
@@ -464,7 +533,11 @@ const ProductVariantDetail = () => {
                     <span>Đang xử lý...</span>
                   </Stack>
                 ) : (
-                  <>🛍️ Mua ngay</>
+                  <>
+                    {isFlashSaleSoldOut(flashSale)
+                      ? "Đã bán hết Flash Sale"
+                      : "🛍️ Mua ngay"}
+                  </>
                 )}
               </Button>
               <Button
@@ -472,7 +545,9 @@ const ProductVariantDetail = () => {
                 variant="outlined"
                 size="large"
                 fullWidth
-                disabled={isLoading || !currentOption}
+                disabled={
+                  isLoading || isFlashSaleSoldOut(flashSale) || !currentOption
+                }
                 sx={{
                   py: 1.5,
                   fontWeight: 600,
@@ -494,7 +569,9 @@ const ProductVariantDetail = () => {
                 ) : (
                   <>
                     <AddShoppingCartIcon sx={{ mr: 1 }} />
-                    Thêm vào giỏ
+                    {isFlashSaleSoldOut(flashSale)
+                      ? "Đã bán hết Flash Sale"
+                      : "Thêm vào giỏ"}
                   </>
                 )}
               </Button>

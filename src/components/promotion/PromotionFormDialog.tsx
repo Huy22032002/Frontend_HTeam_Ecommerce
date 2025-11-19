@@ -16,11 +16,15 @@ import {
   Radio,
   FormControl,
   FormLabel,
-} from '@mui/material';
-import { useEffect, useState } from 'react';
-import type { PromotionReadableDTO, CreatePromotionRequest, ProductOptionDTO } from '../../models/promotions/Promotion';
-import { PromotionApi } from '../../api/promotion/PromotionApi';
-import ProductVariantListModalForPromotion from '../modals/ProductVariantListModalForPromotion';
+} from "@mui/material";
+import { useEffect, useState } from "react";
+import type {
+  PromotionReadableDTO,
+  CreatePromotionRequest,
+  ProductOptionDTO,
+} from "../../models/promotions/Promotion";
+import { PromotionApi } from "../../api/promotion/PromotionApi";
+import ProductVariantListModalForPromotion from "../modals/ProductVariantListModalForPromotion";
 
 interface PromotionFormDialogProps {
   open: boolean;
@@ -37,22 +41,29 @@ export const PromotionFormDialog = ({
   promotion,
 }: PromotionFormDialogProps) => {
   const [formData, setFormData] = useState<CreatePromotionRequest>({
-    code: '',
-    description: '',
+    code: "",
+    description: "",
     discountPercentage: undefined,
     discountAmount: undefined,
-    validFrom: '',
-    validTo: '',
+    validFrom: "",
+    validTo: "",
     isActive: true,
     applicableProductOptionIds: [],
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [selectedProducts, setSelectedProducts] = useState<ProductOptionDTO[]>([]);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+  const [selectedProducts, setSelectedProducts] = useState<ProductOptionDTO[]>(
+    []
+  );
   const [openProductModal, setOpenProductModal] = useState(false);
-  const [discountType, setDiscountType] = useState<'percentage' | 'amount'>('percentage');
+  const [discountType, setDiscountType] = useState<"percentage" | "amount">(
+    "percentage"
+  );
 
   useEffect(() => {
     if (promotion) {
@@ -61,17 +72,18 @@ export const PromotionFormDialog = ({
         description: promotion.description,
         discountPercentage: promotion.discountPercentage,
         discountAmount: promotion.discountAmount,
-        validFrom: promotion.validFrom?.replace('Z', '').slice(0, 16) || '',
-        validTo: promotion.validTo?.replace('Z', '').slice(0, 16) || '',
+        validFrom: promotion.validFrom?.replace("Z", "").slice(0, 16) || "",
+        validTo: promotion.validTo?.replace("Z", "").slice(0, 16) || "",
         isActive: promotion.isActive,
-        applicableProductOptionSkus: promotion.applicableProductOptions?.map(p => p.sku) || [],
+        applicableProductOptionSkus:
+          promotion.applicableProductOptions?.map((p) => p.sku) || [],
         applicableProductOptionIds: undefined,
       });
       // Set discount type based on existing data
       if (promotion.discountPercentage) {
-        setDiscountType('percentage');
+        setDiscountType("percentage");
       } else if (promotion.discountAmount) {
-        setDiscountType('amount');
+        setDiscountType("amount");
       }
       if (promotion.applicableProductOptions) {
         setSelectedProducts(promotion.applicableProductOptions);
@@ -83,12 +95,12 @@ export const PromotionFormDialog = ({
 
   const resetForm = () => {
     setFormData({
-      code: '',
-      description: '',
+      code: "",
+      description: "",
       discountPercentage: undefined,
       discountAmount: undefined,
-      validFrom: '',
-      validTo: '',
+      validFrom: "",
+      validTo: "",
       isActive: true,
       applicableProductOptionSkus: [],
       applicableProductOptionIds: undefined,
@@ -102,48 +114,59 @@ export const PromotionFormDialog = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.code?.trim()) {
-      newErrors.code = 'Mã khuyến mãi không được để trống';
+      newErrors.code = "Mã khuyến mãi không được để trống";
     }
     if (!formData.description?.trim()) {
-      newErrors.description = 'Tên chương trình không được để trống';
+      newErrors.description = "Tên chương trình không được để trống";
     }
     if (!formData.validFrom) {
-      newErrors.validFrom = 'Ngày bắt đầu không được để trống';
+      newErrors.validFrom = "Ngày bắt đầu không được để trống";
     }
     if (!formData.validTo) {
-      newErrors.validTo = 'Ngày kết thúc không được để trống';
+      newErrors.validTo = "Ngày kết thúc không được để trống";
     }
-    
+
     // Validate dates
     if (formData.validFrom) {
       const startDate = new Date(formData.validFrom);
       const now = new Date();
-      
+
       if (startDate <= now) {
-        newErrors.validFrom = 'Ngày bắt đầu phải sau thời gian hiện tại';
+        newErrors.validFrom = "Ngày bắt đầu phải sau thời gian hiện tại";
       }
     }
-    
+
     if (formData.validFrom && formData.validTo) {
       const startDate = new Date(formData.validFrom);
       const endDate = new Date(formData.validTo);
-      
+
       if (endDate <= startDate) {
-        newErrors.validTo = 'Ngày kết thúc phải sau ngày bắt đầu';
+        newErrors.validTo = "Ngày kết thúc phải sau ngày bắt đầu";
       }
     }
-    
+
     // Validate discount value
-    if (formData.discountPercentage === undefined && formData.discountAmount === undefined) {
-      if (discountType === 'percentage') {
-        newErrors.discount = 'Vui lòng nhập phần trăm giảm giá (0-100)';
+    if (
+      formData.discountPercentage === undefined &&
+      formData.discountAmount === undefined
+    ) {
+      if (discountType === "percentage") {
+        newErrors.discount = "Vui lòng nhập phần trăm giảm giá (0-100)";
       } else {
-        newErrors.discount = 'Vui lòng nhập số tiền giảm giá';
+        newErrors.discount = "Vui lòng nhập số tiền giảm giá";
       }
-    } else if (discountType === 'percentage' && (formData.discountPercentage === undefined || formData.discountPercentage <= 0 || formData.discountPercentage > 100)) {
-      newErrors.discount = 'Phần trăm giảm giá phải từ 0 đến 100';
-    } else if (discountType === 'amount' && (formData.discountAmount === undefined || formData.discountAmount <= 0)) {
-      newErrors.discount = 'Số tiền giảm giá phải lớn hơn 0';
+    } else if (
+      discountType === "percentage" &&
+      (formData.discountPercentage === undefined ||
+        formData.discountPercentage <= 0 ||
+        formData.discountPercentage > 100)
+    ) {
+      newErrors.discount = "Phần trăm giảm giá phải từ 0 đến 100";
+    } else if (
+      discountType === "amount" &&
+      (formData.discountAmount === undefined || formData.discountAmount <= 0)
+    ) {
+      newErrors.discount = "Số tiền giảm giá phải lớn hơn 0";
     }
 
     setErrors(newErrors);
@@ -152,29 +175,32 @@ export const PromotionFormDialog = ({
 
   const handleInputChange = (e: any) => {
     const { name, value } = e.target;
-    setFormData(prev => {
+    setFormData((prev) => {
       const updated = {
         ...prev,
-        [name]: name === 'discountPercentage' || name === 'discountAmount' 
-          ? value ? parseFloat(value) : undefined 
-          : value,
+        [name]:
+          name === "discountPercentage" || name === "discountAmount"
+            ? value
+              ? parseFloat(value)
+              : undefined
+            : value,
       };
-      
+
       // Clear the other discount field when one is entered
-      if (name === 'discountPercentage' && value) {
+      if (name === "discountPercentage" && value) {
         updated.discountAmount = undefined;
-        setDiscountType('percentage');
-      } else if (name === 'discountAmount' && value) {
+        setDiscountType("percentage");
+      } else if (name === "discountAmount" && value) {
         updated.discountPercentage = undefined;
-        setDiscountType('amount');
+        setDiscountType("amount");
       }
-      
+
       return updated;
     });
-    
+
     // Clear error for this field
     if (errors[name]) {
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[name];
         return newErrors;
@@ -183,34 +209,38 @@ export const PromotionFormDialog = ({
   };
 
   const handleSwitchChange = (e: any) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       isActive: e.target.checked,
     }));
   };
 
   const handleProductsApply = (selectedOptionSkus: string[]) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       applicableProductOptionSkus: selectedOptionSkus,
       applicableProductOptionIds: undefined, // Clear ID-based lookup
     }));
     // Cập nhật danh sách hiển thị (tạm thời hiển thị SKU)
-    setSelectedProducts(selectedOptionSkus.map(sku => ({
-      id: 0,
-      sku,
-      code: '',
-      name: '',
-      value: '',
-    })));
+    setSelectedProducts(
+      selectedOptionSkus.map((sku) => ({
+        id: 0,
+        sku,
+        code: "",
+        name: "",
+        value: "",
+      }))
+    );
   };
 
   const handleRemoveProduct = (sku: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      applicableProductOptionSkus: (prev.applicableProductOptionSkus || []).filter(s => s !== sku),
+      applicableProductOptionSkus: (
+        prev.applicableProductOptionSkus || []
+      ).filter((s) => s !== sku),
     }));
-    setSelectedProducts(prev => prev.filter(p => p.sku !== sku));
+    setSelectedProducts((prev) => prev.filter((p) => p.sku !== sku));
   };
 
   const handleSave = async () => {
@@ -223,7 +253,7 @@ export const PromotionFormDialog = ({
 
     try {
       // Log payload để debug
-      console.log('Sending promotion payload:', formData);
+      console.log("Sending promotion payload:", formData);
 
       if (promotion) {
         // Update existing
@@ -231,14 +261,14 @@ export const PromotionFormDialog = ({
           id: promotion.id,
           ...formData,
         };
-        console.log('Update data:', updateData);
+        console.log("Update data:", updateData);
         await PromotionApi.update(promotion.id, updateData);
-        setMessage({ type: 'success', text: 'Cập nhật khuyến mãi thành công' });
+        setMessage({ type: "success", text: "Cập nhật khuyến mãi thành công" });
       } else {
         // Create new
-        console.log('Create data:', formData);
+        console.log("Create data:", formData);
         await PromotionApi.create(formData);
-        setMessage({ type: 'success', text: 'Tạo khuyến mãi thành công' });
+        setMessage({ type: "success", text: "Tạo khuyến mãi thành công" });
       }
 
       setTimeout(() => {
@@ -246,8 +276,8 @@ export const PromotionFormDialog = ({
         onSuccess();
       }, 1500);
     } catch (err: any) {
-      const errorMsg = err.response?.data?.errorMessage || 'Có lỗi xảy ra';
-      setMessage({ type: 'error', text: errorMsg });
+      const errorMsg = err.response?.data?.errorMessage || "Có lỗi xảy ra";
+      setMessage({ type: "error", text: errorMsg });
     } finally {
       setLoading(false);
     }
@@ -262,13 +292,11 @@ export const PromotionFormDialog = ({
     <>
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
         <DialogTitle>
-          {promotion ? 'Cập nhật khuyến mãi' : 'Tạo khuyến mãi mới'}
+          {promotion ? "Cập nhật khuyến mãi" : "Tạo khuyến mãi mới"}
         </DialogTitle>
         <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
-            {message && (
-              <Alert severity={message.type}>{message.text}</Alert>
-            )}
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}>
+            {message && <Alert severity={message.type}>{message.text}</Alert>}
 
             <TextField
               label="Mã khuyến mãi"
@@ -302,10 +330,10 @@ export const PromotionFormDialog = ({
                 row
                 value={discountType}
                 onChange={(e) => {
-                  const newType = e.target.value as 'percentage' | 'amount';
+                  const newType = e.target.value as "percentage" | "amount";
                   setDiscountType(newType);
                   // Clear both discount fields
-                  setFormData(prev => ({
+                  setFormData((prev) => ({
                     ...prev,
                     discountPercentage: undefined,
                     discountAmount: undefined,
@@ -326,33 +354,33 @@ export const PromotionFormDialog = ({
               </RadioGroup>
             </FormControl>
 
-            {discountType === 'percentage' && (
+            {discountType === "percentage" && (
               <TextField
                 label="Phần trăm giảm giá (%)"
                 name="discountPercentage"
                 type="number"
-                value={formData.discountPercentage || ''}
+                value={formData.discountPercentage || ""}
                 onChange={handleInputChange}
                 fullWidth
                 inputProps={{ min: 0, max: 100, step: 0.01 }}
                 placeholder="VD: 10"
                 error={!!errors.discount}
-                helperText={errors.discount || 'Nhập phần trăm từ 0 đến 100'}
+                helperText={errors.discount || "Nhập phần trăm từ 0 đến 100"}
               />
             )}
 
-            {discountType === 'amount' && (
+            {discountType === "amount" && (
               <TextField
                 label="Số tiền giảm giá (₫)"
                 name="discountAmount"
                 type="number"
-                value={formData.discountAmount || ''}
+                value={formData.discountAmount || ""}
                 onChange={handleInputChange}
                 fullWidth
                 inputProps={{ min: 0, step: 1 }}
                 placeholder="VD: 50000"
                 error={!!errors.discount}
-                helperText={errors.discount || 'Nhập số tiền giảm giá'}
+                helperText={errors.discount || "Nhập số tiền giảm giá"}
               />
             )}
 
@@ -386,10 +414,15 @@ export const PromotionFormDialog = ({
                 fullWidth
                 onClick={() => setOpenProductModal(true)}
               >
-                Chọn sản phẩm áp dụng (Đã chọn: {selectedProducts.length})<br></br>(Không chọn = áp dụng cho tất cả)
+                Chọn sản phẩm áp dụng (Đã chọn: {selectedProducts.length})
+                <br></br>(Không chọn = áp dụng cho tất cả)
               </Button>
               {selectedProducts.length > 0 && (
-                <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: 'wrap' }}>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{ mt: 2, flexWrap: "wrap" }}
+                >
                   {selectedProducts.map((product) => (
                     <Chip
                       key={product.sku}
@@ -414,13 +447,17 @@ export const PromotionFormDialog = ({
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} disabled={loading}>Hủy</Button>
-          <Button
-            onClick={handleSave}
-            variant="contained"
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={24} /> : promotion ? 'Cập nhật' : 'Tạo'}
+          <Button onClick={handleClose} disabled={loading}>
+            Hủy
+          </Button>
+          <Button onClick={handleSave} variant="contained" disabled={loading}>
+            {loading ? (
+              <CircularProgress size={24} />
+            ) : promotion ? (
+              "Cập nhật"
+            ) : (
+              "Tạo"
+            )}
           </Button>
         </DialogActions>
       </Dialog>
