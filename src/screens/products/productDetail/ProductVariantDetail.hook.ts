@@ -14,6 +14,8 @@ import type {
 } from "../../../models/products/ProductReview";
 import { ReviewApi } from "../../../api/review/ProductReviewApi";
 import { CloudApi } from "../../../api/CloudApi";
+import { FlashSaleApi } from "../../../api/flashsale/FlashSaleApi";
+import type { FlashSaleItemDTO } from "../../../models/flashSale/FlashSaleItemDTO";
 
 const useVariantDetail = () => {
   const dispatch = useDispatch();
@@ -119,7 +121,9 @@ const useVariantDetail = () => {
         sku: option.sku,
         cartId: 0,
         currentPrice:
-          option.availability.salePrice ?? option.availability.regularPrice,
+          flashSale?.flashPrice ??
+          option.availability.salePrice ??
+          option.availability.regularPrice,
       };
 
       const data = await CartApi.addCartItem(finalCartCode, cartItem);
@@ -228,6 +232,16 @@ const useVariantDetail = () => {
     }
   };
 
+  //flash sale
+  const [flashSale, setFlashSale] = useState<FlashSaleItemDTO | null>(null);
+  const getFlashSaleItemBySku = async () => {
+    if (!currentOption?.sku) return;
+    const data = await FlashSaleApi.getActiveFlashSaleItemBySku(
+      currentOption.sku
+    );
+    setFlashSale(data);
+  };
+
   return {
     //productVariant
     getProductVariant,
@@ -259,6 +273,9 @@ const useVariantDetail = () => {
     setFilter,
     totalPages,
     setTotalPages,
+    //flash sale
+    getFlashSaleItemBySku,
+    flashSale,
   };
 };
 

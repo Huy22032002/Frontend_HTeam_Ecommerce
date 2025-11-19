@@ -6,7 +6,6 @@ import {
   Stack,
   IconButton,
   Paper,
-  colors,
   useTheme,
   Backdrop,
 } from "@mui/material";
@@ -42,15 +41,19 @@ const CartPopup: React.FC<CartPopupProps> = ({ open, onClose, cartItems }) => {
 
   // Ẩn CartPopup khi ở trên CartScreen
   const isOnCartScreen = location.pathname === "/cart";
-  
+
   if (!open || isOnCartScreen) return null;
 
   const hasItems = cartItems.length > 0;
 
-  const handleQuantityChange = async (item: CartItem, type: "inc" | "dec", e: React.MouseEvent) => {
+  const handleQuantityChange = async (
+    item: CartItem,
+    type: "inc" | "dec",
+    e: React.MouseEvent
+  ) => {
     // Ngăn event propagation để không trigger navigate
     e.stopPropagation();
-    
+
     if (!cart?.cartCode) return;
 
     const res = await CartApi.updateCartItemQuantity(
@@ -68,7 +71,7 @@ const CartPopup: React.FC<CartPopupProps> = ({ open, onClose, cartItems }) => {
   const handleRemove = async (item: CartItem, e: React.MouseEvent) => {
     // Ngăn event propagation để không trigger navigate
     e.stopPropagation();
-    
+
     if (!cart?.cartCode) return;
 
     const res = await CartApi.deleteCartItem(cart.cartCode, item.id!);
@@ -93,10 +96,10 @@ const CartPopup: React.FC<CartPopupProps> = ({ open, onClose, cartItems }) => {
         onClick={onClose}
         sx={{
           zIndex: 999, // backdrop ở dưới popup
-          backgroundColor: 'rgba(0, 0, 0, 0.3)',
+          backgroundColor: "rgba(0, 0, 0, 0.3)",
         }}
       />
-      
+
       {/* Popup */}
       <Paper
         elevation={6}
@@ -112,146 +115,146 @@ const CartPopup: React.FC<CartPopupProps> = ({ open, onClose, cartItems }) => {
           border: "1px solid #e3e8ef",
         }}
       >
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={1}
-      >
-        <Typography fontWeight={700} fontSize={20} variant="h6">
-          Giỏ hàng ({cartItems.length})
-        </Typography>
-        <IconButton size="small" onClick={onClose}>
-          <CloseIcon fontSize="small" />
-        </IconButton>
-      </Stack>
-
-      {!hasItems ? (
-        <Box
-          display="flex"
-          flexDirection="column"
+        <Stack
+          direction="row"
+          justifyContent="space-between"
           alignItems="center"
-          justifyContent="center"
-          height={150}
+          mb={1}
         >
-          <ShoppingBagOutlinedIcon
-            sx={{ fontSize: 50, color: "primary.main" }}
-          />
-          <Typography variant="subtitle1" mt={1}>
-            Giỏ hàng trống
+          <Typography fontWeight={700} fontSize={20} variant="h6">
+            Giỏ hàng ({cartItems.length})
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Hãy thoải mái lựa chọn sản phẩm bạn nhé
-          </Typography>
-        </Box>
-      ) : (
-        <Stack spacing={1}>
-          {cartItems.map((item) => (
-            <Box
-              key={item.id}
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              sx={{
-                borderBottom: "1px solid #e0e0e0",
-                pb: 1,
-                mb: 1,
-              }}
-              onClick={() => handleClickOption(item.id)}
-            >
-              {/* Hình + Tên + Giá */}
-              <Stack
-                direction="row"
-                spacing={1}
-                alignItems="center"
-                flex={1}
-                p={1}
-              >
-                {item.images && item.images.length > 0 ? (
-                  <Box
-                    component="img"
-                    src={item.images[0].productImageUrl}
-                    alt={item.productName}
-                    sx={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 1,
-                      objectFit: "cover",
-                      border: "1px solid #ddd",
-                    }}
-                  />
-                ) : (
-                  <Box
-                    sx={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 1,
-                      border: "1px solid #ddd",
-                      bgcolor: "#f0f0f0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <ShoppingBagOutlinedIcon fontSize="small" />
-                  </Box>
-                )}
-
-                <Box>
-                  <Typography fontWeight="500">{item.productName}</Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: colors.redAccent[400], fontWeight: "bold" }}
-                  >
-                    {formatCurrency(item.currentPrice)}
-                  </Typography>
-                </Box>
-              </Stack>
-
-              {/* Điều chỉnh số lượng */}
-              <Stack direction="row" spacing={0.5} alignItems="center">
-                <IconButton
-                  size="small"
-                  onClick={(e) => handleQuantityChange(item, "dec", e)}
-                >
-                  <RemoveIcon fontSize="small" />
-                </IconButton>
-
-                <Typography width={16} textAlign="center" fontWeight={600}>
-                  {item.quantity}
-                </Typography>
-
-                <IconButton
-                  onClick={(e) => handleQuantityChange(item, "inc", e)}
-                  size="small"
-                >
-                  <AddIcon fontSize="small" />
-                </IconButton>
-
-                <IconButton
-                  onClick={(e) => handleRemove(item, e)}
-                  size="small"
-                  color="error"
-                >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </Stack>
-            </Box>
-          ))}
-
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            onClick={() => {
-              navigate("/cart");
-              onClose();
-            }}
-          >
-            Xem giỏ hàng
-          </Button>
+          <IconButton size="small" onClick={onClose}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
         </Stack>
-      )}
+
+        {!hasItems ? (
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            height={150}
+          >
+            <ShoppingBagOutlinedIcon
+              sx={{ fontSize: 50, color: "primary.main" }}
+            />
+            <Typography variant="subtitle1" mt={1}>
+              Giỏ hàng trống
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Hãy thoải mái lựa chọn sản phẩm bạn nhé
+            </Typography>
+          </Box>
+        ) : (
+          <Stack spacing={1}>
+            {cartItems.map((item) => (
+              <Box
+                key={item.id}
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                sx={{
+                  borderBottom: "1px solid #e0e0e0",
+                  pb: 1,
+                  mb: 1,
+                }}
+                onClick={() => handleClickOption(item.id)}
+              >
+                {/* Hình + Tên + Giá */}
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                  flex={1}
+                  p={1}
+                >
+                  {item.images && item.images.length > 0 ? (
+                    <Box
+                      component="img"
+                      src={item.images[0].productImageUrl}
+                      alt={item.productName}
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 1,
+                        objectFit: "cover",
+                        border: "1px solid #ddd",
+                      }}
+                    />
+                  ) : (
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 1,
+                        border: "1px solid #ddd",
+                        bgcolor: "#f0f0f0",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <ShoppingBagOutlinedIcon fontSize="small" />
+                    </Box>
+                  )}
+
+                  <Box>
+                    <Typography fontWeight="500">{item.productName}</Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: colors.redAccent[400], fontWeight: "bold" }}
+                    >
+                      {formatCurrency(item.currentPrice)}
+                    </Typography>
+                  </Box>
+                </Stack>
+
+                {/* Điều chỉnh số lượng */}
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => handleQuantityChange(item, "dec", e)}
+                  >
+                    <RemoveIcon fontSize="small" />
+                  </IconButton>
+
+                  <Typography width={16} textAlign="center" fontWeight={600}>
+                    {item.quantity}
+                  </Typography>
+
+                  <IconButton
+                    onClick={(e) => handleQuantityChange(item, "inc", e)}
+                    size="small"
+                  >
+                    <AddIcon fontSize="small" />
+                  </IconButton>
+
+                  <IconButton
+                    onClick={(e) => handleRemove(item, e)}
+                    size="small"
+                    color="error"
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Stack>
+              </Box>
+            ))}
+
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              onClick={() => {
+                navigate("/cart");
+                onClose();
+              }}
+            >
+              Xem giỏ hàng
+            </Button>
+          </Stack>
+        )}
       </Paper>
     </>
   );

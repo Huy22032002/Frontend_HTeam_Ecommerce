@@ -55,8 +55,8 @@ const NotificationPopup = ({
   //navigate base on Notification type
   const handleNavigate = (n: Notification) => {
     const route = mapNotificationRoute(n);
-
     if (route) navigate(route);
+    onClose();
   };
 
   useEffect(() => {
