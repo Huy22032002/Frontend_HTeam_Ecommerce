@@ -1,5 +1,6 @@
 import { Box, IconButton, Avatar, Tooltip, Button, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -104,6 +105,16 @@ export const CmsTopbar = ({ onToggleSidebar }: CmsTopbarProps) => {
         >
           BÁN HÀNG
         </Button>
+        {/* Chat */}
+        <Tooltip title="Chat với khách hàng">
+          <IconButton
+            size="small"
+            onClick={() => navigate('/admin/chat')}
+          >
+            <ChatBubbleOutlineIcon />
+          </IconButton>
+        </Tooltip>
+
         {/* Thông báo */}
         <Tooltip title="Thông báo">
           <IconButton

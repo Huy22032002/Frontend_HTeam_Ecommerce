@@ -4,11 +4,14 @@ import type { ChatMessage } from '../api/chat/ChatApi';
 /**
  * Hook để quản lý WebSocket connection cho chat
  * Sử dụng STOMP protocol qua WebSocket
+ * Hỗ trợ phân trang: 20 messages mỗi trang
  */
 export const useWebSocketChat = (customerId: number | null) => {
   const [connected, setConnected] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
   const clientRef = useRef<any>(null);
   const subscriptionsRef = useRef<any[]>([]);
 
@@ -62,14 +65,21 @@ export const useWebSocketChat = (customerId: number | null) => {
     }
   }, []);
 
-  // Subscribe vào cuộc hội thoại
-  const subscribeToConversation = useCallback((conversationId: number) => {
+  // Subscribe vào cuộc hội thoại (MongoDB String ID)
+  const subscribeToConversation = useCallback((conversationId: string) => {
     if (!clientRef.current?.connected) {
       setError('WebSocket chưa kết nối');
       return;
     }
 
     try {
+      // Unsubscribe các subscription cũ
+      subscriptionsRef.current.forEach(sub => sub.unsubscribe());
+      subscriptionsRef.current = [];
+      setMessages([]);
+      setCurrentPage(0);
+      setHasMore(true);
+
       // Subscribe vào topic tin nhắn
       const subscription = clientRef.current.subscribe(
         `/topic/chat.${conversationId}`,
@@ -85,7 +95,7 @@ export const useWebSocketChat = (customerId: number | null) => {
               )
             );
           } else {
-            // Tin nhắn mới
+            // Tin nhắn mới (thêm vào cuối)
             setMessages(prev => [...prev, body]);
           }
         }
@@ -99,9 +109,9 @@ export const useWebSocketChat = (customerId: number | null) => {
     }
   }, []);
 
-  // Gửi tin nhắn qua WebSocket
+  // Gửi tin nhắn qua WebSocket (MongoDB String conversationId)
   const sendMessage = useCallback(
-    (conversationId: number, content: string, messageType: string = 'TEXT') => {
+    (conversationId: string, content: string, messageType: string = 'TEXT') => {
       if (!clientRef.current?.connected) {
         setError('WebSocket chưa kết nối');
         return;
@@ -152,6 +162,10 @@ export const useWebSocketChat = (customerId: number | null) => {
     connected,
     messages,
     error,
+    currentPage,
+    setCurrentPage,
+    hasMore,
+    setHasMore,
     connect,
     disconnect,
     subscribeToConversation,
@@ -165,7 +179,7 @@ export const useWebSocketChat = (customerId: number | null) => {
  */
 export const useWebSocketAdminChat = (adminId: number | null) => {
   const [connected, setConnected] = useState(false);
-  const [conversations, setConversations] = useState<Map<number, ChatMessage[]>>(new Map());
+  const [conversations, setConversations] = useState<Map<string, ChatMessage[]>>(new Map());
   const [error, setError] = useState<string | null>(null);
   const clientRef = useRef<any>(null);
   const subscriptionsRef = useRef<any[]>([]);
@@ -224,8 +238,8 @@ export const useWebSocketAdminChat = (adminId: number | null) => {
     }
   }, []);
 
-  // Subscribe vào cuộc hội thoại
-  const subscribeToConversation = useCallback((conversationId: number) => {
+  // Subscribe vào cuộc hội thoại (MongoDB String ID)
+  const subscribeToConversation = useCallback((conversationId: string) => {
     if (!clientRef.current?.connected) {
       setError('WebSocket chưa kết nối');
       return;
@@ -255,9 +269,9 @@ export const useWebSocketAdminChat = (adminId: number | null) => {
     }
   }, []);
 
-  // Gửi tin nhắn admin
+  // Gửi tin nhắn admin (MongoDB String conversationId)
   const sendMessage = useCallback(
-    (conversationId: number, content: string, messageType: string = 'TEXT') => {
+    (conversationId: string, content: string, messageType: string = 'TEXT') => {
       if (!clientRef.current?.connected) {
         setError('WebSocket chưa kết nối');
         return;

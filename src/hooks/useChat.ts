@@ -167,9 +167,9 @@ export const useAdminChatConversations = (adminId: number | null) => {
     [adminId]
   );
 
-  // Gán cuộc hội thoại cho admin
+  // Gán cuộc hội thoại cho admin (MongoDB String conversationId)
   const assignConversation = useCallback(
-    async (conversationId: number, adminName: string) => {
+    async (conversationId: string, adminName: string) => {
       if (!adminId) return null;
 
       try {
@@ -192,9 +192,9 @@ export const useAdminChatConversations = (adminId: number | null) => {
     [adminId]
   );
 
-  // Đóng cuộc hội thoại
+  // Đóng cuộc hội thoại (MongoDB String conversationId)
   const closeConversation = useCallback(
-    async (conversationId: number) => {
+    async (conversationId: string) => {
       if (!adminId) return null;
 
       try {
@@ -217,9 +217,9 @@ export const useAdminChatConversations = (adminId: number | null) => {
     [adminId]
   );
 
-  // Mở lại cuộc hội thoại
+  // Mở lại cuộc hội thoại (MongoDB String conversationId)
   const reopenConversation = useCallback(
-    async (conversationId: number) => {
+    async (conversationId: string) => {
       if (!adminId) return null;
 
       try {
@@ -256,9 +256,9 @@ export const useAdminChatConversations = (adminId: number | null) => {
 };
 
 /**
- * Hook để quản lý tin nhắn trong cuộc hội thoại (cho admin)
+ * Hook để quản lý tin nhắn trong cuộc hội thoại (cho admin - MongoDB String conversationId)
  */
-export const useAdminChatMessages = (adminId: number | null, conversationId: number | null) => {
+export const useAdminChatMessages = (adminId: number | null, conversationId: string | null) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -338,5 +338,31 @@ export const useAdminChatMessages = (adminId: number | null, conversationId: num
     loadMessages,
     sendMessage,
     markAllAsRead
+  };
+};
+
+/**
+ * Unified hook cho cả Customer và Admin Chat
+ */
+export const useChat = () => {
+  return {
+    // Customer APIs
+    getOrCreateCustomerConversation: ChatApi.getOrCreateCustomerConversation,
+    sendCustomerMessage: ChatApi.sendCustomerMessage,
+    getCustomerMessages: ChatApi.getCustomerMessages,
+    
+    // Admin APIs
+    sendAdminMessage: ChatApi.sendAdminMessage,
+    getAdminConversations: ChatApi.getAdminConversations,
+    getUnreadConversations: ChatApi.getUnreadConversations,
+    assignConversationToAdmin: ChatApi.assignConversationToAdmin,
+    closeConversation: ChatApi.closeConversation,
+    reopenConversation: ChatApi.reopenConversation,
+    
+    // Common APIs
+    getConversationById: ChatApi.getConversationById,
+    markAllMessagesAsRead: ChatApi.markAllMessagesAsRead,
+    markMessageAsRead: ChatApi.markMessageAsRead,
+    getActiveConversations: ChatApi.getActiveConversations
   };
 };

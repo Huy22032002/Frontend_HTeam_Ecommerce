@@ -7,7 +7,7 @@ const CHAT_API_BASE = `${API_BASE_URL}/chat`;
 // ==================== Types ====================
 export interface ChatMessage {
   id: string;
-  conversationId: number;
+  conversationId: string;  // Changed to string (MongoDB ID)
   senderId: number;
   customerId: number;
   senderName: string;
@@ -20,7 +20,7 @@ export interface ChatMessage {
 }
 
 export interface ChatConversation {
-  id: number;
+  id: string;  // Changed to string (MongoDB ID)
   customerId: number;
   customerName: string;
   adminId?: number;
@@ -35,7 +35,7 @@ export interface ChatConversation {
 }
 
 export interface SendMessageRequest {
-  conversationId: number;
+  conversationId: string;  // Changed to string (MongoDB ID)
   content: string;
   messageType?: string;
   attachmentUrl?: string;
@@ -47,14 +47,10 @@ export interface SendMessageRequest {
  * Khách hàng lấy hoặc tạo cuộc hội thoại
  */
 export const getOrCreateCustomerConversation = async (
-  customerId: number,
-  customerName: string = 'Khách hàng'
+  customerId: number
 ): Promise<ChatConversation> => {
   const response = await axios.get(
-    `${CHAT_API_BASE}/customers/${customerId}/conversation`,
-    {
-      params: { customerName }
-    }
+    `${CHAT_API_BASE}/customers/${customerId}/conversation`
   );
   return response.data;
 };
@@ -74,11 +70,11 @@ export const sendCustomerMessage = async (
 };
 
 /**
- * Khách hàng lấy lịch sử tin nhắn của cuộc hội thoại
+ * Khách hàng lấy lịch sử tin nhắn của cuộc hội thoại (MongoDB String conversationId)
  */
 export const getCustomerMessages = async (
   customerId: number,
-  conversationId: number,
+  conversationId: string,
   page: number = 0,
   size: number = 20
 ): Promise<PagedResponse<ChatMessage>> => {
@@ -94,11 +90,11 @@ export const getCustomerMessages = async (
 // ==================== Admin APIs ====================
 
 /**
- * Admin gửi tin nhắn
+ * Admin gửi tin nhắn (MongoDB String conversationId)
  */
 export const sendAdminMessage = async (
   adminId: number,
-  conversationId: number,
+  conversationId: string,
   request: SendMessageRequest
 ): Promise<ChatMessage> => {
   const response = await axios.post(
@@ -143,11 +139,11 @@ export const getUnreadConversations = async (
 };
 
 /**
- * Admin gán cuộc hội thoại cho mình
+ * Admin gán cuộc hội thoại cho mình (MongoDB String conversationId)
  */
 export const assignConversationToAdmin = async (
   adminId: number,
-  conversationId: number,
+  conversationId: string,
   adminName: string = 'Admin'
 ): Promise<ChatConversation> => {
   const response = await axios.put(
@@ -161,11 +157,11 @@ export const assignConversationToAdmin = async (
 };
 
 /**
- * Admin đóng cuộc hội thoại
+ * Admin đóng cuộc hội thoại (MongoDB String conversationId)
  */
 export const closeConversation = async (
   adminId: number,
-  conversationId: number
+  conversationId: string
 ): Promise<ChatConversation> => {
   const response = await axios.put(
     `${CHAT_API_BASE}/admins/${adminId}/conversations/${conversationId}/close`
@@ -174,11 +170,11 @@ export const closeConversation = async (
 };
 
 /**
- * Admin mở lại cuộc hội thoại
+ * Admin mở lại cuộc hội thoại (MongoDB String conversationId)
  */
 export const reopenConversation = async (
   adminId: number,
-  conversationId: number
+  conversationId: string
 ): Promise<ChatConversation> => {
   const response = await axios.put(
     `${CHAT_API_BASE}/admins/${adminId}/conversations/${conversationId}/reopen`
@@ -199,10 +195,10 @@ export const markMessageAsRead = async (messageId: string): Promise<any> => {
 };
 
 /**
- * Đánh dấu tất cả tin nhắn trong cuộc hội thoại là đã đọc
+ * Đánh dấu tất cả tin nhắn trong cuộc hội thoại là đã đọc (MongoDB String conversationId)
  */
 export const markAllMessagesAsRead = async (
-  conversationId: number,
+  conversationId: string,
   senderId: number
 ): Promise<any> => {
   const response = await axios.put(
@@ -216,10 +212,10 @@ export const markAllMessagesAsRead = async (
 };
 
 /**
- * Lấy cuộc hội thoại theo ID
+ * Lấy cuộc hội thoại theo ID (MongoDB String conversationId)
  */
 export const getConversationById = async (
-  conversationId: number
+  conversationId: string
 ): Promise<ChatConversation> => {
   const response = await axios.get(
     `${CHAT_API_BASE}/conversations/${conversationId}`
