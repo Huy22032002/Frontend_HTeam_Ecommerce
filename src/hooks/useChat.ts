@@ -102,6 +102,13 @@ export const useCustomerChat = (customerId: number | null) => {
     }
   }, []);
 
+  // Load messages khi conversation được tạo
+  useEffect(() => {
+    if (conversation?.id) {
+      loadMessages(0, 20);
+    }
+  }, [conversation?.id, loadMessages]);
+
   // Khởi tạo khi component mount
   useEffect(() => {
     if (customerId) {

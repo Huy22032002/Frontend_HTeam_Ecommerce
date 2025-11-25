@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Paper, Typography, List, ListItem, ListItemButton, Divider, TextField, Button, CircularProgress } from '@mui/material';
+import { Box, Paper, Typography, List, ListItem, ListItemButton, Divider, TextField, Button, CircularProgress, Alert } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import { useChat } from '../../hooks/useChat';
+import { useSelector } from 'react-redux';
 
 interface Conversation {
   id: string;
@@ -18,20 +19,46 @@ export default function AdminChatScreen() {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const { getAdminConversations, sendAdminMessage, getConversationById } = useChat();
+  const [error, setError] = useState<string | null>(null);
+  const { getAdminConversations, sendAdminMessage, getCustomerMessages } = useChat();
+  
+  // Try multiple ways to get adminId
+  const userState = useSelector((state: any) => state.user);
+  let adminId = userState?.user?.id || null;
+  
+  // Fallback: Try to extract from localStorage or other sources
+  if (!adminId) {
+    // Try from localStorage (if stored during login)
+    const stored = localStorage.getItem('adminId');
+    adminId = stored ? parseInt(stored) : null;
+  }
+  
+  // DEBUG: Log Redux state
+  useEffect(() => {
+    console.log('AdminChatScreen - userState:', userState);
+    console.log('AdminChatScreen - adminId final:', adminId);
+  }, [userState, adminId]);
 
   // Load conversations
   useEffect(() => {
     loadConversations();
-  }, []);
+  }, [adminId]);
 
   const loadConversations = async () => {
+    if (!adminId) {
+      setError('Admin ID not found. Please login again.');
+      return;
+    }
+    
     setLoading(true);
+    setError(null);
     try {
-      const data = await getAdminConversations();
-      setConversations(data || []);
-    } catch (error) {
-      console.error('Error loading conversations:', error);
+      const data = await getAdminConversations(adminId, 0, 20);
+      setConversations(data?.content || data || []);
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.message || err.message || 'Error loading conversations';
+      setError(errorMsg);
+      console.error('Error loading conversations:', err);
     } finally {
       setLoading(false);
     }
@@ -45,29 +72,55 @@ export default function AdminChatScreen() {
   }, [selectedConversationId]);
 
   const loadMessages = async () => {
-    if (!selectedConversationId) return;
+    if (!selectedConversationId || !adminId) return;
     try {
-      const data = await getConversationById(selectedConversationId);
-      setMessages(data?.messages || []);
-    } catch (error) {
-      console.error('Error loading messages:', error);
+      const data = await getCustomerMessages(adminId, selectedConversationId, 0, 20);
+      setMessages(data?.content || []);
+    } catch (err: any) {
+      console.error('Error loading messages:', err);
     }
   };
 
   const handleSendMessage = async () => {
-    if (!selectedConversationId || !newMessage.trim()) return;
+    if (!adminId || !selectedConversationId || !newMessage.trim()) {
+      setError('Admin ID or conversation not selected');
+      return;
+    }
 
     try {
-      await sendAdminMessage(selectedConversationId, newMessage);
+      await sendAdminMessage(adminId, selectedConversationId, { conversationId: selectedConversationId, content: newMessage });
       setNewMessage('');
       await loadMessages();
-    } catch (error) {
-      console.error('Error sending message:', error);
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.message || err.message || 'Error sending message';
+      setError(errorMsg);
+      console.error('Error sending message:', err);
     }
   };
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f5f5f5' }}>
+    <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f5f5f5', flexDirection: 'column' }}>
+      {/* Error Alert */}
+      {error && (
+        <Box sx={{ p: 2, bgcolor: '#ffebee', borderBottom: '1px solid #ffcdd2' }}>
+          <Typography variant="body2" sx={{ color: '#c62828' }}>
+            ⚠️ {error}
+          </Typography>
+        </Box>
+      )}
+
+      {/* Not logged in */}
+      {!adminId && (
+        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Typography variant="h6" sx={{ color: '#999' }}>
+            Please login as admin to view conversations
+          </Typography>
+        </Box>
+      )}
+
+      {/* Chat Interface */}
+      {adminId && (
+        <Box sx={{ display: 'flex', flex: 1 }}>
       {/* Conversations List */}
       <Paper
         sx={{
@@ -203,6 +256,8 @@ export default function AdminChatScreen() {
           </Box>
         )}
       </Box>
+        </Box>
+      )}
     </Box>
   );
 }

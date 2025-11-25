@@ -2,7 +2,6 @@ import axios from 'axios';
 import type { PagedResponse } from '../../models/PagedResponse';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
-const CHAT_API_BASE = `${API_BASE_URL}/chat`;
 
 // ==================== Types ====================
 export interface ChatMessage {
@@ -50,7 +49,7 @@ export const getOrCreateCustomerConversation = async (
   customerId: number
 ): Promise<ChatConversation> => {
   const response = await axios.get(
-    `${CHAT_API_BASE}/customers/${customerId}/conversation`
+    `${API_BASE_URL}/customers/${customerId}/chat/conversation`
   );
   return response.data;
 };
@@ -63,7 +62,7 @@ export const sendCustomerMessage = async (
   request: SendMessageRequest
 ): Promise<ChatMessage> => {
   const response = await axios.post(
-    `${CHAT_API_BASE}/customers/${customerId}/messages`,
+    `${API_BASE_URL}/customers/${customerId}/chat/messages`,
     request
   );
   return response.data;
@@ -79,7 +78,7 @@ export const getCustomerMessages = async (
   size: number = 20
 ): Promise<PagedResponse<ChatMessage>> => {
   const response = await axios.get(
-    `${CHAT_API_BASE}/customers/${customerId}/conversations/${conversationId}/messages`,
+    `${API_BASE_URL}/customers/${customerId}/chat/conversations/${conversationId}/messages`,
     {
       params: { page, size }
     }
@@ -98,7 +97,7 @@ export const sendAdminMessage = async (
   request: SendMessageRequest
 ): Promise<ChatMessage> => {
   const response = await axios.post(
-    `${CHAT_API_BASE}/admins/${adminId}/conversations/${conversationId}/messages`,
+    `${API_BASE_URL}/admins/${adminId}/chat/conversations/${conversationId}/messages`,
     request
   );
   return response.data;
@@ -113,7 +112,7 @@ export const getAdminConversations = async (
   size: number = 20
 ): Promise<PagedResponse<ChatConversation>> => {
   const response = await axios.get(
-    `${CHAT_API_BASE}/admins/${adminId}/conversations`,
+    `${API_BASE_URL}/admins/${adminId}/chat/conversations`,
     {
       params: { page, size }
     }
@@ -130,7 +129,7 @@ export const getUnreadConversations = async (
   size: number = 20
 ): Promise<PagedResponse<ChatConversation>> => {
   const response = await axios.get(
-    `${CHAT_API_BASE}/admins/${adminId}/unread-conversations`,
+    `${API_BASE_URL}/admins/${adminId}/chat/unread-conversations`,
     {
       params: { page, size }
     }
@@ -147,7 +146,7 @@ export const assignConversationToAdmin = async (
   adminName: string = 'Admin'
 ): Promise<ChatConversation> => {
   const response = await axios.put(
-    `${CHAT_API_BASE}/admins/${adminId}/conversations/${conversationId}/assign`,
+    `${API_BASE_URL}/admins/${adminId}/chat/conversations/${conversationId}/assign`,
     {},
     {
       params: { adminName }
@@ -164,7 +163,7 @@ export const closeConversation = async (
   conversationId: string
 ): Promise<ChatConversation> => {
   const response = await axios.put(
-    `${CHAT_API_BASE}/admins/${adminId}/conversations/${conversationId}/close`
+    `${API_BASE_URL}/admins/${adminId}/chat/conversations/${conversationId}/close`
   );
   return response.data;
 };
@@ -177,7 +176,7 @@ export const reopenConversation = async (
   conversationId: string
 ): Promise<ChatConversation> => {
   const response = await axios.put(
-    `${CHAT_API_BASE}/admins/${adminId}/conversations/${conversationId}/reopen`
+    `${API_BASE_URL}/admins/${adminId}/chat/conversations/${conversationId}/reopen`
   );
   return response.data;
 };
@@ -189,7 +188,7 @@ export const reopenConversation = async (
  */
 export const markMessageAsRead = async (messageId: string): Promise<any> => {
   const response = await axios.put(
-    `${CHAT_API_BASE}/messages/${messageId}/read`
+    `${API_BASE_URL}/messages/${messageId}/read`
   );
   return response.data;
 };
@@ -202,7 +201,7 @@ export const markAllMessagesAsRead = async (
   senderId: number
 ): Promise<any> => {
   const response = await axios.put(
-    `${CHAT_API_BASE}/conversations/${conversationId}/mark-all-read`,
+    `${API_BASE_URL}/conversations/${conversationId}/mark-all-read`,
     {},
     {
       params: { senderId }
@@ -218,7 +217,7 @@ export const getConversationById = async (
   conversationId: string
 ): Promise<ChatConversation> => {
   const response = await axios.get(
-    `${CHAT_API_BASE}/conversations/${conversationId}`
+    `${API_BASE_URL}/conversations/${conversationId}`
   );
   return response.data;
 };
@@ -231,7 +230,7 @@ export const getActiveConversations = async (
   size: number = 20
 ): Promise<PagedResponse<ChatConversation>> => {
   const response = await axios.get(
-    `${CHAT_API_BASE}/conversations/active`,
+    `${API_BASE_URL}/conversations/active`,
     {
       params: { page, size }
     }
