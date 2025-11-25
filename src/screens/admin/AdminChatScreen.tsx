@@ -20,7 +20,7 @@ export default function AdminChatScreen() {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { getAdminConversations, sendAdminMessage, getCustomerMessages } = useChat();
+  const { getAdminConversations, sendAdminMessage, getAdminMessages } = useChat();
   
   // Try multiple ways to get adminId
   const userState = useSelector((state: any) => state.user);
@@ -74,7 +74,7 @@ export default function AdminChatScreen() {
   const loadMessages = async () => {
     if (!selectedConversationId || !adminId) return;
     try {
-      const data = await getCustomerMessages(adminId, selectedConversationId, 0, 20);
+      const data = await getAdminMessages(adminId, selectedConversationId, 0, 20);
       setMessages(data?.content || []);
     } catch (err: any) {
       console.error('Error loading messages:', err);

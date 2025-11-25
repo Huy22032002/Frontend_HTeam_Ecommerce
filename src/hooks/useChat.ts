@@ -360,6 +360,7 @@ export const useChat = () => {
     
     // Admin APIs
     sendAdminMessage: ChatApi.sendAdminMessage,
+    getAdminMessages: ChatApi.getAdminMessages,
     getAdminConversations: ChatApi.getAdminConversations,
     getUnreadConversations: ChatApi.getUnreadConversations,
     assignConversationToAdmin: ChatApi.assignConversationToAdmin,

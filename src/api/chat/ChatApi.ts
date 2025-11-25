@@ -104,6 +104,24 @@ export const sendAdminMessage = async (
 };
 
 /**
+ * Admin lấy tin nhắn của một cuộc hội thoại (MongoDB String conversationId)
+ */
+export const getAdminMessages = async (
+  adminId: number,
+  conversationId: string,
+  page: number = 0,
+  size: number = 20
+): Promise<PagedResponse<ChatMessage>> => {
+  const response = await axios.get(
+    `${API_BASE_URL}/admins/${adminId}/chat/conversations/${conversationId}/messages`,
+    {
+      params: { page, size }
+    }
+  );
+  return response.data;
+};
+
+/**
  * Admin lấy danh sách cuộc hội thoại được gán
  */
 export const getAdminConversations = async (
