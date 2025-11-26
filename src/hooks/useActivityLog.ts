@@ -26,13 +26,14 @@ export const useActivityLog = (options?: UseActivityLogOptions) => {
 
   useEffect(() => {
     fetchActivityLogs();
-  }, [filters]);
+  }, [filters.page, filters.size, filters.userType, filters.actionType, filters.startDate, filters.endDate]);
 
   const fetchActivityLogs = async () => {
     try {
       setLoading(true);
       setError(null);
 
+      // Call API with all filter parameters
       const data = await ActivityLogApi.getAllActivityLogs(
         filters.page,
         filters.size,
@@ -53,13 +54,21 @@ export const useActivityLog = (options?: UseActivityLogOptions) => {
     }
   };
 
+  // Helper function to update filters
+  const updateFilters = (newFilters: Partial<typeof filters>) => {
+    setFilters((prev) => ({
+      ...prev,
+      ...newFilters,
+    }));
+  };
+
   return {
     logs,
     total,
     loading,
     error,
     filters,
-    setFilters,
+    setFilters: updateFilters,
     refetch: fetchActivityLogs,
   };
 };

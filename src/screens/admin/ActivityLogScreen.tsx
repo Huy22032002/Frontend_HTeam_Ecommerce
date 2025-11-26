@@ -67,11 +67,14 @@ const ActivityLogScreen = () => {
   const handleTabChange = (_event: React.SyntheticEvent, newValue: 'CUSTOMER' | 'ADMIN') => {
     setSelectedTab(newValue);
     setPage(0);
-    setFilters((prev) => ({
-      ...prev,
+    setFilters({
       page: 0,
+      size: rowsPerPage,
       userType: newValue,
-    }));
+      actionType: localFilters.actionType || undefined,
+      startDate: localFilters.startDate || undefined,
+      endDate: localFilters.endDate || undefined,
+    });
   };
 
   // Handle action type filter
@@ -79,7 +82,14 @@ const ActivityLogScreen = () => {
     const value = e.target.value as string;
     setLocalFilters((prev) => ({ ...prev, actionType: value }));
     setPage(0);
-    setFilters((prev) => ({ ...prev, actionType: value || undefined, page: 0 }));
+    setFilters({
+      page: 0,
+      size: rowsPerPage,
+      userType: selectedTab,
+      actionType: value || undefined,
+      startDate: localFilters.startDate || undefined,
+      endDate: localFilters.endDate || undefined,
+    });
   };
 
   // Handle start date filter
@@ -87,7 +97,14 @@ const ActivityLogScreen = () => {
     const value = e.target.value;
     setLocalFilters((prev) => ({ ...prev, startDate: value }));
     setPage(0);
-    setFilters((prev) => ({ ...prev, startDate: value || undefined, page: 0 }));
+    setFilters({
+      page: 0,
+      size: rowsPerPage,
+      userType: selectedTab,
+      actionType: localFilters.actionType || undefined,
+      startDate: value || undefined,
+      endDate: localFilters.endDate || undefined,
+    });
   };
 
   // Handle end date filter
@@ -95,20 +112,41 @@ const ActivityLogScreen = () => {
     const value = e.target.value;
     setLocalFilters((prev) => ({ ...prev, endDate: value }));
     setPage(0);
-    setFilters((prev) => ({ ...prev, endDate: value || undefined, page: 0 }));
+    setFilters({
+      page: 0,
+      size: rowsPerPage,
+      userType: selectedTab,
+      actionType: localFilters.actionType || undefined,
+      startDate: localFilters.startDate || undefined,
+      endDate: value || undefined,
+    });
   };
 
   // Handle pagination
   const handlePageChange = (_event: unknown, newPage: number) => {
     setPage(newPage);
-    setFilters((prev) => ({ ...prev, page: newPage }));
+    setFilters({
+      page: newPage,
+      size: rowsPerPage,
+      userType: selectedTab,
+      actionType: localFilters.actionType || undefined,
+      startDate: localFilters.startDate || undefined,
+      endDate: localFilters.endDate || undefined,
+    });
   };
 
   const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newSize = parseInt(event.target.value, 10);
     setRowsPerPage(newSize);
     setPage(0);
-    setFilters((prev) => ({ ...prev, page: 0, size: newSize }));
+    setFilters({
+      page: 0,
+      size: newSize,
+      userType: selectedTab,
+      actionType: localFilters.actionType || undefined,
+      startDate: localFilters.startDate || undefined,
+      endDate: localFilters.endDate || undefined,
+    });
   };
 
   // Access control
