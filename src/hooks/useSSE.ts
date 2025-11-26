@@ -19,19 +19,19 @@ export const useSSE = () => {
    */
   const connect = useCallback((conversationId: string, userId: string | number, userRole: 'customer' | 'admin' = 'customer') => {
     if (eventSourceRef.current.has(conversationId)) {
-      console.log(`✅ SSE already connected for conversation: ${conversationId}`);
+      console.log(`SSE already connected for conversation: ${conversationId}`);
       return;
     }
 
     try {
       const token = localStorage.getItem('token');
-      // Note: EventSource doesn't support custom headers, so we pass token as query parameter
+      // EventSource doesn't support custom headers, so we pass token as query parameter
       const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
       const streamUrl = userRole === 'admin' 
         ? `${API_URL}/admins/${userId}/chat/stream/${conversationId}${tokenParam}`
         : `${API_URL}/customers/${userId}/chat/stream/${conversationId}${tokenParam}`;
       
-      console.log(`🔌 SSE: Connecting to ${streamUrl.replace(token || '', '***')}`);
+      console.log(`SSE: Connecting to ${streamUrl.replace(token || '', '***')}`);
 
       const eventSource = new EventSource(streamUrl, {
         withCredentials: true,
@@ -40,7 +40,7 @@ export const useSSE = () => {
       // Catch-up: nhận tất cả messages cũ
       eventSource.addEventListener('catch-up', (event: MessageEvent) => {
         try {
-          console.log('📥 Received catch-up messages');
+          console.log('Received catch-up messages');
           const messages = JSON.parse(event.data);
           if (Array.isArray(messages)) {
             messages.forEach(msg => {
@@ -56,7 +56,7 @@ export const useSSE = () => {
       // Real-time messages
       eventSource.addEventListener('message', (event: MessageEvent) => {
         try {
-          console.log('📨 Received real-time message');
+          console.log('Received real-time message');
           const message = JSON.parse(event.data);
           const callbacks = subscribersRef.current.get(conversationId) || [];
           callbacks.forEach(cb => cb(message));
@@ -66,14 +66,14 @@ export const useSSE = () => {
       });
 
       eventSource.onopen = () => {
-        console.log(`✅ SSE CONNECTED for conversation: ${conversationId}`);
+        console.log(`SSE CONNECTED for conversation: ${conversationId}`);
         setIsConnected(true);
       };
 
       eventSource.onerror = (error) => {
-        console.error(`❌ SSE error for conversation ${conversationId}:`, error);
+        console.error(`SSE error for conversation ${conversationId}:`, error);
         if (eventSource.readyState === EventSource.CLOSED) {
-          console.log(`🔌 SSE connection closed for ${conversationId}`);
+          console.log(`SSE connection closed for ${conversationId}`);
           eventSourceRef.current.delete(conversationId);
           setIsConnected(false);
         }
@@ -113,7 +113,7 @@ export const useSSE = () => {
     userId?: string | number,
     userRole: 'customer' | 'admin' = 'customer'
   ) => {
-    console.log(`📢 Subscribing to conversation: ${conversationId}`);
+    console.log(`Subscribing to conversation: ${conversationId}`);
     
     // Thêm callback vào list
     const callbacks = subscribersRef.current.get(conversationId) || [];

@@ -10,21 +10,18 @@ import {
   Box,
   TextField,
   MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
   CircularProgress,
   Paper,
   IconButton,
   Menu,
   Button,
   TablePagination,
-  type SelectChangeEvent,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import { useNavigate } from "react-router-dom";
@@ -45,6 +42,23 @@ const OrderListScreen = () => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
   const [exporting, setExporting] = React.useState(false);
+  const [selectedStatusTab, setSelectedStatusTab] = React.useState<string>(
+    filters.status || ""
+  );
+
+  // Status options for tabs
+  const statusOptions = [
+    { value: "", label: "Tất cả" },
+    { value: "PENDING", label: "Chờ xác nhận" },
+    { value: "APPROVED", label: "Đã xác nhận" },
+    { value: "PROCESSING", label: "Đang xử lý" },
+    { value: "SHIPPING", label: "Đang giao" },
+    { value: "DELIVERED", label: "Đã giao" },
+    { value: "PAID", label: "Thanh toán" },
+    { value: "CANCELLED", label: "Đã huỷ" },
+    { value: "REFUNDED", label: "Hoàn tiền" },
+    { value: "PARTIALLY_REFUNDED", label: "Hoàn một phần" },
+  ];
 
   const handleMenuOpen = (
     event: React.MouseEvent<HTMLButtonElement>,
@@ -63,14 +77,6 @@ const OrderListScreen = () => {
     navigate("/admin/orders/create");
   };
 
-  const handleCancelOrder = (orderId: string) => {
-    if (window.confirm("Bạn có chắc chắn muốn huỷ đơn hàng này không?")) {
-      console.log("Huỷ đơn hàng:", orderId);
-
-    }
-    handleMenuClose();
-  };
-
   const handleViewDetail = (orderId: string) => {
     navigate(`/admin/orders/${orderId}`);
     handleMenuClose();
@@ -82,10 +88,10 @@ const OrderListScreen = () => {
     setFilters((prev) => ({ ...prev, [name]: value, page: 0 }));
   };
 
-  const handleSelectChange = (e: SelectChangeEvent<string>) => {
-    const { name, value } = e.target;
-    setPage(0); 
-    setFilters((prev) => ({ ...prev, [name]: value, page: 0 }));
+  const handleStatusTabChange = (_event: React.SyntheticEvent, newValue: string) => {
+    setSelectedStatusTab(newValue);
+    setPage(0);
+    setFilters((prev) => ({ ...prev, status: newValue, page: 0 }));
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,7 +99,7 @@ const OrderListScreen = () => {
     setFilters((prev) => ({ ...prev, search: e.target.value, page: 0 }));
   };
 
-  const handlePageChange = (event: unknown, newPage: number) => {
+  const handlePageChange = (_event: unknown, newPage: number) => {
     setPage(newPage);
     setFilters((prev) => ({ ...prev, page: newPage, size: rowsPerPage }));
   };
@@ -223,6 +229,35 @@ const OrderListScreen = () => {
           </Button>
         </Box>
       </Box>
+
+      {/* Status Tabs */}
+      <Paper sx={{ mb: 2, borderBottom: 1, borderColor: "divider" }}>
+        <Tabs 
+          value={selectedStatusTab} 
+          onChange={handleStatusTabChange}
+          variant="scrollable"
+          scrollButtons="auto"
+          sx={{
+            "& .MuiTab-root": {
+              textTransform: "none",
+              fontSize: "0.95rem",
+              fontWeight: 500,
+              minWidth: "auto",
+              px: 2,
+            },
+          }}
+        >
+          {statusOptions.map((option) => (
+            <Tab
+              key={option.value}
+              label={option.label}
+              value={option.value}
+            />
+          ))}
+        </Tabs>
+      </Paper>
+
+      {/* Filters */}
       <Paper sx={{ p: 2, mb: 2 }}>
         <Box display="flex" flexWrap="wrap" gap={2} alignItems="center">
           <TextField
@@ -234,26 +269,6 @@ const OrderListScreen = () => {
             InputProps={{ startAdornment: <SearchIcon fontSize="small" /> }}
             sx={{ minWidth: 260 }}
           />
-          <FormControl size="small" sx={{ minWidth: 140 }}>
-            <InputLabel>Trạng thái</InputLabel>
-            <Select
-              name="status"
-              value={filters.status || ""}
-              label="Trạng thái"
-              onChange={handleSelectChange}
-            >
-              <MenuItem value="">Tất cả</MenuItem>
-              <MenuItem value="PENDING">Chờ xác nhận</MenuItem>
-              <MenuItem value="APPROVED">Đã xác nhận</MenuItem>
-              <MenuItem value="PROCESSING">Đang xử lý</MenuItem>
-              <MenuItem value="SHIPPING">Đang giao</MenuItem>
-              <MenuItem value="DELIVERED">Đã giao</MenuItem>
-              <MenuItem value="PAID">Thanh toán</MenuItem>
-              <MenuItem value="CANCELLED">Đã huỷ</MenuItem>
-              <MenuItem value="REFUNDED">Hoàn tiền</MenuItem>
-              <MenuItem value="PARTIALLY_REFUNDED">Hoàn một phần</MenuItem>
-            </Select>
-          </FormControl>
           <TextField
             name="startDate"
             size="small"
