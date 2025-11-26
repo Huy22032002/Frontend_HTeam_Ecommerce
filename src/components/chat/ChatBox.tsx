@@ -79,8 +79,10 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
     }
   }, [conversation?.id, customerId, subscribe, markAsRead]);
 
-  // Combine REST messages + SSE messages
-  const allMessages = [...messages, ...sseMessages];
+  // Combine REST messages + SSE messages, avoid duplicates
+  const messageIds = new Set(messages.map(m => m.id));
+  const uniqueSSEMessages = sseMessages.filter(m => !messageIds.has(m.id));
+  const allMessages = [...messages, ...uniqueSSEMessages];
 
   // Tự động scroll đến tin nhắn mới nhất
   const scrollToBottom = () => {
@@ -107,22 +109,10 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
     setMessageText(''); // Clear input immediately
     setIsSending(true);
     try {
-      // Add message to local state immediately for instant feedback
-      const localMessage = {
-        id: `temp-${Date.now()}`,
-        conversationId: conversation.id,
-        content: messageToSend,
-        senderRole: 'CUSTOMER',
-        senderId: customerId,
-        messageType: 'TEXT',
-        createdAt: new Date().toISOString(),
-        isRead: false,
-      };
-      setSSEMessages((prev: any[]) => [...prev, localMessage]);
-
       // Send message via HTTP POST REST API
       // The backend will publish to RabbitMQ and broadcast via SSE
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/chat/messages`, {
+      // Don't add to local state - wait for SSE broadcast from server
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/customers/${customerId}/chat/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

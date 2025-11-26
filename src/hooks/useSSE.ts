@@ -25,16 +25,17 @@ export const useSSE = () => {
 
     try {
       const token = localStorage.getItem('token');
+      // Note: EventSource doesn't support custom headers, so we pass token as query parameter
+      const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
       const streamUrl = userRole === 'admin' 
-        ? `${API_URL}/admins/${userId}/chat/stream/${conversationId}`
-        : `${API_URL}/customers/${userId}/chat/stream/${conversationId}`;
+        ? `${API_URL}/admins/${userId}/chat/stream/${conversationId}${tokenParam}`
+        : `${API_URL}/customers/${userId}/chat/stream/${conversationId}${tokenParam}`;
       
-      console.log(`🔌 SSE: Connecting to ${streamUrl}`);
+      console.log(`🔌 SSE: Connecting to ${streamUrl.replace(token || '', '***')}`);
 
       const eventSource = new EventSource(streamUrl, {
         withCredentials: true,
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      } as any);
+      });
 
       // Catch-up: nhận tất cả messages cũ
       eventSource.addEventListener('catch-up', (event: MessageEvent) => {

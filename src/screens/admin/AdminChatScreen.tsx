@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Paper, Typography, List, ListItemButton, Divider, TextField, Button, CircularProgress } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { useChat } from '../../hooks/useChat';
 import { useSSE } from '../../hooks/useSSE';
 import { useSelector } from 'react-redux';
@@ -44,20 +45,25 @@ export default function AdminChatScreen() {
 
   // Subscribe to SSE stream when conversation selected
   useEffect(() => {
-    if (selectedConversationId) {
+    if (selectedConversationId && adminId) {
       console.log('📢 AdminChatScreen: Subscribing to conversation:', selectedConversationId);
       
-      const unsubscribeFn = subscribe(selectedConversationId, (message: any) => {
-        console.log('Admin received SSE message:', message);
-        setSSEMessages((prev: any[]) => [...prev, message]);
-      });
+      const unsubscribeFn = subscribe(
+        selectedConversationId,
+        (message: any) => {
+          console.log('Admin received SSE message:', message);
+          setSSEMessages((prev: any[]) => [...prev, message]);
+        },
+        adminId,
+        'admin'
+      );
 
       return () => {
         console.log('🔕 AdminChatScreen: Unsubscribing from conversation:', selectedConversationId);
         if (unsubscribeFn) unsubscribeFn();
       };
     }
-  }, [selectedConversationId, subscribe]);
+  }, [selectedConversationId, adminId, subscribe]);
 
   // Load conversations
   useEffect(() => {
@@ -113,22 +119,10 @@ export default function AdminChatScreen() {
     setNewMessage(''); // Clear input immediately
 
     try {
-      // Add message to local state immediately for instant feedback
-      const localMessage = {
-        id: `temp-${Date.now()}`,
-        conversationId: selectedConversationId,
-        content: messageToSend,
-        senderRole: 'ADMIN',
-        senderId: adminId,
-        messageType: 'TEXT',
-        createdAt: new Date().toISOString(),
-        isRead: false,
-      };
-      setSSEMessages((prev: any[]) => [...prev, localMessage]);
-
       // Send message via HTTP POST REST API
       // The backend will publish to RabbitMQ and broadcast via SSE
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/chat/messages/admin`, {
+      // Don't add to local state - wait for SSE broadcast from server
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/admins/${adminId}/chat/conversations/${selectedConversationId}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -174,21 +168,22 @@ export default function AdminChatScreen() {
 
       {/* Chat Interface */}
       {adminId && (
-        <Box sx={{ display: 'flex', flex: 1 }}>
+        <Box sx={{ display: 'flex', flex: 1, gap: 0 }}>
           {/* Conversations List */}
           <Paper
         sx={{
-          width: '30%',
+          width: '35%',
           borderRadius: 0,
-          boxShadow: 1,
+          boxShadow: 'none',
+          border: '1px solid #e0e0e0',
           display: 'flex',
           flexDirection: 'column',
-          bgcolor: 'white',
+          bgcolor: '#fafafa',
         }}
       >
-        <Box sx={{ p: 2, borderBottom: '1px solid #ddd' }}>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            Cuộc hội thoại ({conversations.length})
+        <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0', bgcolor: 'white' }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a' }}>
+            💬 Cuộc hội thoại ({conversations.length})
           </Typography>
         </Box>
 
@@ -197,26 +192,39 @@ export default function AdminChatScreen() {
             <CircularProgress size={24} />
           </Box>
         ) : (
-          <List sx={{ flex: 1, overflow: 'auto' }}>
+          <List sx={{ flex: 1, overflow: 'auto', p: 0 }}>
             {conversations.map((conv) => (
               <React.Fragment key={conv.id}>
                 <ListItemButton
                   selected={selectedConversationId === conv.id}
                   onClick={() => setSelectedConversationId(conv.id)}
                   sx={{
-                    backgroundColor: selectedConversationId === conv.id ? '#e3f2fd' : 'transparent',
-                    '&:hover': { backgroundColor: '#f5f5f5' },
+                    backgroundColor: selectedConversationId === conv.id ? '#e3f2fd' : '#fafafa',
+                    '&:hover': { backgroundColor: selectedConversationId === conv.id ? '#e3f2fd' : '#f5f5f5' },
+                    borderBottom: '1px solid #f0f0f0',
+                    transition: 'all 0.2s ease',
+                    py: 1.5,
                   }}
                 >
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
-                      {conv.customerName}
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1a1a1a', mb: 0.5 }}>
+                      {conv.customerName || 'Khách hàng'}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: '#666', display: 'block', mt: 0.5 }}>
-                      {conv.lastMessage || 'Không có tin nhắn'}
+                    <Typography 
+                      variant="caption" 
+                      sx={{ 
+                        color: '#666', 
+                        display: 'block', 
+                        mb: 0.5,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {conv.lastMessage || '(Chưa có tin nhắn)'}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: '#999' }}>
-                      {new Date(conv.updatedAt).toLocaleTimeString('vi-VN')}
+                    <Typography variant="caption" sx={{ color: '#999', fontSize: '0.7rem' }}>
+                      {new Date(conv.updatedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                     </Typography>
                   </Box>
                   {conv.unreadCount && conv.unreadCount > 0 && (
@@ -245,39 +253,63 @@ export default function AdminChatScreen() {
       </Paper>
 
       {/* Chat Area */}
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', bgcolor: 'white' }}>
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', bgcolor: '#fff', borderLeft: '1px solid #e0e0e0' }}>
         {selectedConversationId ? (
           <>
             {/* Messages */}
-            <Box sx={{ flex: 1, overflow: 'auto', p: 2, bgcolor: '#fafafa' }}>
-              {[...messages, ...sseMessages].map((msg) => (
-                <Box
-                  key={msg.id}
-                  sx={{
-                    display: 'flex',
-                    justifyContent: msg.senderRole === 'ADMIN' ? 'flex-end' : 'flex-start',
-                    mb: 2,
-                  }}
-                >
-                  <Paper
+            <Box sx={{ flex: 1, overflow: 'auto', p: 2.5, bgcolor: '#fff', display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {(() => {
+                // Deduplicate messages: exclude SSE messages that are already in REST messages
+                const uniqueMessageIds = new Set(messages.map(m => m.id));
+                const filteredSSEMessages = sseMessages.filter(msg => !uniqueMessageIds.has(msg.id));
+                const allMessages = [...messages, ...filteredSSEMessages];
+                return allMessages.map((msg) => (
+                  <Box
+                    key={msg.id}
                     sx={{
-                      maxWidth: '70%',
-                      p: 1.5,
-                      bgcolor: msg.senderRole === 'ADMIN' ? '#2196f3' : '#e0e0e0',
-                      color: msg.senderRole === 'ADMIN' ? 'white' : 'black',
+                      display: 'flex',
+                      justifyContent: msg.senderRole === 'ADMIN' ? 'flex-end' : 'flex-start',
+                      mb: 0.5,
+                      animation: 'fadeIn 0.3s ease-in',
+                      '@keyframes fadeIn': {
+                        from: { opacity: 0, transform: 'translateY(10px)' },
+                        to: { opacity: 1, transform: 'translateY(0)' },
+                      },
                     }}
                   >
-                    <Typography variant="body2">{msg.content}</Typography>
-                    <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.7 }}>
-                      {new Date(msg.createdAt).toLocaleTimeString('vi-VN')}
+                  <Paper
+                    sx={{
+                      maxWidth: '65%',
+                      p: '10px 14px',
+                      bgcolor: msg.senderRole === 'ADMIN' ? '#2196f3' : '#f0f0f0',
+                      color: msg.senderRole === 'ADMIN' ? 'white' : '#000',
+                      borderRadius: '12px',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap', lineHeight: 1.4 }}>
+                      {msg.content}
+                    </Typography>
+                    <Typography 
+                      variant="caption" 
+                      sx={{ 
+                        display: 'block', 
+                        mt: 0.5, 
+                        opacity: 0.7,
+                        fontSize: '0.75rem',
+                        textAlign: msg.senderRole === 'ADMIN' ? 'right' : 'left'
+                      }}
+                    >
+                      {new Date(msg.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                     </Typography>
                   </Paper>
                 </Box>
-              ))}
+                ));
+              })()}
             </Box>
 
             {/* Input Area */}
-            <Box sx={{ p: 2, borderTop: '1px solid #ddd', display: 'flex', gap: 1 }}>
+            <Box sx={{ p: 2, borderTop: '1px solid #e0e0e0', display: 'flex', gap: 1, bgcolor: '#fafafa' }}>
               <TextField
                 fullWidth
                 size="small"
@@ -290,6 +322,13 @@ export default function AdminChatScreen() {
                     handleSendMessage();
                   }
                 }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '20px',
+                    backgroundColor: 'white',
+                    '&:hover fieldset': { borderColor: '#2196f3' },
+                  }
+                }}
               />
               <Button
                 variant="contained"
@@ -297,15 +336,20 @@ export default function AdminChatScreen() {
                 endIcon={<SendIcon />}
                 onClick={handleSendMessage}
                 disabled={!newMessage.trim()}
+                sx={{ borderRadius: '20px', textTransform: 'none', fontWeight: 600 }}
               >
                 Gửi
               </Button>
             </Box>
           </>
         ) : (
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-            <Typography variant="body1" sx={{ color: '#999' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, flexDirection: 'column', gap: 2 }}>
+            <ChatBubbleOutlineIcon sx={{ fontSize: 60, color: '#ccc', opacity: 0.5 }} />
+            <Typography variant="h6" sx={{ color: '#999', fontWeight: 500 }}>
               Chọn cuộc hội thoại để bắt đầu
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#bbb' }}>
+              Danh sách cuộc hội thoại hiển thị ở bên trái
             </Typography>
           </Box>
         )}
