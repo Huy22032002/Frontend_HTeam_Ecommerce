@@ -17,7 +17,7 @@ import AttachFileIcon from '@mui/icons-material/AttachFile';
 import CloseIcon from '@mui/icons-material/Close';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { useCustomerChat } from '../../hooks/useChat';
-import { useWebSocket } from '../../hooks/useWebSocket';
+import { useSSE } from '../../hooks/useSSE';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 
@@ -30,44 +30,57 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
   const customer = useSelector((state: RootState) => state.customerAuth.customer);
   const customerId = customer?.id;
 
-  const { conversation, messages, loading, error, sendMessage, markAsRead } = useCustomerChat(customerId || null);
-  const { connect, disconnect, subscribe, unsubscribe, send: sendWebSocketMessage, isConnected } = useWebSocket();
+  const { conversation, messages, loading, error, markAsRead } = useCustomerChat(customerId || null);
+  const { subscribe } = useSSE();
 
   const [messageText, setMessageText] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [wsMessages, setWsMessages] = useState<any[]>([]);
+  const [sseMessages, setSSEMessages] = useState<any[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const connectionAttemptedRef = useRef(false);
 
-  // Connect to WebSocket when component mounts
+  // Connect to SSE when component mounts (only once)
   useEffect(() => {
-    connect();
-    return () => {
-      disconnect();
-    };
-  }, [connect, disconnect]);
+    if (!connectionAttemptedRef.current) {
+      connectionAttemptedRef.current = true;
+      console.log('🔌 ChatBox: Attempting SSE connection...');
+    }
+    
+    // Don't disconnect on unmount - keep the connection alive for other components
+    // return () => {
+    //   disconnect();
+    // };
+  }, []);
 
-  // Subscribe to conversation topic when conversation is ready
+  // Subscribe to SSE stream when conversation is ready
   useEffect(() => {
-    if (isConnected && conversation?.id) {
-      subscribe(
-        `/topic/chat.${conversation.id}`,
-        (message) => {
-          console.log('Received message from WebSocket:', message);
+    if (conversation?.id && customerId) {
+      console.log('📢 ChatBox: Subscribing to conversation:', conversation.id);
+      
+      const unsubscribeFn = subscribe(
+        conversation.id,
+        (message: any) => {
+          console.log('📨 Received message from SSE:', message);
           // Add received message to state
-          setWsMessages(prev => [...prev, message]);
-          markAsRead(message.id);
+          setSSEMessages((prev: any[]) => [...prev, message]);
+          // Mark admin messages as read
+          if (message.senderRole === 'ADMIN' && message.id) {
+            markAsRead(message.id);
+          }
         },
-        `chat-${conversation.id}`
+        customerId,
+        'customer'
       );
 
       return () => {
-        unsubscribe(`chat-${conversation.id}`);
+        console.log('🔕 ChatBox: Unsubscribing from conversation:', conversation.id);
+        if (unsubscribeFn) unsubscribeFn();
       };
     }
-  }, [isConnected, conversation?.id, subscribe, unsubscribe, markAsRead]);
+  }, [conversation?.id, customerId, subscribe, markAsRead]);
 
-  // Combine REST messages + WebSocket messages
-  const allMessages = [...messages, ...wsMessages];
+  // Combine REST messages + SSE messages
+  const allMessages = [...messages, ...sseMessages];
 
   // Tự động scroll đến tin nhắn mới nhất
   const scrollToBottom = () => {
@@ -105,14 +118,26 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
         createdAt: new Date().toISOString(),
         isRead: false,
       };
-      setWsMessages(prev => [...prev, localMessage]);
+      setSSEMessages((prev: any[]) => [...prev, localMessage]);
 
-      // Send via WebSocket for real-time delivery
-      sendWebSocketMessage('/app/chat.send', {
-        conversationId: conversation.id,
-        content: messageToSend,
-        messageType: 'TEXT',
+      // Send message via HTTP POST REST API
+      // The backend will publish to RabbitMQ and broadcast via SSE
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/chat/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          conversationId: conversation.id,
+          content: messageToSend,
+          messageType: 'TEXT',
+        })
       });
+
+      if (!response.ok) {
+        console.error('Failed to send message:', response.statusText);
+      }
     } catch (err) {
       console.error('Error sending message:', err);
     } finally {

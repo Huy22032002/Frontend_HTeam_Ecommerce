@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Paper, Typography, List, ListItem, ListItemButton, Divider, TextField, Button, CircularProgress, Alert } from '@mui/material';
+import { Box, Paper, Typography, List, ListItemButton, Divider, TextField, Button, CircularProgress } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import { useChat } from '../../hooks/useChat';
-import { useWebSocket } from '../../hooks/useWebSocket';
+import { useSSE } from '../../hooks/useSSE';
 import { useSelector } from 'react-redux';
 
 interface Conversation {
@@ -18,12 +18,12 @@ export default function AdminChatScreen() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
-  const [wsMessages, setWsMessages] = useState<any[]>([]);
+  const [sseMessages, setSSEMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { getAdminConversations, sendAdminMessage, getAdminMessages } = useChat();
-  const { connect, disconnect, subscribe, unsubscribe, send: sendWebSocketMessage, isConnected } = useWebSocket();
+  const { getAdminConversations, getAdminMessages } = useChat();
+  const { subscribe } = useSSE();
   
   // Try multiple ways to get adminId
   const userState = useSelector((state: any) => state.user);
@@ -35,38 +35,29 @@ export default function AdminChatScreen() {
     const stored = localStorage.getItem('adminId');
     adminId = stored ? parseInt(stored) : null;
   }
-  
-  // DEBUG: Log Redux state
-  useEffect(() => {
-    console.log('AdminChatScreen - userState:', userState);
-    console.log('AdminChatScreen - adminId final:', adminId);
-  }, [userState, adminId]);
 
-  // Connect to WebSocket
+  // Connect to SSE (only once)
   useEffect(() => {
-    connect();
-    return () => {
-      disconnect();
-    };
-  }, [connect, disconnect]);
+    console.log('🔌 AdminChatScreen: SSE hook initialized');
+    // SSE doesn't need explicit connection, it connects on demand
+  }, []);
 
-  // Subscribe to conversation topic when conversation selected
+  // Subscribe to SSE stream when conversation selected
   useEffect(() => {
-    if (isConnected && selectedConversationId) {
-      subscribe(
-        `/topic/chat.${selectedConversationId}`,
-        (message) => {
-          console.log('Admin received WebSocket message:', message);
-          setWsMessages(prev => [...prev, message]);
-        },
-        `admin-chat-${selectedConversationId}`
-      );
+    if (selectedConversationId) {
+      console.log('📢 AdminChatScreen: Subscribing to conversation:', selectedConversationId);
+      
+      const unsubscribeFn = subscribe(selectedConversationId, (message: any) => {
+        console.log('Admin received SSE message:', message);
+        setSSEMessages((prev: any[]) => [...prev, message]);
+      });
 
       return () => {
-        unsubscribe(`admin-chat-${selectedConversationId}`);
+        console.log('🔕 AdminChatScreen: Unsubscribing from conversation:', selectedConversationId);
+        if (unsubscribeFn) unsubscribeFn();
       };
     }
-  }, [isConnected, selectedConversationId, subscribe, unsubscribe]);
+  }, [selectedConversationId, subscribe]);
 
   // Load conversations
   useEffect(() => {
@@ -133,16 +124,29 @@ export default function AdminChatScreen() {
         createdAt: new Date().toISOString(),
         isRead: false,
       };
-      setWsMessages(prev => [...prev, localMessage]);
+      setSSEMessages((prev: any[]) => [...prev, localMessage]);
 
-      // Send via WebSocket for real-time delivery
-      sendWebSocketMessage('/app/admin/chat.send', {
-        conversationId: selectedConversationId,
-        content: messageToSend,
-        messageType: 'TEXT',
+      // Send message via HTTP POST REST API
+      // The backend will publish to RabbitMQ and broadcast via SSE
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/chat/messages/admin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          conversationId: selectedConversationId,
+          content: messageToSend,
+          messageType: 'TEXT',
+        })
       });
+
+      if (!response.ok) {
+        console.error('Failed to send message:', response.statusText);
+        setError('Failed to send message');
+      }
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || 'Error sending message';
+      const errorMsg = err.message || 'Error sending message';
       setError(errorMsg);
       console.error('Error sending message:', err);
     }
@@ -171,8 +175,8 @@ export default function AdminChatScreen() {
       {/* Chat Interface */}
       {adminId && (
         <Box sx={{ display: 'flex', flex: 1 }}>
-      {/* Conversations List */}
-      <Paper
+          {/* Conversations List */}
+          <Paper
         sx={{
           width: '30%',
           borderRadius: 0,
@@ -246,7 +250,7 @@ export default function AdminChatScreen() {
           <>
             {/* Messages */}
             <Box sx={{ flex: 1, overflow: 'auto', p: 2, bgcolor: '#fafafa' }}>
-              {[...messages, ...wsMessages].map((msg) => (
+              {[...messages, ...sseMessages].map((msg) => (
                 <Box
                   key={msg.id}
                   sx={{
@@ -306,7 +310,7 @@ export default function AdminChatScreen() {
           </Box>
         )}
       </Box>
-        </Box>
+      </Box>
       )}
     </Box>
   );
