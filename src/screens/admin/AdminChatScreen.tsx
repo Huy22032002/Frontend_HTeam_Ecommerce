@@ -171,16 +171,16 @@ export default function AdminChatScreen() {
         <Box sx={{ display: 'flex', flex: 1, gap: 0 }}>
           {/* Conversations List */}
           <Paper
-        sx={{
-          width: '35%',
-          borderRadius: 0,
-          boxShadow: 'none',
-          border: '1px solid #e0e0e0',
-          display: 'flex',
-          flexDirection: 'column',
-          bgcolor: '#fafafa',
-        }}
-      >
+            sx={{
+              width: '35%',
+              borderRadius: 0,
+              boxShadow: 'none',
+              border: '1px solid #e0e0e0',
+              display: 'flex',
+              flexDirection: 'column',
+              bgcolor: '#fafafa',
+            }}
+          >
         <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0', bgcolor: 'white' }}>
           <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a' }}>
             💬 Cuộc hội thoại ({conversations.length})

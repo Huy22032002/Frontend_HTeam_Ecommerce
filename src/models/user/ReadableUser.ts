@@ -6,5 +6,5 @@ export interface ReadableUser {
   emailAddress: string;
   username: string;
   anonymous: boolean;
-  roles: string[];
+  role: string[];
 }

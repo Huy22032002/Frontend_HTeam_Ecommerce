@@ -9,7 +9,7 @@ import { CmsLayout } from "./components/cms/CmsLayout";
 //screens
 import AdminLoginScreen from "./screens/admin/AdminLoginScreen";
 import DashboardScreen from "./screens/dashboard/DashboardScreen";
-import ActivityLogScreen from "./screens/activity/ActivityLogScreen";
+import ActivityLogScreen from "./screens/admin/ActivityLogScreen";
 import ReportsScreen from "./screens/reports/ReportsScreen";
 import UserManagementScreen from "./screens/users/UserManagementScreen";
 import ProductListScreen from "./screens/products/ProductListScreen";

@@ -14,7 +14,12 @@ export const cmsNav: CmsNavItem[] = [
     path: "/admin/dashboard",
   },
   // { key: 'reports', label: 'Thống kê báo cáo', icon: '📊', path: '/admin/reports' },
-  // { key: 'activity-log', label: 'Lịch sử hoạt động', icon: '📝', path: '/admin/activity-log' },
+  {
+    key: "activity-log",
+    label: "Lịch sử hoạt động",
+    icon: "📝",
+    path: "/admin/activity-log",
+  },
   {
     key: "user-management",
     label: "Quản lý người dùng",
