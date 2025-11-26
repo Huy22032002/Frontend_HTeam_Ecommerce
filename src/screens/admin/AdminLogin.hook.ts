@@ -23,31 +23,38 @@ export const useAdminLogin = () => {
 
     try {
       const response = await UserApi.login(username, password);
+      console.log("Login response:", response.data);  // DEBUG
       const { token, id } = response.data || {};
+      console.log("Extracted token:", token, "id:", id);  // DEBUG
 
       if (token && id) {
-        // Save token
+        // Save token AND adminId
         localStorage.setItem("token", token);
+        localStorage.setItem("adminId", id.toString());  // Save adminId!
+        console.log("Saved to localStorage - token and adminId:", id);
 
-        // // Dispatch initial user info
-        // dispatch(loginAction({
-        //     id,
-        //     username,
-        //     name: username,
-        //     emailAddress: "",
-        //     gender: false,
-        //     dateOfBirth: new Date(),
-        //     anonymous: false,
-        //     roles: []
-        // }));
+        // Dispatch initial user info (with minimal data from login response)
+        dispatch(loginAction({
+            id,
+            username,
+            name: username,
+            emailAddress: "",
+            gender: false,
+            dateOfBirth: new Date(),
+            anonymous: false,
+            roles: ["ADMIN"]
+        }));
+        console.log("Dispatched loginAction with id:", id);
 
         setMessage("Đăng nhập thành công!");
 
-        // Fetch full user details
+        // Fetch full user details and update Redux
         try {
           const userDetailRes = await UserApi.getById(id);
+          console.log("User details:", userDetailRes.data);  // DEBUG
           if (userDetailRes.data) {
             dispatch(loginAction(userDetailRes.data));
+            console.log("Updated Redux with full user details");
           }
         } catch (err) {
           console.warn("Could not fetch admin details:", err);
@@ -57,12 +64,14 @@ export const useAdminLogin = () => {
         // Navigate to dashboard
         setTimeout(() => navigate("/admin/dashboard"), 300);
       } else {
-        setError("Invalid credentials or server error.");
+        setError(`Invalid credentials or server error. Token: ${token}, ID: ${id}`);
+        console.log("Missing token or id in response:", response.data);  // DEBUG
       }
     } catch (err: any) {
       const errorMsg =
         err?.response?.data?.message || err?.message || "Login failed";
       setError(errorMsg);
+      console.error("Login error:", err);  // DEBUG
     } finally {
       setIsLoading(false);
     }
