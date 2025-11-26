@@ -79,7 +79,9 @@ export const useCustomerChat = (customerId: number | null) => {
         setLoading(true);
         setError(null);
         const result = await ChatApi.getCustomerMessages(customerId!, conversation.id, page, size);
-        setMessages(result.content || []);
+        // Reverse to show oldest first (bottom) to newest last (top)
+        const reversedMessages = [...(result.content || [])].reverse();
+        setMessages(reversedMessages);
       } catch (err: any) {
         setError(err.response?.data?.error || 'Lỗi khi lấy tin nhắn');
         console.error('Error loading messages:', err);
@@ -280,7 +282,9 @@ export const useAdminChatMessages = (adminId: number | null, conversationId: str
         setError(null);
         // Sử dụng endpoint khách hàng vì logic lấy tin nhắn giống nhau
         const result = await ChatApi.getCustomerMessages(adminId, conversationId, page, size);
-        setMessages(result.content || []);
+        // Reverse to show oldest first (bottom) to newest last (top)
+        const reversedMessages = [...(result.content || [])].reverse();
+        setMessages(reversedMessages);
       } catch (err: any) {
         setError(err.response?.data?.error || 'Lỗi khi lấy tin nhắn');
         console.error('Error loading messages:', err);

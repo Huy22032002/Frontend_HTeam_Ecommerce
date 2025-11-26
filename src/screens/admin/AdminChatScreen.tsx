@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Paper, Typography, List, ListItem, ListItemButton, Divider, TextField, Button, CircularProgress, Alert } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import { useChat } from '../../hooks/useChat';
+import { useWebSocket } from '../../hooks/useWebSocket';
 import { useSelector } from 'react-redux';
 
 interface Conversation {
@@ -17,10 +18,12 @@ export default function AdminChatScreen() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
+  const [wsMessages, setWsMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { getAdminConversations, sendAdminMessage, getAdminMessages } = useChat();
+  const { connect, disconnect, subscribe, unsubscribe, send: sendWebSocketMessage, isConnected } = useWebSocket();
   
   // Try multiple ways to get adminId
   const userState = useSelector((state: any) => state.user);
@@ -38,6 +41,32 @@ export default function AdminChatScreen() {
     console.log('AdminChatScreen - userState:', userState);
     console.log('AdminChatScreen - adminId final:', adminId);
   }, [userState, adminId]);
+
+  // Connect to WebSocket
+  useEffect(() => {
+    connect();
+    return () => {
+      disconnect();
+    };
+  }, [connect, disconnect]);
+
+  // Subscribe to conversation topic when conversation selected
+  useEffect(() => {
+    if (isConnected && selectedConversationId) {
+      subscribe(
+        `/topic/chat.${selectedConversationId}`,
+        (message) => {
+          console.log('Admin received WebSocket message:', message);
+          setWsMessages(prev => [...prev, message]);
+        },
+        `admin-chat-${selectedConversationId}`
+      );
+
+      return () => {
+        unsubscribe(`admin-chat-${selectedConversationId}`);
+      };
+    }
+  }, [isConnected, selectedConversationId, subscribe, unsubscribe]);
 
   // Load conversations
   useEffect(() => {
@@ -75,7 +104,9 @@ export default function AdminChatScreen() {
     if (!selectedConversationId || !adminId) return;
     try {
       const data = await getAdminMessages(adminId, selectedConversationId, 0, 20);
-      setMessages(data?.content || []);
+      // Reverse to show oldest first (bottom) to newest last (top)
+      const reversedMessages = [...(data?.content || [])].reverse();
+      setMessages(reversedMessages);
     } catch (err: any) {
       console.error('Error loading messages:', err);
     }
@@ -87,10 +118,29 @@ export default function AdminChatScreen() {
       return;
     }
 
+    const messageToSend = newMessage;
+    setNewMessage(''); // Clear input immediately
+
     try {
-      await sendAdminMessage(adminId, selectedConversationId, { conversationId: selectedConversationId, content: newMessage });
-      setNewMessage('');
-      await loadMessages();
+      // Add message to local state immediately for instant feedback
+      const localMessage = {
+        id: `temp-${Date.now()}`,
+        conversationId: selectedConversationId,
+        content: messageToSend,
+        senderRole: 'ADMIN',
+        senderId: adminId,
+        messageType: 'TEXT',
+        createdAt: new Date().toISOString(),
+        isRead: false,
+      };
+      setWsMessages(prev => [...prev, localMessage]);
+
+      // Send via WebSocket for real-time delivery
+      sendWebSocketMessage('/app/admin/chat.send', {
+        conversationId: selectedConversationId,
+        content: messageToSend,
+        messageType: 'TEXT',
+      });
     } catch (err: any) {
       const errorMsg = err.response?.data?.message || err.message || 'Error sending message';
       setError(errorMsg);
@@ -196,7 +246,7 @@ export default function AdminChatScreen() {
           <>
             {/* Messages */}
             <Box sx={{ flex: 1, overflow: 'auto', p: 2, bgcolor: '#fafafa' }}>
-              {messages.map((msg) => (
+              {[...messages, ...wsMessages].map((msg) => (
                 <Box
                   key={msg.id}
                   sx={{

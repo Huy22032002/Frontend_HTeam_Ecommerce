@@ -5,22 +5,19 @@ import {
   TextField,
   Button,
   Typography,
-  Avatar,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
   CircularProgress,
   Alert,
   InputAdornment,
   IconButton,
-  Tooltip
+  Tooltip,
+  List
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import CloseIcon from '@mui/icons-material/Close';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { useCustomerChat } from '../../hooks/useChat';
+import { useWebSocket } from '../../hooks/useWebSocket';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 
@@ -34,10 +31,43 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
   const customerId = customer?.id;
 
   const { conversation, messages, loading, error, sendMessage, markAsRead } = useCustomerChat(customerId || null);
+  const { connect, disconnect, subscribe, unsubscribe, send: sendWebSocketMessage, isConnected } = useWebSocket();
 
   const [messageText, setMessageText] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [wsMessages, setWsMessages] = useState<any[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Connect to WebSocket when component mounts
+  useEffect(() => {
+    connect();
+    return () => {
+      disconnect();
+    };
+  }, [connect, disconnect]);
+
+  // Subscribe to conversation topic when conversation is ready
+  useEffect(() => {
+    if (isConnected && conversation?.id) {
+      subscribe(
+        `/topic/chat.${conversation.id}`,
+        (message) => {
+          console.log('Received message from WebSocket:', message);
+          // Add received message to state
+          setWsMessages(prev => [...prev, message]);
+          markAsRead(message.id);
+        },
+        `chat-${conversation.id}`
+      );
+
+      return () => {
+        unsubscribe(`chat-${conversation.id}`);
+      };
+    }
+  }, [isConnected, conversation?.id, subscribe, unsubscribe, markAsRead]);
+
+  // Combine REST messages + WebSocket messages
+  const allMessages = [...messages, ...wsMessages];
 
   // Tự động scroll đến tin nhắn mới nhất
   const scrollToBottom = () => {
@@ -46,7 +76,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [allMessages]);
 
   // Đánh dấu tin nhắn từ admin là đã đọc
   useEffect(() => {
@@ -58,14 +88,35 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
   }, [messages, markAsRead]);
 
   const handleSendMessage = async () => {
-    if (!messageText.trim()) return;
+    if (!messageText.trim() || !conversation) return;
 
+    const messageToSend = messageText;
+    setMessageText(''); // Clear input immediately
     setIsSending(true);
-    const success = await sendMessage(messageText);
-    setIsSending(false);
+    try {
+      // Add message to local state immediately for instant feedback
+      const localMessage = {
+        id: `temp-${Date.now()}`,
+        conversationId: conversation.id,
+        content: messageToSend,
+        senderRole: 'CUSTOMER',
+        senderId: customerId,
+        messageType: 'TEXT',
+        createdAt: new Date().toISOString(),
+        isRead: false,
+      };
+      setWsMessages(prev => [...prev, localMessage]);
 
-    if (success) {
-      setMessageText('');
+      // Send via WebSocket for real-time delivery
+      sendWebSocketMessage('/app/chat.send', {
+        conversationId: conversation.id,
+        content: messageToSend,
+        messageType: 'TEXT',
+      });
+    } catch (err) {
+      console.error('Error sending message:', err);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -154,74 +205,58 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
           minHeight: 300
         }}
       >
-        {loading && !messages.length ? (
+        {loading && !allMessages.length ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
             <CircularProgress />
           </Box>
-        ) : messages.length === 0 ? (
+        ) : allMessages.length === 0 ? (
           <Box sx={{ textAlign: 'center', color: 'text.secondary', py: 4 }}>
             <ChatBubbleOutlineIcon sx={{ fontSize: 40, mb: 1, opacity: 0.5 }} />
             <Typography variant="body2">Hãy bắt đầu cuộc hội thoại</Typography>
           </Box>
         ) : (
           <List sx={{ p: 0 }}>
-            {messages.map((msg) => (
+            {allMessages.map((msg) => (
               <React.Fragment key={msg.id}>
-                <ListItem
+                <Box
                   sx={{
+                    display: 'flex',
                     flexDirection: msg.senderRole === 'CUSTOMER' ? 'row-reverse' : 'row',
-                    mb: 1,
-                    alignItems: 'flex-start'
+                    mb: 2,
+                    alignItems: 'flex-start',
+                    px: 2
                   }}
                 >
-                  <ListItemAvatar sx={{ minWidth: 40 }}>
-                    <Avatar
+                  <Paper
+                    sx={{
+                      p: 1.5,
+                      backgroundColor: msg.senderRole === 'CUSTOMER' ? 'primary.light' : '#fff',
+                      borderRadius: 2,
+                      maxWidth: '70%',
+                      wordBreak: 'break-word',
+                      border: msg.senderRole === 'ADMIN' ? '1px solid #e0e0e0' : 'none'
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+                      {msg.content}
+                    </Typography>
+                    <Typography
+                      variant="caption"
                       sx={{
-                        bgcolor: msg.senderRole === 'CUSTOMER' ? 'primary.main' : 'success.main',
-                        width: 32,
-                        height: 32
+                        display: 'block',
+                        mt: 0.5,
+                        textAlign: msg.senderRole === 'CUSTOMER' ? 'right' : 'left',
+                        color: 'text.secondary'
                       }}
                     >
-                      {msg.senderRole === 'CUSTOMER' ? 'K' : 'A'}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={
-                      <Paper
-                        sx={{
-                          p: 1.5,
-                          backgroundColor: msg.senderRole === 'CUSTOMER' ? 'primary.light' : '#fff',
-                          borderRadius: 2,
-                          maxWidth: '70%',
-                          wordBreak: 'break-word',
-                          border: msg.senderRole === 'ADMIN' ? '1px solid #e0e0e0' : 'none'
-                        }}
-                      >
-                        <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-                          {msg.content}
-                        </Typography>
-                      </Paper>
-                    }
-                    secondary={
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          display: 'block',
-                          mt: 0.5,
-                          textAlign: msg.senderRole === 'CUSTOMER' ? 'right' : 'left',
-                          color: 'text.secondary'
-                        }}
-                      >
-                        {new Date(msg.createdAt).toLocaleTimeString('vi-VN', {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                        {msg.senderRole === 'CUSTOMER' && msg.isRead && ' ✓'}
-                      </Typography>
-                    }
-                    sx={{ ml: msg.senderRole === 'CUSTOMER' ? 1 : 0 }}
-                  />
-                </ListItem>
+                      {new Date(msg.createdAt).toLocaleTimeString('vi-VN', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                      {msg.senderRole === 'CUSTOMER' && msg.isRead && ' ✓'}
+                    </Typography>
+                  </Paper>
+                </Box>
               </React.Fragment>
             ))}
             <div ref={messagesEndRef} />
