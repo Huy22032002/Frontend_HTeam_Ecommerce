@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   Box,
+  Button,
   Card,
   CardContent,
   Chip,
@@ -25,7 +26,50 @@ import {
 import type { SelectChangeEvent } from '@mui/material';
 import { useActivityLog } from '../../hooks/useActivityLog';
 import { useSelector } from 'react-redux';
+import { ActivityLogApi } from '../../api/activity/ActivityLogApi';
+import { downloadExcelFile } from '../../utils/exportToExcel';
 import type { RootState } from '../../store/store';
+
+// Mapping tiếng Việt cho loại hành động của Customer
+const CUSTOMER_ACTION_TYPES = {
+  CREATE_ORDER: 'Tạo đơn hàng',
+  CANCEL_ORDER: 'Huỷ đơn hàng',
+  UPDATE_PROFILE: 'Cập nhật hồ sơ',
+  CHANGE_PASSWORD: 'Đổi mật khẩu',
+  UPDATE_ADDRESS: 'Cập nhật địa chỉ',
+  DELETE_ADDRESS: 'Xoá địa chỉ',
+  CREATE_REVIEW: 'Tạo đánh giá',
+  UPDATE_REVIEW: 'Cập nhật đánh giá',
+  DELETE_REVIEW: 'Xoá đánh giá',
+  ADD_TO_CART: 'Thêm vào giỏ',
+  REMOVE_FROM_CART: 'Xoá khỏi giỏ',
+  CLEAR_CART: 'Xoá giỏ hàng',
+  CREATE_PAYMENT: 'Tạo thanh toán',
+  PROCESS_PAYMENT: 'Xử lý thanh toán',
+  REFUND_PAYMENT: 'Hoàn tiền',
+  LOGIN: 'Đăng nhập',
+  LOGOUT: 'Đăng xuất',
+  APPLY_VOUCHER: 'Áp dụng voucher',
+};
+
+// Mapping tiếng Việt cho loại hành động của Admin
+const ADMIN_ACTION_TYPES = {
+  CREATE_ORDER: 'Tạo đơn hàng',
+  UPDATE_ORDER_STATUS: 'Cập nhật trạng thái đơn',
+  CANCEL_ORDER: 'Huỷ đơn hàng',
+  CREATE_PRODUCT: 'Tạo sản phẩm',
+  UPDATE_PRODUCT: 'Cập nhật sản phẩm',
+  DELETE_PRODUCT: 'Xoá sản phẩm',
+  MANAGE_PROMOTION: 'Quản lý khuyến mãi',
+  MANAGE_WAREHOUSE: 'Quản lý kho hàng',
+  CREATE_PAYMENT: 'Tạo thanh toán',
+  PROCESS_PAYMENT: 'Xử lý thanh toán',
+  REFUND_PAYMENT: 'Hoàn tiền',
+  EXPORT_REPORT: 'Xuất báo cáo',
+  VIEW_ANALYTICS: 'Xem phân tích',
+  LOGIN: 'Đăng nhập',
+  LOGOUT: 'Đăng xuất',
+};
 
 const ActivityLogScreen = () => {
   const userState = useSelector((state: RootState) => state.userAuth);
@@ -40,6 +84,7 @@ const ActivityLogScreen = () => {
   const [selectedTab, setSelectedTab] = useState<'CUSTOMER' | 'ADMIN'>('CUSTOMER');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [exporting, setExporting] = useState(false);
   const [localFilters, setLocalFilters] = useState({
     actionType: '',
     startDate: '',
@@ -54,6 +99,9 @@ const ActivityLogScreen = () => {
     role?.toUpperCase()?.includes('SUPER_ADMIN')
   );
 
+  // Get action types based on selected tab
+  const currentActionTypes = selectedTab === 'CUSTOMER' ? CUSTOMER_ACTION_TYPES : ADMIN_ACTION_TYPES;
+
   const { logs, total, loading, error, setFilters } = useActivityLog({
     page,
     size: rowsPerPage,
@@ -67,11 +115,12 @@ const ActivityLogScreen = () => {
   const handleTabChange = (_event: React.SyntheticEvent, newValue: 'CUSTOMER' | 'ADMIN') => {
     setSelectedTab(newValue);
     setPage(0);
+    setLocalFilters((prev) => ({ ...prev, actionType: '' })); // Reset action type filter
     setFilters({
       page: 0,
       size: rowsPerPage,
       userType: newValue,
-      actionType: localFilters.actionType || undefined,
+      actionType: undefined,
       startDate: localFilters.startDate || undefined,
       endDate: localFilters.endDate || undefined,
     });
@@ -147,6 +196,44 @@ const ActivityLogScreen = () => {
       startDate: localFilters.startDate || undefined,
       endDate: localFilters.endDate || undefined,
     });
+  };
+
+  // Get Vietnamese label for action type
+  const getActionTypeLabel = (actionKey: string): string => {
+    return currentActionTypes[actionKey as keyof typeof currentActionTypes] || actionKey;
+  };
+
+  // Handle export to Excel
+  const handleExportToExcel = async () => {
+    try {
+      setExporting(true);
+      const response = await ActivityLogApi.exportToExcel({
+        userType: selectedTab,
+        actionType: localFilters.actionType || undefined,
+        startDate: localFilters.startDate || undefined,
+        endDate: localFilters.endDate || undefined,
+      });
+
+      // Get filename from Content-Disposition header or use default
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = 'Nhat_ky_hoat_dong.xlsx';
+      if (contentDisposition) {
+        try {
+          filename =
+            contentDisposition.split('filename=')[1].split('"')[1] ||
+            filename;
+        } catch (e) {
+          // Use default filename if parsing fails
+        }
+      }
+
+      downloadExcelFile(response.data, filename);
+    } catch (error) {
+      console.error('Lỗi khi xuất file:', error);
+      alert('Lỗi khi xuất file Excel');
+    } finally {
+      setExporting(false);
+    }
   };
 
   // Access control
@@ -226,7 +313,7 @@ const ActivityLogScreen = () => {
       {/* Filters */}
       <Paper sx={{ p: 2, mb: 2 }}>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
-          <FormControl sx={{ minWidth: 200 }} size="small">
+          <FormControl sx={{ minWidth: 250 }} size="small">
             <InputLabel>Loại hành động</InputLabel>
             <Select
               value={localFilters.actionType}
@@ -234,29 +321,11 @@ const ActivityLogScreen = () => {
               onChange={handleActionTypeChange}
             >
               <MenuItem value="">Tất cả</MenuItem>
-              <MenuItem value="CREATE_ORDER">Tạo đơn hàng</MenuItem>
-              <MenuItem value="UPDATE_ORDER_STATUS">Cập nhật trạng thái đơn</MenuItem>
-              <MenuItem value="CANCEL_ORDER">Huỷ đơn hàng</MenuItem>
-              <MenuItem value="CREATE_PAYMENT">Tạo thanh toán</MenuItem>
-              <MenuItem value="PROCESS_PAYMENT">Xử lý thanh toán</MenuItem>
-              <MenuItem value="REFUND_PAYMENT">Hoàn tiền</MenuItem>
-              <MenuItem value="UPDATE_PROFILE">Cập nhật hồ sơ</MenuItem>
-              <MenuItem value="CHANGE_PASSWORD">Đổi mật khẩu</MenuItem>
-              <MenuItem value="UPDATE_ADDRESS">Cập nhật địa chỉ</MenuItem>
-              <MenuItem value="DELETE_ADDRESS">Xoá địa chỉ</MenuItem>
-              <MenuItem value="CREATE_REVIEW">Tạo đánh giá</MenuItem>
-              <MenuItem value="UPDATE_REVIEW">Cập nhật đánh giá</MenuItem>
-              <MenuItem value="DELETE_REVIEW">Xoá đánh giá</MenuItem>
-              <MenuItem value="ADD_TO_CART">Thêm vào giỏ</MenuItem>
-              <MenuItem value="REMOVE_FROM_CART">Xoá khỏi giỏ</MenuItem>
-              <MenuItem value="CLEAR_CART">Xoá giỏ hàng</MenuItem>
-              <MenuItem value="CREATE_PRODUCT">Tạo sản phẩm</MenuItem>
-              <MenuItem value="UPDATE_PRODUCT">Cập nhật sản phẩm</MenuItem>
-              <MenuItem value="DELETE_PRODUCT">Xoá sản phẩm</MenuItem>
-              <MenuItem value="MANAGE_PROMOTION">Quản lý khuyến mãi</MenuItem>
-              <MenuItem value="MANAGE_WAREHOUSE">Quản lý kho hàng</MenuItem>
-              <MenuItem value="LOGIN">Đăng nhập</MenuItem>
-              <MenuItem value="LOGOUT">Đăng xuất</MenuItem>
+              {Object.entries(currentActionTypes).map(([key, label]) => (
+                <MenuItem key={key} value={key}>
+                  {label}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 
@@ -279,6 +348,15 @@ const ActivityLogScreen = () => {
           />
 
           <Box sx={{ flex: 1 }} />
+
+          <Button
+            variant="contained"
+            color="success"
+            onClick={handleExportToExcel}
+            disabled={exporting || logs.length === 0}
+          >
+            {exporting ? '⏳ Đang xuất...' : '📊 Xuất Excel'}
+          </Button>
         </Box>
       </Paper>
 
@@ -331,7 +409,7 @@ const ActivityLogScreen = () => {
                     </TableCell>
                     <TableCell>
                       <Chip
-                        label={log.actionType}
+                        label={getActionTypeLabel(log.actionType)}
                         size="small"
                         variant="outlined"
                         sx={{ bgcolor: '#e3f2fd' }}

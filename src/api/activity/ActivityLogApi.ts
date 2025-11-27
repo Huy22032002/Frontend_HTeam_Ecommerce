@@ -121,5 +121,20 @@ export const ActivityLogApi = {
   createActivityLog: async (log: Partial<ActivityLog>): Promise<ActivityLog> => {
     const response = await axios.post(`${API_BASE_URL}/activity-logs`, log);
     return response.data;
+  },
+
+  /**
+   * Export activity logs to Excel
+   */
+  exportToExcel: (filters: ActivityLogFilter) => {
+    const params = new URLSearchParams();
+    if (filters.userType) params.append('userType', filters.userType);
+    if (filters.actionType) params.append('actionType', filters.actionType);
+    if (filters.startDate) params.append('startDate', filters.startDate);
+    if (filters.endDate) params.append('endDate', filters.endDate);
+
+    return axios.get(`${API_BASE_URL}/activity-logs/export/excel?${params.toString()}`, {
+      responseType: 'blob',
+    });
   }
 };

@@ -27,6 +27,7 @@ import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import { useNavigate } from "react-router-dom";
 import { useOrders } from "../../hooks/useOrders";
 import { OrderApi } from "../../api/order/OrderApi";
+import { ActivityLogApi } from "../../api/activity/ActivityLogApi";
 import { downloadExcelFile } from "../../utils/exportToExcel";
 
 const OrderListScreen = () => {
@@ -132,8 +133,37 @@ const OrderListScreen = () => {
       }
       
       downloadExcelFile(response.data, filename);
+
+      // Log export action
+      await ActivityLogApi.createActivityLog({
+        userType: 'ADMIN',
+        userId: 0,
+        userName: 'Admin',
+        actionType: 'EXPORT_REPORT',
+        description: 'Xuất báo cáo đơn hàng',
+        entityType: 'ORDER',
+        status: 'SUCCESS',
+        details: JSON.stringify({
+          filters: filters,
+          filename: filename,
+          timestamp: new Date().toISOString(),
+        }),
+      });
     } catch (error) {
       console.error("Lỗi khi xuất file:", error);
+
+      // Log error
+      await ActivityLogApi.createActivityLog({
+        userType: 'ADMIN',
+        userId: 0,
+        userName: 'Admin',
+        actionType: 'EXPORT_REPORT',
+        description: 'Lỗi xuất báo cáo đơn hàng',
+        entityType: 'ORDER',
+        status: 'FAILED',
+        details: (error as Error).message,
+      }).catch(e => console.error('Failed to log error:', e));
+
       alert("Lỗi khi xuất file Excel");
     } finally {
       setExporting(false);
