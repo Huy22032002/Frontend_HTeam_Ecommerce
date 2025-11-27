@@ -32,6 +32,7 @@ import OrderHistoryScreen from "./screens/customerLayout/orderHistory/OrderHisto
 import CustomerReviewScreen from "./screens/customerLayout/review/CustomerReviewScreen";
 import VoucherScreen from "./screens/customerLayout/voucher/VoucherScreen";
 import FlashSaleScreen from "./screens/flashsale/FlashSaleScreen";
+import ChatbotWidget from "./components/chatbot/ChatBotWidget";
 
 function AppContent() {
   const location = useLocation();
@@ -79,6 +80,8 @@ function AppContent() {
           />
         </Routes>
         {!hideLayout && <Footer />}
+
+        {!hideLayout && <ChatbotWidget />}
       </main>
     </div>
   );
