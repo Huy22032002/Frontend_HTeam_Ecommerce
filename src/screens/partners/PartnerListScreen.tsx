@@ -12,16 +12,19 @@ import {
   Chip,
   Alert,
   Switch,
+  Tooltip,
 } from '@mui/material';
 import BlockIcon from '@mui/icons-material/Block';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useState } from 'react';
 import { useCustomers, type Customer } from '../../hooks/useCustomers';
 import { CustomerAdminApi } from '../../api/customer/CustomerAdminApi';
+import { useAdminPermissions } from '../../hooks/useAdminPermissions';
 
 
 const PartnerListScreen = () => {
   const { customers, loading, error, refetch } = useCustomers();
+  const { isSuperAdmin, canChangeStatus } = useAdminPermissions();
   const [toggling, setToggling] = useState<number | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -98,12 +101,16 @@ const PartnerListScreen = () => {
                       />
                     </TableCell>
                     <TableCell align="center">
-                      <Switch
-                        checked={!customer.blocked}
-                        onChange={() => handleToggleBlock(customer)}
-                        disabled={toggling === customer.id}
-                        color="primary"
-                      />
+                      <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể thay đổi" : ""}>
+                        <span>
+                          <Switch
+                            checked={!customer.blocked}
+                            onChange={() => handleToggleBlock(customer)}
+                            disabled={toggling === customer.id || !isSuperAdmin}
+                            color="primary"
+                          />
+                        </span>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                 ))

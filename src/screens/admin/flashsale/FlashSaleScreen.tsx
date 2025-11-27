@@ -17,6 +17,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import useFlashSale from "./FlashSale.hook";
+import { useAdminPermissions } from "../../../hooks/useAdminPermissions";
 import { useNavigate } from "react-router-dom";
 
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -26,6 +27,7 @@ import FlashSaleItemDetailRow from "../../../components/flashSale/FlashSaleItemR
 
 const FlashSaleScreen = () => {
   const { flashSales, error, loading } = useFlashSale();
+  const { isSuperAdmin } = useAdminPermissions();
   const navigate = useNavigate();
 
   const formatDate = (dateString?: string) => {
@@ -65,13 +67,18 @@ const FlashSaleScreen = () => {
         <Typography variant="h4" fontWeight={600}>
           Quản lý Flash Sale
         </Typography>
-        <Button
-          onClick={() => navigate("/admin/flash-sale/create")}
-          variant="contained"
-          size="small"
-        >
-          + Tạo chiến dịch
-        </Button>
+        <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể tạo chiến dịch" : ""}>
+          <span>
+            <Button
+              onClick={() => navigate("/admin/flash-sale/create")}
+              variant="contained"
+              size="small"
+              disabled={!isSuperAdmin}
+            >
+              + Tạo chiến dịch
+            </Button>
+          </span>
+        </Tooltip>
       </Box>
       {loading ? (
         <Box display="flex" justifyContent="center" mt={4}>
@@ -163,10 +170,12 @@ const FlashSaleScreen = () => {
                           <VisibilityIcon />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Sửa">
-                        <IconButton size="small" color="primary">
-                          <EditIcon />
-                        </IconButton>
+                      <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể sửa" : "Sửa"}>
+                        <span>
+                          <IconButton size="small" color="primary" disabled={!isSuperAdmin}>
+                            <EditIcon />
+                          </IconButton>
+                        </span>
                       </Tooltip>
                     </TableCell>
                   </TableRow>

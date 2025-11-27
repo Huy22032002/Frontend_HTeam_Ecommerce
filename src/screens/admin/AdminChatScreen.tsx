@@ -10,6 +10,8 @@ interface Conversation {
   id: string;
   customerId: number;
   customerName: string;
+  customerPhone?: string;
+  customerEmail?: string;
   lastMessage?: string;
   updatedAt: string;
   unreadCount?: number;
@@ -208,12 +210,23 @@ export default function AdminChatScreen() {
                 >
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1a1a1a', mb: 0.5 }}>
-                      {conv.customerName || 'Khách hàng'}
+                      {conv.customerId} - {conv.customerName || 'Khách hàng'}
                     </Typography>
                     <Typography 
                       variant="caption" 
                       sx={{ 
                         color: '#666', 
+                        display: 'block', 
+                        mb: 0.5,
+                        fontSize: '0.75rem'
+                      }}
+                    >
+                      {conv.customerPhone ? `📱 ${conv.customerPhone}` : conv.customerEmail ? `📧 ${conv.customerEmail}` : 'N/A'}
+                    </Typography>
+                    <Typography 
+                      variant="caption" 
+                      sx={{ 
+                        color: '#999', 
                         display: 'block', 
                         mb: 0.5,
                         overflow: 'hidden',

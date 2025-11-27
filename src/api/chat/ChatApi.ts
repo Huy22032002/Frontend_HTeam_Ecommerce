@@ -22,6 +22,8 @@ export interface ChatConversation {
   id: string;  // Changed to string (MongoDB ID)
   customerId: number;
   customerName: string;
+  customerPhone?: string;
+  customerEmail?: string;
   adminId?: number;
   adminName?: string;
   status: 'ACTIVE' | 'CLOSED';

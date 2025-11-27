@@ -4,6 +4,7 @@ export interface CmsNavItem {
   icon?: string; // Placeholder: you can swap to MUI Icons later
   children?: CmsNavItem[];
   path?: string; // route path
+  requiredRole?: 'SUPER_ADMIN' | 'ADMIN'; // If SUPER_ADMIN, only superadmin can see
 }
 
 export const cmsNav: CmsNavItem[] = [
@@ -19,12 +20,14 @@ export const cmsNav: CmsNavItem[] = [
     label: "Lịch sử hoạt động",
     icon: "📝",
     path: "/admin/activity-log",
+    requiredRole: 'SUPER_ADMIN', // Only superadmin can see
   },
   {
     key: "user-management",
     label: "Quản lý người dùng",
     icon: "👤",
     path: "/admin/users",
+    requiredRole: 'SUPER_ADMIN', // Only superadmin can see
   },
   {
     key: "partners",

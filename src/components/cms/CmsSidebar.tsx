@@ -6,6 +6,8 @@ import {
   ListItemButton,
   ListItemText,
 } from "@mui/material";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../store/store";
 import styles from "./CmsSidebar.module.css";
 import { cmsNav } from "./navConfig";
 import type { CmsNavItem } from "./navConfig";
@@ -15,19 +17,45 @@ interface SidebarProps {
   width?: number;
 }
 
+/**
+ * Check if user can access this nav item based on requiredRole
+ */
+const canAccessItem = (item: CmsNavItem, userRole: string[]): boolean => {
+  // If no required role specified, everyone can access
+  if (!item.requiredRole) return true;
+  
+  // If SUPER_ADMIN is required, check if user is SUPER_ADMIN
+  if (item.requiredRole === 'SUPER_ADMIN') {
+    return userRole.some(r => r.toUpperCase().includes('SUPERADMIN') || r.toUpperCase().includes('SUPER_ADMIN'));
+  }
+  
+  return true;
+};
+
 const renderItem = (
   item: CmsNavItem,
   openMap: Record<string, boolean>,
   toggle: (k: string) => void,
-  currentPath: string
+  currentPath: string,
+  userRole: string[]
 ) => {
+  // Skip if user doesn't have access
+  if (!canAccessItem(item, userRole)) {
+    return null;
+  }
+
   const hasChildren = !!item.children?.length;
   const active = item.path && currentPath.startsWith(item.path);
+  
+  // Filter children based on role
+  const accessibleChildren = item.children?.filter(child => canAccessItem(child, userRole)) || [];
+  const hasAccessibleChildren = accessibleChildren.length > 0;
+
   return (
     <Box key={item.key}>
       <ListItemButton
         onClick={
-          hasChildren
+          hasAccessibleChildren
             ? (e) => {
                 e.stopPropagation();
                 toggle(item.key);
@@ -50,10 +78,10 @@ const renderItem = (
           }}
         />
       </ListItemButton>
-      {hasChildren && (
+      {hasAccessibleChildren && (
         <Collapse in={openMap[item.key]} timeout="auto" unmountOnExit>
           <List disablePadding>
-            {item.children!.map((child) => {
+            {accessibleChildren.map((child) => {
               const childActive = child.path
                 ? currentPath.startsWith(child.path)
                 : false;
@@ -87,6 +115,12 @@ const renderItem = (
 };
 
 export const CmsSidebar = (_props: SidebarProps) => {
+  // Get user role from Redux
+  const userState = useSelector((state: RootState) => state.userAuth);
+  const userRole = Array.isArray(userState?.user?.role)
+    ? userState.user.role
+    : [];
+
   // Load persisted openMap from localStorage so navigation doesn't reset opened parents
   const [openMap, setOpenMap] = useState<Record<string, boolean>>(() => {
     try {
@@ -116,7 +150,7 @@ export const CmsSidebar = (_props: SidebarProps) => {
       </Box>
       <List component="nav" dense>
         {cmsNav.map((item) =>
-          renderItem(item, openMap, toggle, location.pathname)
+          renderItem(item, openMap, toggle, location.pathname, userRole)
         )}
       </List>
     </Box>

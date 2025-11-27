@@ -24,12 +24,14 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useState } from 'react';
 import { usePromotions } from '../../hooks/usePromotions';
+import { useAdminPermissions } from '../../hooks/useAdminPermissions';
 import { PromotionApi } from '../../api/promotion/PromotionApi';
 import { PromotionFormDialog } from '../../components/promotion/PromotionFormDialog';
 import type { PromotionReadableDTO } from '../../models/promotions/Promotion';
 
 const PromotionListScreen = () => {
   const { promotions, loading, error, refetch } = usePromotions();
+  const { isSuperAdmin } = useAdminPermissions();
   const [selectedPromotion, setSelectedPromotion] = useState<PromotionReadableDTO | null>(null);
   const [openForm, setOpenForm] = useState(false);
   const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
@@ -124,13 +126,18 @@ const PromotionListScreen = () => {
 
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
         <Typography variant="h4" fontWeight={600}>Quản lý khuyến mãi</Typography>
-        <Button
-          variant="contained"
-          size="small"
-          onClick={() => handleOpenForm()}
-        >
-          + Thêm khuyến mãi
-        </Button>
+        <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể tạo khuyến mãi" : ""}>
+          <span>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => handleOpenForm()}
+              disabled={!isSuperAdmin}
+            >
+              + Thêm khuyến mãi
+            </Button>
+          </span>
+        </Tooltip>
       </Box>
 
       {loading ? (
@@ -186,23 +193,29 @@ const PromotionListScreen = () => {
                         <VisibilityIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="Sửa">
-                      <IconButton
-                        size="small"
-                        color="primary"
-                        onClick={() => handleOpenForm(p)}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
+                    <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể sửa" : "Sửa"}>
+                      <span>
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          onClick={() => handleOpenForm(p)}
+                          disabled={!isSuperAdmin}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </span>
                     </Tooltip>
-                    <Tooltip title="Xóa">
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => handleDelete(p.id)}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
+                    <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể xóa" : "Xóa"}>
+                      <span>
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => handleDelete(p.id)}
+                          disabled={!isSuperAdmin}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </span>
                     </Tooltip>
                   </TableCell>
                 </TableRow>
