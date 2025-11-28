@@ -5,11 +5,12 @@ import store from "./store/store";
 import { ColorModeContext, useMode } from "./theme/theme";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { CmsLayout } from "./components/cms/CmsLayout";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 //screens
 import AdminLoginScreen from "./screens/admin/AdminLoginScreen";
 import DashboardScreen from "./screens/dashboard/DashboardScreen";
-import ActivityLogScreen from "./screens/activity/ActivityLogScreen";
+import ActivityLogScreen from "./screens/admin/ActivityLogScreen";
 import ReportsScreen from "./screens/reports/ReportsScreen";
 import UserManagementScreen from "./screens/users/UserManagementScreen";
 import ProductListScreen from "./screens/products/ProductListScreen";
@@ -44,14 +45,15 @@ function AdminAppContent() {
       {/* Login route */}
       <Route path="/admin/login" element={<AdminLoginScreen />} />
 
-      {/* Admin routes with CmsLayout */}
+      {/* Admin routes with CmsLayout - Protected */}
       <Route
         path="/admin/*"
         element={
-          <CmsLayout>
-            <Routes>
-              <Route path="dashboard" element={<DashboardScreen />} />
-              <Route path="activity-log" element={<ActivityLogScreen />} />
+          <ProtectedRoute>
+            <CmsLayout>
+              <Routes>
+                <Route path="dashboard" element={<DashboardScreen />} />
+                <Route path="activity-log" element={<ActivityLogScreen />} />
               <Route path="reports" element={<ReportsScreen />} />
               <Route path="users" element={<UserManagementScreen />} />
               <Route path="products" element={<ProductListScreen />} />
@@ -100,7 +102,8 @@ function AdminAppContent() {
               {/* Redirect root /admin to dashboard */}
               <Route path="*" element={<DashboardScreen />} />
             </Routes>
-          </CmsLayout>
+            </CmsLayout>
+          </ProtectedRoute>
         }
       />
     </Routes>

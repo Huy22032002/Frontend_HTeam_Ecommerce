@@ -23,55 +23,46 @@ export const useAdminLogin = () => {
 
     try {
       const response = await UserApi.login(username, password);
-      console.log("Login response:", response.data);  // DEBUG
       const { token, id } = response.data || {};
-      console.log("Extracted token:", token, "id:", id);  // DEBUG
 
       if (token && id) {
-        // Save token AND adminId
+        // 1. Save token to localStorage FIRST
         localStorage.setItem("token", token);
-        localStorage.setItem("adminId", id.toString());  // Save adminId!
-        console.log("Saved to localStorage - token and adminId:", id);
+        localStorage.setItem("adminId", id.toString());
 
-        // Dispatch initial user info (with minimal data from login response)
-        dispatch(loginAction({
-            id,
-            username,
-            name: username,
-            emailAddress: "",
-            gender: false,
-            dateOfBirth: new Date(),
-            anonymous: false,
-            roles: ["ADMIN"]
-        }));
-        console.log("Dispatched loginAction with id:", id);
+        // 2. Dispatch user to Redux
+        const userData = {
+          id,
+          username,
+          name: username,
+          emailAddress: "",
+          gender: null,
+          dateOfBirth: null,
+          anonymous: false,
+          role: ["ADMIN"]
+        };
+        dispatch(loginAction(userData));
 
+        // 3. Navigate immediately (don't wait)
+        navigate("/admin/dashboard");
         setMessage("Đăng nhập thành công!");
 
-        // Fetch full user details and update Redux
-        try {
-          const userDetailRes = await UserApi.getById(id);
-          console.log("User details:", userDetailRes.data);  // DEBUG
-          if (userDetailRes.data) {
-            dispatch(loginAction(userDetailRes.data));
-            console.log("Updated Redux with full user details");
-          }
-        } catch (err) {
-          console.warn("Could not fetch admin details:", err);
-          // User still logged in with minimal info - that's ok
-        }
-
-        // Navigate to dashboard
-        setTimeout(() => navigate("/admin/dashboard"), 300);
+        // 4. Fetch full details in background
+        UserApi.getById(id)
+          .then((res) => {
+            console.log("✅ Fetched full user details - role:", res.data?.role);
+            if (res.data) {
+              dispatch(loginAction(res.data));
+            }
+          })
+          .catch((err) => console.warn("⚠️ Could not fetch user details:", err));
       } else {
-        setError(`Invalid credentials or server error. Token: ${token}, ID: ${id}`);
-        console.log("Missing token or id in response:", response.data);  // DEBUG
+        setError(`Invalid response. Token: ${!!token}, ID: ${id}`);
       }
     } catch (err: any) {
       const errorMsg =
         err?.response?.data?.message || err?.message || "Login failed";
       setError(errorMsg);
-      console.error("Login error:", err);  // DEBUG
     } finally {
       setIsLoading(false);
     }

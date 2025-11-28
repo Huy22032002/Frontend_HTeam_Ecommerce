@@ -30,6 +30,7 @@ import {
   Typography,
   Select,
   MenuItem,
+  Tooltip,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
@@ -42,6 +43,7 @@ import { VariantsApi } from "../../api/product/VariantApi";
 import { VariantsOptionsApi } from "../../api/product/VariantOptionsApi";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { ProductApi } from "../../api/product/ProductApi";
+import { useAdminPermissions } from "../../hooks/useAdminPermissions";
 
 interface ProductVariant {
   id: number;
@@ -68,6 +70,7 @@ interface OptionData {
 
 const ProductVariantListScreen = () => {
   const theme = useTheme();
+  const { isSuperAdmin, canEdit, canDelete, canCreate } = useAdminPermissions();
 
   // State
   const [variants, setVariants] = useState<ProductVariant[]>([]);
@@ -650,17 +653,23 @@ const ProductVariantListScreen = () => {
       <Box sx={{ mb: 3, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h1>📦 Danh sách Biến thể Sản phẩm</h1>
         <Box sx={{ display: "flex", gap: 1 }}>
-          <Button
-            variant="contained"
-            color="success"
-            sx={{ textTransform: "none" }}
-            onClick={() => {
-              // Navigate to create product screen
-              window.location.href = "/admin/create-product";
-            }}
-          >
-            + Thêm sản phẩm
-          </Button>
+          <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể thêm sản phẩm" : ""}>
+            <span>
+              <Button
+                variant="contained"
+                color="success"
+                sx={{ textTransform: "none" }}
+                disabled={!isSuperAdmin}
+                onClick={() => {
+                  if (isSuperAdmin) {
+                    window.location.href = "/admin/create-product";
+                  }
+                }}
+              >
+                + Thêm sản phẩm
+              </Button>
+            </span>
+          </Tooltip>
           <Button
             onClick={() => setShowFilters(!showFilters)}
             variant="outlined"
@@ -994,21 +1003,31 @@ const ProductVariantListScreen = () => {
                           Bấm ▼ để xem các tùy chọn
                         </TableCell>
                         <TableCell align="center">
-                          <IconButton
-                            size="small"
-                            onClick={() => handleEditVariant(variant)}
-                            title="Chỉnh sửa biến thể"
-                          >
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleDeleteVariant(variant)}
-                            title="Xoá biến thể"
-                            sx={{ color: "error.main", ml: 1 }}
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
+                          <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể chỉnh sửa" : ""}>
+                            <span>
+                              <IconButton
+                                size="small"
+                                onClick={() => isSuperAdmin && handleEditVariant(variant)}
+                                title="Chỉnh sửa biến thể"
+                                disabled={!isSuperAdmin}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                          <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể xoá" : ""}>
+                            <span>
+                              <IconButton
+                                size="small"
+                                onClick={() => isSuperAdmin && handleDeleteVariant(variant)}
+                                title="Xoá biến thể"
+                                sx={{ color: "error.main", ml: 1 }}
+                                disabled={!isSuperAdmin}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
                         </TableCell>
                       </TableRow>
 
@@ -1126,34 +1145,44 @@ const ProductVariantListScreen = () => {
                                             />
                                           </TableCell>
                                           <TableCell align="center">
-                                            <IconButton
-                                              size="small"
-                                              onClick={() =>
-                                                handleEditOption(
-                                                  variant.id,
-                                                  option
-                                                )
-                                              }
-                                              title="Chỉnh sửa option"
-                                            >
-                                              <EditIcon fontSize="small" />
-                                            </IconButton>
-                                            <IconButton
-                                              size="small"
-                                              onClick={() =>
-                                                handleDeleteOption(
-                                                  variant.id,
-                                                  option
-                                                )
-                                              }
-                                              title="Xoá option"
-                                              sx={{
-                                                color: "error.main",
-                                                ml: 1,
-                                              }}
-                                            >
-                                              <DeleteIcon fontSize="small" />
-                                            </IconButton>
+                                            <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể chỉnh sửa" : ""}>
+                                              <span>
+                                                <IconButton
+                                                  size="small"
+                                                  onClick={() =>
+                                                    isSuperAdmin && handleEditOption(
+                                                      variant.id,
+                                                      option
+                                                    )
+                                                  }
+                                                  title="Chỉnh sửa option"
+                                                  disabled={!isSuperAdmin}
+                                                >
+                                                  <EditIcon fontSize="small" />
+                                                </IconButton>
+                                              </span>
+                                            </Tooltip>
+                                            <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể xoá" : ""}>
+                                              <span>
+                                                <IconButton
+                                                  size="small"
+                                                  onClick={() =>
+                                                    isSuperAdmin && handleDeleteOption(
+                                                      variant.id,
+                                                      option
+                                                    )
+                                                  }
+                                                  title="Xoá option"
+                                                  sx={{
+                                                    color: "error.main",
+                                                    ml: 1,
+                                                  }}
+                                                  disabled={!isSuperAdmin}
+                                                >
+                                                  <DeleteIcon fontSize="small" />
+                                                </IconButton>
+                                              </span>
+                                            </Tooltip>
                                           </TableCell>
                                         </TableRow>
                                       ))}

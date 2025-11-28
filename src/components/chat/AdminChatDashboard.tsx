@@ -213,7 +213,7 @@ const AdminChatDashboard: React.FC = () => {
                     >
                       <ListItemAvatar>
                         <Badge
-                          badgeContent={conversation.unreadCount > 0 ? conversation.unreadCount : 0}
+                          badgeContent={conversation.unreadCount > 0 ? conversation.unreadCount : null}
                           color="error"
                         >
                           <Avatar sx={{ bgcolor: 'primary.main' }}>

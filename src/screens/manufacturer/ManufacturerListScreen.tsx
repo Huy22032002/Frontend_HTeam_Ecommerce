@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, Table, TableBody, TableCell, TableHead, TableRow, Typography, Avatar, Chip } from "@mui/material";
+import { Box, Button, Table, TableBody, TableCell, TableHead, TableRow, Typography, Avatar, Chip, Tooltip } from "@mui/material";
 import { ManufacturerAdminApi } from "../../api/manufacturer/manufacturerAdminApi";
+import { useAdminPermissions } from "../../hooks/useAdminPermissions";
 import { Link } from "react-router-dom";
 import type { Manufacturer } from "../../models/manufacturer/Manufacturer";
 
 const ManufacturerListScreen: React.FC = () => {
+  const { isSuperAdmin } = useAdminPermissions();
   const [manufacturers, setManufacturers] = useState<Manufacturer[]>([]);
   const load = async () => {
     // prefer admin endpoint so we can see active status
@@ -20,9 +22,13 @@ const ManufacturerListScreen: React.FC = () => {
     <Box p={2}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h5">Danh sách thương hiệu</Typography>
-        <Button variant="contained" component={Link} to="create">
-          Tạo thương hiệu
-        </Button>
+        <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể tạo thương hiệu" : ""}>
+          <span>
+            <Button variant="contained" component={Link} to="create" disabled={!isSuperAdmin}>
+              Tạo thương hiệu
+            </Button>
+          </span>
+        </Tooltip>
       </Box>
 
       <Table>
@@ -53,28 +59,37 @@ const ManufacturerListScreen: React.FC = () => {
               </TableCell>
               <TableCell>{m.sortOrder}</TableCell>
               <TableCell>
-                <Button variant="outlined" size="small" component={Link} to={`${m.id}/edit`} style={{ marginRight: 8 }}>
-                  Sửa
-                </Button>
+                <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể sửa" : ""}>
+                  <span>
+                    <Button variant="outlined" size="small" component={Link} to={`${m.id}/edit`} style={{ marginRight: 8 }} disabled={!isSuperAdmin}>
+                      Sửa
+                    </Button>
+                  </span>
+                </Tooltip>
 
-                <Button
-                  variant="contained"
-                  color={m.active ? "error" : "success"}
-                  size="small"
-                  onClick={async () => {
-                    const target = m.active ? 'Inactive' : 'Active';
-                    if (!confirm(`Bạn có chắc muốn chuyển trạng thái thương hiệu "${m.name}" sang ${target}?`)) return;
-                    const res = await ManufacturerAdminApi.toggleStatus(Number(m.id));
-                    if (res) {
-                      // reload list
-                      await load();
-                    } else {
-                      alert('Chuyển trạng thái thất bại');
-                    }
-                  }}
-                >
-                  Chuyển trạng thái
-                </Button>
+                <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể chuyển trạng thái" : ""}>
+                  <span>
+                    <Button
+                      variant="contained"
+                      color={m.active ? "error" : "success"}
+                      size="small"
+                      disabled={!isSuperAdmin}
+                      onClick={async () => {
+                        const target = m.active ? 'Inactive' : 'Active';
+                        if (!confirm(`Bạn có chắc muốn chuyển trạng thái thương hiệu "${m.name}" sang ${target}?`)) return;
+                        const res = await ManufacturerAdminApi.toggleStatus(Number(m.id));
+                        if (res) {
+                          // reload list
+                          await load();
+                        } else {
+                          alert('Chuyển trạng thái thất bại');
+                        }
+                      }}
+                    >
+                      Chuyển trạng thái
+                    </Button>
+                  </span>
+                </Tooltip>
               </TableCell>
             </TableRow>
           ))}

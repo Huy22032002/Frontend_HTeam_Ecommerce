@@ -11,9 +11,11 @@ import {
   Button,
   Collapse,
   IconButton,
+  Tooltip,
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { useProducts } from "../../hooks/useProducts";
+import { useAdminPermissions } from "../../hooks/useAdminPermissions";
 import type { Product } from "../../models/products/Product";
 import type { ProductVariants } from "../../models/products/ProductVariant";
 import { useNavigate } from "react-router-dom";
@@ -25,10 +27,11 @@ const getStatus = (p: Product) => {
 
 const ProductListScreen = () => {
   const { products, loading, error } = useProducts();
+  const { isSuperAdmin } = useAdminPermissions();
+  const navigate = useNavigate();
+  
   // State để theo dõi sản phẩm nào đang mở variants
   const [openRow, setOpenRow] = React.useState<number | null>(null);
-
-  const navigate = useNavigate();
 
   return (
     <Box>
@@ -41,13 +44,22 @@ const ProductListScreen = () => {
         <Typography variant="h4" fontWeight={600}>
           Danh sách sản phẩm
         </Typography>
-        <Button
-          onClick={() => navigate("/admin/create-product")}
-          variant="contained"
-          size="small"
-        >
-          + Thêm sản phẩm mới
-        </Button>
+        <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể thêm sản phẩm" : ""}>
+          <span>
+            <Button
+              variant="contained"
+              size="small"
+              disabled={!isSuperAdmin}
+              onClick={() => {
+                if (isSuperAdmin) {
+                  navigate("/admin/create-product");
+                }
+              }}
+            >
+              + Thêm sản phẩm mới
+            </Button>
+          </span>
+        </Tooltip>
       </Box>
       {loading ? (
         <Typography>Đang tải sản phẩm...</Typography>
@@ -95,27 +107,41 @@ const ProductListScreen = () => {
                     />
                   </TableCell>
                   <TableCell>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      onClick={() => navigate(`/admin/products/${p.id}/edit`)}
-                      style={{ marginRight: 8 }}
-                    >
-                      Sửa
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      color="error"
-                      onClick={() => {
-                        if (window.confirm("Bạn có chắc muốn xóa sản phẩm này?")) {
-                          // Call delete API
-                          console.log("Delete product:", p.id);
-                        }
-                      }}
-                    >
-                      Xóa
-                    </Button>
+                    <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể chỉnh sửa" : ""}>
+                      <span>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => {
+                            if (isSuperAdmin) {
+                              navigate(`/admin/products/${p.id}/edit`);
+                            }
+                          }}
+                          style={{ marginRight: 8 }}
+                          disabled={!isSuperAdmin}
+                        >
+                          Sửa
+                        </Button>
+                      </span>
+                    </Tooltip>
+                    <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể xóa" : ""}>
+                      <span>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="error"
+                          onClick={() => {
+                            if (isSuperAdmin && window.confirm("Bạn có chắc muốn xóa sản phẩm này?")) {
+                              // Call delete API
+                              console.log("Delete product:", p.id);
+                            }
+                          }}
+                          disabled={!isSuperAdmin}
+                        >
+                          Xóa
+                        </Button>
+                      </span>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
                 <TableRow>

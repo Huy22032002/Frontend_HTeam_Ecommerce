@@ -8,6 +8,7 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { useInvoices } from '../../hooks/useInvoices';
 import { useNavigate } from 'react-router-dom';
 import { InvoiceApi } from '../../api/invoice/InvoiceApi';
+import { ActivityLogApi } from '../../api/activity/ActivityLogApi';
 import { downloadExcelFile } from '../../utils/exportToExcel';
 
 const InvoiceListScreen = () => {
@@ -56,8 +57,37 @@ const InvoiceListScreen = () => {
       }
       
       downloadExcelFile(response.data, filename);
+
+      // Log export action
+      await ActivityLogApi.createActivityLog({
+        userType: 'ADMIN',
+        userId: 0,
+        userName: 'Admin',
+        actionType: 'EXPORT_REPORT',
+        description: 'Xuất báo cáo hóa đơn',
+        entityType: 'INVOICE',
+        status: 'SUCCESS',
+        details: JSON.stringify({
+          filters: filters,
+          filename: filename,
+          timestamp: new Date().toISOString(),
+        }),
+      });
     } catch (error) {
       console.error("Lỗi khi xuất file:", error);
+
+      // Log error
+      await ActivityLogApi.createActivityLog({
+        userType: 'ADMIN',
+        userId: 0,
+        userName: 'Admin',
+        actionType: 'EXPORT_REPORT',
+        description: 'Lỗi xuất báo cáo hóa đơn',
+        entityType: 'INVOICE',
+        status: 'FAILED',
+        details: (error as Error).message,
+      }).catch(e => console.error('Failed to log error:', e));
+
       alert("Lỗi khi xuất file Excel");
     } finally {
       setExporting(false);
