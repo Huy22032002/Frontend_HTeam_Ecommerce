@@ -131,7 +131,11 @@ const PromotionListScreen = () => {
             <Button
               variant="contained"
               size="small"
-              onClick={() => handleOpenForm()}
+              onClick={() => {
+                if (isSuperAdmin) {
+                  handleOpenForm();
+                }
+              }}
               disabled={!isSuperAdmin}
             >
               + Thêm khuyến mãi
@@ -198,7 +202,11 @@ const PromotionListScreen = () => {
                         <IconButton
                           size="small"
                           color="primary"
-                          onClick={() => handleOpenForm(p)}
+                          onClick={() => {
+                            if (isSuperAdmin) {
+                              handleOpenForm(p);
+                            }
+                          }}
                           disabled={!isSuperAdmin}
                         >
                           <EditIcon fontSize="small" />
@@ -210,7 +218,11 @@ const PromotionListScreen = () => {
                         <IconButton
                           size="small"
                           color="error"
-                          onClick={() => handleDelete(p.id)}
+                          onClick={() => {
+                            if (isSuperAdmin) {
+                              handleDelete(p.id);
+                            }
+                          }}
                           disabled={!isSuperAdmin}
                         >
                           <DeleteIcon fontSize="small" />

@@ -8,25 +8,37 @@ import type { RootState } from '../store/store';
 export const useAdminPermissions = () => {
   const userState = useSelector((state: RootState) => state.userAuth);
   
-  const userRole = Array.isArray(userState?.user?.role)
-    ? userState.user.role
-    : [];
+  // Role có thể là array of objects {id, name} hoặc array of strings
+  let userRoles: string[] = [];
+  
+  if (Array.isArray(userState?.user?.role)) {
+    userRoles = userState.user.role.map((r: any) => {
+      // Nếu là object, lấy name property
+      if (typeof r === 'object' && r && r.name) {
+        return String(r.name).toUpperCase();
+      }
+      // Nếu là string
+      if (typeof r === 'string') {
+        return r.toUpperCase();
+      }
+      return '';
+    }).filter((r: string) => r !== '');
+  }
 
-  // Check if user is SUPER_ADMIN
-  const isSuperAdmin = userRole.some(r => 
-    r.toUpperCase().includes('SUPERADMIN') || 
-    r.toUpperCase().includes('SUPER_ADMIN')
+  // Check if user is SUPER_ADMIN (name là SUPERADMIN hoặc SUPER_ADMIN)
+  const isSuperAdmin = userRoles.some((r: string) => 
+    r === 'SUPERADMIN' || r === 'SUPER_ADMIN'
   );
 
-  // Check if user is ADMIN (but not SUPER_ADMIN)
-  const isAdmin = !isSuperAdmin && userRole.some(r => 
-    r.toUpperCase().includes('ADMIN')
+  // Check if user is ADMIN (nhưng không phải SUPER_ADMIN)
+  const isAdmin = !isSuperAdmin && userRoles.some((r: string) => 
+    r === 'ADMIN'
   );
 
   return {
     isSuperAdmin,
     isAdmin,
-    userRole,
+    userRoles,
     // Permissions for different actions
     canCreate: isSuperAdmin, // Only SUPER_ADMIN can create
     canEdit: isSuperAdmin,   // Only SUPER_ADMIN can edit

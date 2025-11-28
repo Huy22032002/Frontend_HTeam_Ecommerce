@@ -1001,7 +1001,7 @@ const ProductVariantListScreen = () => {
                             <span>
                               <IconButton
                                 size="small"
-                                onClick={() => handleEditVariant(variant)}
+                                onClick={() => isSuperAdmin && handleEditVariant(variant)}
                                 title="Chỉnh sửa biến thể"
                                 disabled={!isSuperAdmin}
                               >
@@ -1013,7 +1013,7 @@ const ProductVariantListScreen = () => {
                             <span>
                               <IconButton
                                 size="small"
-                                onClick={() => handleDeleteVariant(variant)}
+                                onClick={() => isSuperAdmin && handleDeleteVariant(variant)}
                                 title="Xoá biến thể"
                                 sx={{ color: "error.main", ml: 1 }}
                                 disabled={!isSuperAdmin}
@@ -1144,7 +1144,7 @@ const ProductVariantListScreen = () => {
                                                 <IconButton
                                                   size="small"
                                                   onClick={() =>
-                                                    handleEditOption(
+                                                    isSuperAdmin && handleEditOption(
                                                       variant.id,
                                                       option
                                                     )
@@ -1161,7 +1161,7 @@ const ProductVariantListScreen = () => {
                                                 <IconButton
                                                   size="small"
                                                   onClick={() =>
-                                                    handleDeleteOption(
+                                                    isSuperAdmin && handleDeleteOption(
                                                       variant.id,
                                                       option
                                                     )

@@ -105,7 +105,7 @@ const PartnerListScreen = () => {
                         <span>
                           <Switch
                             checked={!customer.blocked}
-                            onChange={() => handleToggleBlock(customer)}
+                            onChange={() => isSuperAdmin && handleToggleBlock(customer)}
                             disabled={toggling === customer.id || !isSuperAdmin}
                             color="primary"
                           />

@@ -70,7 +70,11 @@ const FlashSaleScreen = () => {
         <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể tạo chiến dịch" : ""}>
           <span>
             <Button
-              onClick={() => navigate("/admin/flash-sale/create")}
+              onClick={() => {
+                if (isSuperAdmin) {
+                  navigate("/admin/flash-sale/create");
+                }
+              }}
               variant="contained"
               size="small"
               disabled={!isSuperAdmin}

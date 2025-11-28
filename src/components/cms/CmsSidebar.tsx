@@ -20,13 +20,24 @@ interface SidebarProps {
 /**
  * Check if user can access this nav item based on requiredRole
  */
-const canAccessItem = (item: CmsNavItem, userRole: string[]): boolean => {
+const canAccessItem = (item: CmsNavItem, userRole: any[]): boolean => {
   // If no required role specified, everyone can access
   if (!item.requiredRole) return true;
   
+  // Convert roles to strings
+  const roleStrings = userRole.map((r: any) => {
+    if (typeof r === 'object' && r && r.name) {
+      return String(r.name).toUpperCase();
+    }
+    if (typeof r === 'string') {
+      return r.toUpperCase();
+    }
+    return '';
+  }).filter((r: string) => r !== '');
+  
   // If SUPER_ADMIN is required, check if user is SUPER_ADMIN
   if (item.requiredRole === 'SUPER_ADMIN') {
-    return userRole.some(r => r.toUpperCase().includes('SUPERADMIN') || r.toUpperCase().includes('SUPER_ADMIN'));
+    return roleStrings.some(r => r === 'SUPERADMIN' || r === 'SUPER_ADMIN');
   }
   
   return true;

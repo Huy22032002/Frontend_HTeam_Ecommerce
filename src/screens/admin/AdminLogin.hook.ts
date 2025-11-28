@@ -41,8 +41,8 @@ export const useAdminLogin = () => {
           username,
           name: username,
           emailAddress: "",
-          gender: false,
-          dateOfBirth: new Date(),
+          gender: null,
+          dateOfBirth: null,
           anonymous: false,
           role: ["ADMIN"]
         };

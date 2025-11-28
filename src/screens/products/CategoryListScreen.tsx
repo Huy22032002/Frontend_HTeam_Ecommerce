@@ -22,6 +22,7 @@ import {
   Snackbar,
   Alert,
   Paper,
+  Tooltip,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -31,6 +32,7 @@ import {
   VisibilityOff as VisibilityOffIcon,
 } from "@mui/icons-material";
 import { CategoryApi } from "../../api/catalog/CategoryApi";
+import { useAdminPermissions } from "../../hooks/useAdminPermissions";
 import { CloudApi } from "../../api/CloudApi";
 import type { Category } from "../../models/catalogs/Category";
 
@@ -45,6 +47,7 @@ interface CategoryFormData {
 }
 
 const CategoryListScreen: React.FC = () => {
+  const { isSuperAdmin } = useAdminPermissions();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
@@ -236,13 +239,22 @@ const CategoryListScreen: React.FC = () => {
         <Typography variant="h4" fontWeight="bold">
           Quản lý danh mục
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleOpenCreateDialog}
-        >
-          Thêm danh mục
-        </Button>
+        <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể thêm danh mục" : ""}>
+          <span>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                if (isSuperAdmin) {
+                  handleOpenCreateDialog();
+                }
+              }}
+              disabled={!isSuperAdmin}
+            >
+              Thêm danh mục
+            </Button>
+          </span>
+        </Tooltip>
       </Stack>
 
       <TableContainer component={Paper}>
@@ -298,22 +310,40 @@ const CategoryListScreen: React.FC = () => {
                     />
                   </TableCell>
                   <TableCell align="center">
-                    <IconButton
-                      size="small"
-                      color="primary"
-                      onClick={() => handleOpenEditDialog(category)}
-                      title="Chỉnh sửa"
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      color="error"
-                      onClick={() => handleDeleteCategory(category)}
-                      title="Xóa"
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                    <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể chỉnh sửa" : ""}>
+                      <span>
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          onClick={() => {
+                            if (isSuperAdmin) {
+                              handleOpenEditDialog(category);
+                            }
+                          }}
+                          title="Chỉnh sửa"
+                          disabled={!isSuperAdmin}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể xóa" : ""}>
+                      <span>
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => {
+                            if (isSuperAdmin) {
+                              handleDeleteCategory(category);
+                            }
+                          }}
+                          title="Xóa"
+                          disabled={!isSuperAdmin}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))
