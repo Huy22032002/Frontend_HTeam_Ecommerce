@@ -28,10 +28,10 @@ const getStatus = (p: Product) => {
 const ProductListScreen = () => {
   const { products, loading, error } = useProducts();
   const { isSuperAdmin } = useAdminPermissions();
+  const navigate = useNavigate();
+  
   // State để theo dõi sản phẩm nào đang mở variants
   const [openRow, setOpenRow] = React.useState<number | null>(null);
-
-  const navigate = useNavigate();
 
   return (
     <Box>
@@ -47,14 +47,14 @@ const ProductListScreen = () => {
         <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể thêm sản phẩm" : ""}>
           <span>
             <Button
+              variant="contained"
+              size="small"
+              disabled={!isSuperAdmin}
               onClick={() => {
                 if (isSuperAdmin) {
                   navigate("/admin/create-product");
                 }
               }}
-              variant="contained"
-              size="small"
-              disabled={!isSuperAdmin}
             >
               + Thêm sản phẩm mới
             </Button>

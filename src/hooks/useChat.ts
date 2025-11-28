@@ -10,6 +10,8 @@ export const useCustomerChat = (customerId: number | null) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [messagePage, setMessagePage] = useState(0);
+  const [totalMessagePages, setTotalMessagePages] = useState(0);
 
   // Lấy hoặc tạo cuộc hội thoại
   const initializeConversation = useCallback(async () => {
@@ -79,9 +81,20 @@ export const useCustomerChat = (customerId: number | null) => {
         setLoading(true);
         setError(null);
         const result = await ChatApi.getCustomerMessages(customerId!, conversation.id, page, size);
-        // Reverse to show oldest first (bottom) to newest last (top)
-        const reversedMessages = [...(result.content || [])].reverse();
-        setMessages(reversedMessages);
+        // Set total pages from response
+        if (result?.totalPages !== undefined) {
+          setTotalMessagePages(result.totalPages);
+        }
+        
+        if (page > 0) {
+          // Prepend older messages
+          setMessages(prev => [...(result.content || []), ...prev]);
+        } else {
+          // Reverse to show oldest first (bottom) to newest last (top)
+          const reversedMessages = [...(result.content || [])].reverse();
+          setMessages(reversedMessages);
+        }
+        setMessagePage(page);
       } catch (err: any) {
         setError(err.response?.data?.error || 'Lỗi khi lấy tin nhắn');
         console.error('Error loading messages:', err);
@@ -126,7 +139,9 @@ export const useCustomerChat = (customerId: number | null) => {
     sendMessage,
     loadMessages,
     markAsRead,
-    initializeConversation
+    initializeConversation,
+    messagePage,
+    totalMessagePages
   };
 };
 

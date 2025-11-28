@@ -23,17 +23,12 @@ export const useAdminLogin = () => {
 
     try {
       const response = await UserApi.login(username, password);
-      console.log("Login response:", response.data);  // DEBUG
       const { token, id } = response.data || {};
-      console.log("Extracted token:", token, "id:", id);  // DEBUG
 
       if (token && id) {
-        console.log("🔐 Login successful - token:", token?.substring(0, 20) + "...", "id:", id);
-
         // 1. Save token to localStorage FIRST
         localStorage.setItem("token", token);
         localStorage.setItem("adminId", id.toString());
-        console.log("✅ Saved to localStorage");
 
         // 2. Dispatch user to Redux
         const userData = {
@@ -47,18 +42,18 @@ export const useAdminLogin = () => {
           role: ["ADMIN"]
         };
         dispatch(loginAction(userData));
-        console.log("✅ Dispatched to Redux with user id:", id);
 
         // 3. Navigate immediately (don't wait)
-        console.log("📍 Navigating to dashboard NOW");
         navigate("/admin/dashboard");
         setMessage("Đăng nhập thành công!");
 
         // 4. Fetch full details in background
         UserApi.getById(id)
           .then((res) => {
-            console.log("✅ Fetched full user details");
-            if (res.data) dispatch(loginAction(res.data));
+            console.log("✅ Fetched full user details - role:", res.data?.role);
+            if (res.data) {
+              dispatch(loginAction(res.data));
+            }
           })
           .catch((err) => console.warn("⚠️ Could not fetch user details:", err));
       } else {
@@ -68,7 +63,6 @@ export const useAdminLogin = () => {
       const errorMsg =
         err?.response?.data?.message || err?.message || "Login failed";
       setError(errorMsg);
-      console.error("Login error:", err);  // DEBUG
     } finally {
       setIsLoading(false);
     }

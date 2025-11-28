@@ -653,17 +653,23 @@ const ProductVariantListScreen = () => {
       <Box sx={{ mb: 3, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h1>📦 Danh sách Biến thể Sản phẩm</h1>
         <Box sx={{ display: "flex", gap: 1 }}>
-          <Button
-            variant="contained"
-            color="success"
-            sx={{ textTransform: "none" }}
-            onClick={() => {
-              // Navigate to create product screen
-              window.location.href = "/admin/create-product";
-            }}
-          >
-            + Thêm sản phẩm
-          </Button>
+          <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể thêm sản phẩm" : ""}>
+            <span>
+              <Button
+                variant="contained"
+                color="success"
+                sx={{ textTransform: "none" }}
+                disabled={!isSuperAdmin}
+                onClick={() => {
+                  if (isSuperAdmin) {
+                    window.location.href = "/admin/create-product";
+                  }
+                }}
+              >
+                + Thêm sản phẩm
+              </Button>
+            </span>
+          </Tooltip>
           <Button
             onClick={() => setShowFilters(!showFilters)}
             variant="outlined"

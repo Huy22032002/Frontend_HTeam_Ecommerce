@@ -30,14 +30,26 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
   const customer = useSelector((state: RootState) => state.customerAuth.customer);
   const customerId = customer?.id;
 
-  const { conversation, messages, loading, error, markAsRead } = useCustomerChat(customerId || null);
+  const { conversation, messages, loading, error, markAsRead, loadMessages, messagePage: hookMessagePage, totalMessagePages: hookTotalPages } = useCustomerChat(customerId || null);
   const { subscribe } = useSSE();
 
   const [messageText, setMessageText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [sseMessages, setSSEMessages] = useState<any[]>([]);
+  const [messagePage, setMessagePage] = useState(hookMessagePage);
+  const [totalMessagePages, setTotalMessagePages] = useState(hookTotalPages);
+  const [loadingMoreMessages, setLoadingMoreMessages] = useState(false);
+  const [hasNewMessages, setHasNewMessages] = useState(false);
+  const [isAtBottom, setIsAtBottom] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const connectionAttemptedRef = useRef(false);
+
+  // Update local state when hook values change
+  useEffect(() => {
+    setMessagePage(hookMessagePage);
+    setTotalMessagePages(hookTotalPages);
+  }, [hookMessagePage, hookTotalPages]);
 
   // Connect to SSE when component mounts (only once)
   useEffect(() => {
@@ -84,14 +96,55 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
   const uniqueSSEMessages = sseMessages.filter(m => !messageIds.has(m.id));
   const allMessages = [...messages, ...uniqueSSEMessages];
 
-  // Tự động scroll đến tin nhắn mới nhất
+  // Scroll to bottom on initial load or when messages change
+  useEffect(() => {
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+      setIsAtBottom(true);
+    }, 0);
+  }, [allMessages]);
+
+  // Detect new messages - auto-scroll if at bottom, show button if scrolled up
+  useEffect(() => {
+    if (uniqueSSEMessages.length > 0 && messagesContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+      const atBottom = scrollHeight - scrollTop - clientHeight < 30;
+      setIsAtBottom(atBottom);
+      
+      if (atBottom) {
+        // Auto-scroll to bottom
+        setHasNewMessages(false);
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 0);
+      } else {
+        // Show button if not at bottom - with delay to let auto-scroll complete
+        setTimeout(() => {
+          setHasNewMessages(true);
+        }, 500);
+      }
+    }
+  }, [uniqueSSEMessages]);
+
+  // Scroll to bottom function
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setHasNewMessages(false);
+    setIsAtBottom(true);
   };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [allMessages]);
+  // Detect if user is at bottom of messages
+  const handleMessagesScroll = () => {
+    if (messagesContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+      const atBottom = scrollHeight - scrollTop - clientHeight < 30;
+      setIsAtBottom(atBottom);
+      // Auto-clear button when user scrolls to bottom
+      if (atBottom) {
+        setHasNewMessages(false);
+      }
+    }
+  };
 
   // Đánh dấu tin nhắn từ admin là đã đọc
   useEffect(() => {
@@ -173,12 +226,13 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
         bottom: 20,
         right: 20,
         width: 380,
-        maxHeight: 600,
+        height: 580,
         boxShadow: 3,
         display: 'flex',
         flexDirection: 'column',
         zIndex: 1000,
-        backgroundColor: '#fff'
+        backgroundColor: '#fff',
+        borderRadius: 2
       }}
     >
       {/* Header */}
@@ -212,12 +266,15 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
 
       {/* Messages List */}
       <Box
+        ref={messagesContainerRef}
+        onScroll={handleMessagesScroll}
         sx={{
           flex: 1,
           overflowY: 'auto',
           p: 2,
           backgroundColor: '#f5f5f5',
-          minHeight: 300
+          position: 'relative',
+          minHeight: 0
         }}
       >
         {loading && !allMessages.length ? (
@@ -231,6 +288,27 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
           </Box>
         ) : (
           <List sx={{ p: 0 }}>
+            {/* Load More Button */}
+            {messagePage < totalMessagePages - 1 && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                <Button
+                  variant="text"
+                  size="small"
+                  onClick={async () => {
+                    setLoadingMoreMessages(true);
+                    try {
+                      await loadMessages(messagePage + 1, 20);
+                    } finally {
+                      setLoadingMoreMessages(false);
+                    }
+                  }}
+                  disabled={loadingMoreMessages}
+                  sx={{ textTransform: 'none', fontSize: '0.85rem' }}
+                >
+                  {loadingMoreMessages ? '⏳ Đang tải...' : '📜 Xem thêm tin nhắn cũ'}
+                </Button>
+              </Box>
+            )}
             {allMessages.map((msg) => (
               <React.Fragment key={msg.id}>
                 <Box
@@ -274,10 +352,40 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
                 </Box>
               </React.Fragment>
             ))}
+            
             <div ref={messagesEndRef} />
           </List>
         )}
       </Box>
+
+      {/* New Messages Button - Fixed above input */}
+      {hasNewMessages && !isAtBottom && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 1.5, backgroundColor: '#fff', borderTop: '2px solid #e0e0e0', background: 'linear-gradient(to bottom, rgba(33, 150, 243, 0.05), transparent)' }}>
+          <Button
+            variant="contained"
+            color="primary"
+            size="small"
+            onClick={scrollToBottom}
+            sx={{ 
+              textTransform: 'none', 
+              borderRadius: '20px', 
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              px: 2.5,
+              py: 0.8,
+              boxShadow: '0 2px 8px rgba(33, 150, 243, 0.3)',
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 4px 12px rgba(33, 150, 243, 0.4)'
+              }
+            }}
+            endIcon={<span style={{marginLeft: '4px'}}>⬇️</span>}
+          >
+            💬 Tin nhắn mới
+          </Button>
+        </Box>
+      )}
 
       {error && (
         <Alert severity="error" sx={{ m: 1, fontSize: '0.875rem' }}>

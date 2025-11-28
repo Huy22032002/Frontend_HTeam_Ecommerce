@@ -25,15 +25,11 @@ export const useAdminPermissions = () => {
     }).filter((r: string) => r !== '');
   }
 
-  // Check if user is SUPER_ADMIN (name là SUPERADMIN hoặc SUPER_ADMIN)
-  const isSuperAdmin = userRoles.some((r: string) => 
-    r === 'SUPERADMIN' || r === 'SUPER_ADMIN'
-  );
+  // Check if user is SUPER_ADMIN (role array contains SUPERADMIN)
+  const isSuperAdmin = userRoles.includes('SUPERADMIN');
 
-  // Check if user is ADMIN (nhưng không phải SUPER_ADMIN)
-  const isAdmin = !isSuperAdmin && userRoles.some((r: string) => 
-    r === 'ADMIN'
-  );
+  // Check if user is ADMIN (has ADMIN but not SUPERADMIN)
+  const isAdmin = !isSuperAdmin && userRoles.includes('ADMIN');
 
   return {
     isSuperAdmin,
@@ -43,7 +39,7 @@ export const useAdminPermissions = () => {
     canCreate: isSuperAdmin, // Only SUPER_ADMIN can create
     canEdit: isSuperAdmin,   // Only SUPER_ADMIN can edit
     canDelete: isSuperAdmin, // Only SUPER_ADMIN can delete
-    canChangeStatus: isSuperAdmin, // Only SUPER_ADMIN can change status (khách hàng, đối tác)
+    canChangeStatus: isSuperAdmin, // Only SUPER_ADMIN can change status
     canView: true, // Everyone can view
   };
 };

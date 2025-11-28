@@ -304,10 +304,19 @@ const CategoryListScreen: React.FC = () => {
                     )}
                   </TableCell>
                   <TableCell align="center">
-                    <Switch
-                      checked={category.visible}
-                      onChange={() => handleToggleVisible(category)}
-                    />
+                    <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể thay đổi trạng thái" : ""}>
+                      <span>
+                        <Switch
+                          checked={category.visible}
+                          onChange={() => {
+                            if (isSuperAdmin) {
+                              handleToggleVisible(category);
+                            }
+                          }}
+                          disabled={!isSuperAdmin}
+                        />
+                      </span>
+                    </Tooltip>
                   </TableCell>
                   <TableCell align="center">
                     <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể chỉnh sửa" : ""}>
