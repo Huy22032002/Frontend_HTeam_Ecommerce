@@ -1,9 +1,9 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_BASE_URL + '/api/admins/dashboard';
+const API_BASE = import.meta.env.VITE_BASE_URL + "/api/admins/dashboard";
 
 function getAuthHeader() {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
@@ -28,6 +28,7 @@ export interface NewCustomerDTO {
   id: number;
   name: string;
   email: string;
+  phone: string;
   createdAt: string;
 }
 
@@ -38,8 +39,7 @@ export interface MonthlyRevenueDTO {
 
 export const DashboardApi = {
   // Lấy tất cả KPI metrics
-  getKPIs: () =>
-    axios.get(`${API_BASE}/kpis`, { headers: getAuthHeader() }),
+  getKPIs: () => axios.get(`${API_BASE}/kpis`, { headers: getAuthHeader() }),
 
   // Lấy đơn hàng gần đây
   getRecentOrders: () =>
@@ -51,7 +51,9 @@ export const DashboardApi = {
 
   // Lấy thống kê trạng thái đơn hàng
   getOrderStatusDistribution: () =>
-    axios.get(`${API_BASE}/order-status-distribution`, { headers: getAuthHeader() }),
+    axios.get(`${API_BASE}/order-status-distribution`, {
+      headers: getAuthHeader(),
+    }),
 
   // Lấy doanh thu theo tháng
   getMonthlyRevenue: () =>

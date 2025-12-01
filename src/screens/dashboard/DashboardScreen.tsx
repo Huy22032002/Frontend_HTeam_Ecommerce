@@ -390,7 +390,7 @@ const DashboardScreen = () => {
                         <strong>Tên</strong>
                       </TableCell>
                       <TableCell>
-                        <strong>Email</strong>
+                        <strong>SĐT/Email</strong>
                       </TableCell>
                       <TableCell>
                         <strong>Ngày tham gia</strong>
@@ -402,7 +402,9 @@ const DashboardScreen = () => {
                       newCustomers.map((customer) => (
                         <TableRow key={customer.id} hover>
                           <TableCell>{customer.name}</TableCell>
-                          <TableCell>{customer.email}</TableCell>
+                          <TableCell>
+                            {customer.phone ? customer.phone : customer.email}
+                          </TableCell>
                           <TableCell>
                             {formatDate(customer.createdAt)}
                           </TableCell>

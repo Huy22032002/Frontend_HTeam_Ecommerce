@@ -1,11 +1,20 @@
 import { useEffect, useState, useRef } from "react";
-import { DashboardApi, type DashboardKPIDTO, type RecentOrderDTO, type NewCustomerDTO, type MonthlyRevenueDTO } from "../../api/dashboard/DashboardApi";
+import {
+  DashboardApi,
+  type DashboardKPIDTO,
+  type RecentOrderDTO,
+  type NewCustomerDTO,
+  type MonthlyRevenueDTO,
+} from "../../api/dashboard/DashboardApi";
 
 const withTimeout = (promise: Promise<any>, timeoutMs: number = 8000) => {
   return Promise.race([
     promise,
     new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(`Request timeout after ${timeoutMs}ms`)), timeoutMs)
+      setTimeout(
+        () => reject(new Error(`Request timeout after ${timeoutMs}ms`)),
+        timeoutMs
+      )
     ),
   ]);
 };
@@ -15,7 +24,9 @@ export const useDashboard = () => {
   const [recentOrders, setRecentOrders] = useState<RecentOrderDTO[]>([]);
   const [newCustomers, setNewCustomers] = useState<NewCustomerDTO[]>([]);
   const [monthlyRevenue, setMonthlyRevenue] = useState<MonthlyRevenueDTO[]>([]);
-  const [orderStatusDistribution, setOrderStatusDistribution] = useState<Record<string, number>>({});
+  const [orderStatusDistribution, setOrderStatusDistribution] = useState<
+    Record<string, number>
+  >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const hasLoadedRef = useRef(false);
@@ -33,24 +44,27 @@ export const useDashboard = () => {
 
       // Load other data in parallel
       try {
-        const [ordersRes, customersRes, revenueRes, statusRes] = await Promise.all([
-          withTimeout(DashboardApi.getRecentOrders(), 8000).catch(e => {
-            console.warn("⚠️ Orders failed:", e.message);
-            return { data: [] };
-          }),
-          withTimeout(DashboardApi.getNewCustomers(), 8000).catch(e => {
-            console.warn("⚠️ Customers failed:", e.message);
-            return { data: [] };
-          }),
-          withTimeout(DashboardApi.getMonthlyRevenue(), 8000).catch(e => {
-            console.warn("⚠️ Monthly revenue failed:", e.message);
-            return { data: [] };
-          }),
-          withTimeout(DashboardApi.getOrderStatusDistribution(), 8000).catch(e => {
-            console.warn("⚠️ Status distribution failed:", e.message);
-            return { data: {} };
-          }),
-        ]);
+        const [ordersRes, customersRes, revenueRes, statusRes] =
+          await Promise.all([
+            withTimeout(DashboardApi.getRecentOrders(), 8000).catch((e) => {
+              console.warn("⚠️ Orders failed:", e.message);
+              return { data: [] };
+            }),
+            withTimeout(DashboardApi.getNewCustomers(), 8000).catch((e) => {
+              console.warn("⚠️ Customers failed:", e.message);
+              return { data: [] };
+            }),
+            withTimeout(DashboardApi.getMonthlyRevenue(), 8000).catch((e) => {
+              console.warn("⚠️ Monthly revenue failed:", e.message);
+              return { data: [] };
+            }),
+            withTimeout(DashboardApi.getOrderStatusDistribution(), 8000).catch(
+              (e) => {
+                console.warn("⚠️ Status distribution failed:", e.message);
+                return { data: {} };
+              }
+            ),
+          ]);
 
         console.log("✅ Dashboard data loaded");
         setRecentOrders(ordersRes.data || []);
@@ -82,15 +96,14 @@ export const useDashboard = () => {
     loadData();
   }, []);
 
-  return { 
-    kpis, 
-    recentOrders, 
-    newCustomers, 
+  return {
+    kpis,
+    recentOrders,
+    newCustomers,
     monthlyRevenue,
     orderStatusDistribution,
-    loading, 
-    error, 
-    reload 
+    loading,
+    error,
+    reload,
   };
 };
-
