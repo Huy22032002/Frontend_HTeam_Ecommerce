@@ -6,7 +6,9 @@ import type { FlashSaleDTO } from "../../models/flashSale/FlashSaleDTO";
 
 function getAuthHeader() {
   const token = localStorage.getItem("token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return token
+    ? { Authorization: `Bearer ${token}`, "Access-Control-Allow-Origin": "*" }
+    : {};
 }
 const API_BASE = import.meta.env.VITE_BASE_URL;
 
