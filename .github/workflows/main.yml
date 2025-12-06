@@ -1,4 +1,4 @@
-name: Deploy to Vercel
+name: Deploy Vite React to Vercel
 
 on:
   push:
@@ -9,21 +9,25 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: 20
 
       - name: Install dependencies
         run: npm install
 
       - name: Build project
         run: npm run build
-        
+
       - name: Deploy to Vercel
-        uses: vercel/deploy-action@v1
+        uses: amondnet/vercel-action@v20
         with:
           vercel-token: F0bYdylmAgRLmT8JHnlTEAEE
+          vercel-args: "--prod"
+          working-directory: .
+          vercel-project-id: prj_Ak7wLP2AbGTwHso0btA9o9A07Dd3
+          vercel-org-id: YOUR_ORG_ID
