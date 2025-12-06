@@ -11,7 +11,6 @@ export const getAuthHeader = (): Record<string, string> => {
   return {
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
-    Accept: "application/json",
   };
 };
 
@@ -33,17 +32,36 @@ export const FlashSaleApi = {
     page = 0,
     size = 10
   ): Promise<PagedResponse<FlashSaleItemDTO>> => {
-    const response = await axios.get(
-      `${API_BASE}/api/public/flash-sale/active`,
-      {
-        params: { page, size },
-        headers: getAuthHeader(),
-        withCredentials: true,
-      }
-    );
-    console.log("list active flash sale items: ", response.data);
+    try {
+      const response = await axios.get(
+        `${API_BASE}/api/public/flash-sale/active`,
+        {
+          params: { page, size },
+        }
+      );
 
-    return response.data;
+      console.log("list active flash sale items:", response.data);
+      return response.data;
+    } catch (error: any) {
+      // Log lỗi chi tiết
+      if (axios.isAxiosError(error)) {
+        console.error(
+          "Axios error while fetching flash sale:",
+          error.response?.data || error.message
+        );
+      } else {
+        console.error("Unexpected error while fetching flash sale:", error);
+      }
+
+      // Trả fallback empty object hoặc throw tiếp nếu muốn
+      return {
+        content: [],
+        totalElements: 0,
+        totalPages: 0,
+        page: 0,
+        size: size,
+      };
+    }
   },
 
   getActiveFlashSaleItemBySku: async (
