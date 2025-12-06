@@ -30,4 +30,3 @@ jobs:
           vercel-args: "--prod"
           working-directory: .
           vercel-project-id: prj_Ak7wLP2AbGTwHso0btA9o9A07Dd3
-          vercel-org-id: YOUR_ORG_ID
