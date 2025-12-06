@@ -4,6 +4,7 @@ import type { FlashSaleItemDTO } from "../../models/flashSale/FlashSaleItemDTO";
 import banner from "../../assets/flashsale.jpg";
 
 import { Box, Card, CardMedia, Grid, Pagination } from "@mui/material";
+
 import FlashSaleDetailCard from "../../components/flashSale/FlashSaleDetailCard";
 import FlashSaleCountdown from "../../components/flashSale/FlashSaleCountDown";
 
@@ -48,11 +49,12 @@ const FlashSaleScreen = () => {
 
       {/* Grid Item */}
       <Grid container spacing={2}>
-        {items.map((item) => (
-          <Grid item xs={6} sm={4} md={3} lg={2.4} key={item.sku}>
-            <FlashSaleDetailCard item={item} />
-          </Grid>
-        ))}
+        {items.length > 0 &&
+          items.map((item) => (
+            <Grid size={{ xs: 6, sm: 4, md: 3, lg: 2.4 }} key={item.sku}>
+              <FlashSaleDetailCard item={item} />
+            </Grid>
+          ))}
       </Grid>
 
       {/* Pagination */}

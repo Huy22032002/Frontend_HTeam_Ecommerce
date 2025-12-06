@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Typography,
   Table,
@@ -13,70 +13,76 @@ import {
   Select,
   Button,
   CircularProgress,
-  IconButton,
-  Menu,
   Pagination,
   Alert,
   TableContainer,
   Paper,
-} from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import DeleteIcon from '@mui/icons-material/Delete';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import { usePayments } from '../../hooks/usePayments';
-import { formatCurrency } from '../../utils/formatCurrency';
+} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import { usePayments } from "../../hooks/usePayments";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 const PaymentListScreen = () => {
   const theme = useTheme();
-  const { payments, total, loading, error, filters, setFilters } = usePayments({ page: 0, size: 10 });
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [selectedPaymentId, setSelectedPaymentId] = React.useState<number | null>(null);
+  const { payments, total, loading, error, filters, setFilters } = usePayments({
+    page: 0,
+    size: 10,
+  });
+
+  // const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  // const [selectedPaymentId, setSelectedPaymentId] = React.useState<
+  //   number | null
+  // >(null);
+
   const [showFilters, setShowFilters] = React.useState(false);
   const [page, setPage] = React.useState(0);
   const pageSize = filters.size || 10;
   const totalPages = Math.ceil(total / pageSize);
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>, paymentId: number) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedPaymentId(paymentId);
-  };
+  // const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>, paymentId: number) => {
+  //   setAnchorEl(event.currentTarget);
+  //   setSelectedPaymentId(paymentId);
+  // };
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setSelectedPaymentId(null);
-  };
+  // const handleMenuClose = () => {
+  //   setAnchorEl(null);
+  //   setSelectedPaymentId(null);
+  // };
 
-  const handleDeletePayment = (paymentId: number) => {
-    console.log('Xoá thanh toán:', paymentId);
-    handleMenuClose();
-  };
+  // const handleDeletePayment = (paymentId: number) => {
+  //   console.log('Xoá thanh toán:', paymentId);
+  //   handleMenuClose();
+  // };
 
-  const handleViewDetail = (paymentId: number) => {
-    console.log('Xem chi tiết thanh toán:', paymentId);
-    handleMenuClose();
-  };
+  // const handleViewDetail = (paymentId: number) => {
+  //   console.log('Xem chi tiết thanh toán:', paymentId);
+  //   handleMenuClose();
+  // };
 
   const handleTextFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value, page: 0 }));
+    setFilters((prev) => ({ ...prev, [name]: value, page: 0 }));
     setPage(0);
   };
-  
+
   const handleSelectChange = (e: any) => {
     const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value === 'all' ? undefined : value, page: 0 }));
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value === "all" ? undefined : value,
+      page: 0,
+    }));
     setPage(0);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters(prev => ({ ...prev, search: e.target.value, page: 0 }));
+    setFilters((prev) => ({ ...prev, search: e.target.value, page: 0 }));
     setPage(0);
   };
 
   const handlePageChange = (_: any, newPage: number) => {
     setPage(newPage - 1);
-    setFilters(prev => ({ ...prev, page: newPage - 1 }));
+    setFilters((prev) => ({ ...prev, page: newPage - 1 }));
   };
 
   const handleClearFilters = () => {
@@ -87,8 +93,17 @@ const PaymentListScreen = () => {
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
-      <Box sx={{ mb: 3, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Typography variant="h4" fontWeight={600}>💳 Lịch Sử Thanh Toán</Typography>
+      <Box
+        sx={{
+          mb: 3,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Typography variant="h4" fontWeight={600}>
+          💳 Lịch Sử Thanh Toán
+        </Typography>
         <Button
           onClick={() => setShowFilters(!showFilters)}
           variant="outlined"
@@ -106,7 +121,13 @@ const PaymentListScreen = () => {
       )}
 
       {/* Main Layout: Filter Sidebar + Content */}
-      <Box sx={{ display: "grid", gridTemplateColumns: showFilters ? "250px 1fr" : "1fr", gap: 3 }}>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: showFilters ? "250px 1fr" : "1fr",
+          gap: 3,
+        }}
+      >
         {/* Filter Sidebar */}
         {showFilters && (
           <Box
@@ -194,7 +215,9 @@ const PaymentListScreen = () => {
             </Box>
 
             {/* Action Buttons */}
-            <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
+            <Box
+              sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}
+            >
               <Button
                 variant="contained"
                 size="small"
@@ -227,23 +250,38 @@ const PaymentListScreen = () => {
                 <Table>
                   <TableHead
                     sx={{
-                      bgcolor: theme.palette.mode === "dark" ? "#1e1e1e" : "#f5f5f5",
+                      bgcolor:
+                        theme.palette.mode === "dark" ? "#1e1e1e" : "#f5f5f5",
                     }}
                   >
                     <TableRow>
                       {/* <TableCell sx={{ fontWeight: "bold", width: "80px" }}>
                         Thao Tác
                       </TableCell> */}
-                      <TableCell sx={{ fontWeight: "bold" }}>Mã Thanh Toán</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>
+                        Mã Thanh Toán
+                      </TableCell>
                       {/* <TableCell sx={{ fontWeight: "bold" }}>Mã Hóa Đơn</TableCell> */}
-                      <TableCell sx={{ fontWeight: "bold" }}>Mã Đơn Hàng</TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>Khách Hàng</TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>Ngày Tạo</TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>Phương Thức</TableCell>
-                      <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>
+                      <TableCell sx={{ fontWeight: "bold" }}>
+                        Mã Đơn Hàng
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>
+                        Khách Hàng
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>
+                        Ngày Tạo
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>
+                        Phương Thức
+                      </TableCell>
+                      <TableCell
+                        sx={{ fontWeight: "bold", textAlign: "right" }}
+                      >
                         Số Tiền
                       </TableCell>
-                      <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>
+                      <TableCell
+                        sx={{ fontWeight: "bold", textAlign: "center" }}
+                      >
                         Trạng Thái
                       </TableCell>
                     </TableRow>

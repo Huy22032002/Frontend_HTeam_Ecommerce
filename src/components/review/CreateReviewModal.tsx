@@ -83,7 +83,7 @@ const CreateReviewModal = ({
         <Typography variant="subtitle1" mb={1}>
           Đánh giá số sao:{" "}
         </Typography>
-        <Rating size="large" value={rating} onChange={(e, v) => setRating(v)} />
+        <Rating size="large" value={rating} onChange={(_, v) => setRating(v)} />
         {/* Comment */}
         <TextField
           fullWidth

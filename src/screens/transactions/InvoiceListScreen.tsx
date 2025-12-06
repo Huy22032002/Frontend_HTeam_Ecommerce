@@ -1,24 +1,45 @@
-import * as React from 'react';
-import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Chip, Box, TextField, MenuItem, Select, InputLabel, FormControl, Button, CircularProgress, IconButton, Menu, type SelectChangeEvent } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import DeleteIcon from '@mui/icons-material/Delete';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import { useInvoices } from '../../hooks/useInvoices';
-import { useNavigate } from 'react-router-dom';
-import { InvoiceApi } from '../../api/invoice/InvoiceApi';
-import { ActivityLogApi } from '../../api/activity/ActivityLogApi';
-import { downloadExcelFile } from '../../utils/exportToExcel';
+import * as React from "react";
+import {
+  Typography,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Chip,
+  Box,
+  MenuItem,
+  Button,
+  CircularProgress,
+  IconButton,
+  Menu,
+} from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import DeleteIcon from "@mui/icons-material/Delete";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import { useInvoices } from "../../hooks/useInvoices";
+import { useNavigate } from "react-router-dom";
+import { InvoiceApi } from "../../api/invoice/InvoiceApi";
+import { ActivityLogApi } from "../../api/activity/ActivityLogApi";
+import { downloadExcelFile } from "../../utils/exportToExcel";
 
 const InvoiceListScreen = () => {
-  const { invoices, loading, error, filters, setFilters } = useInvoices({ page: 0, size: 20 });
+  const { invoices, loading, error, filters } = useInvoices({
+    page: 0,
+    size: 20,
+  });
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [selectedInvoiceId, setSelectedInvoiceId] = React.useState<number | null>(null);
+  const [selectedInvoiceId, setSelectedInvoiceId] = React.useState<
+    number | null
+  >(null);
   const [exporting, setExporting] = React.useState(false);
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>, invoiceId: number) => {
+  const handleMenuOpen = (
+    event: React.MouseEvent<HTMLButtonElement>,
+    invoiceId: number
+  ) => {
     setAnchorEl(event.currentTarget);
     setSelectedInvoiceId(invoiceId);
   };
@@ -29,7 +50,7 @@ const InvoiceListScreen = () => {
   };
 
   const handleDeleteInvoice = (invoiceId: number) => {
-    console.log('Xoá hóa đơn:', invoiceId);
+    console.log("Xoá hóa đơn:", invoiceId);
     handleMenuClose();
   };
 
@@ -42,31 +63,31 @@ const InvoiceListScreen = () => {
     try {
       setExporting(true);
       const response = await InvoiceApi.exportToExcel(filters);
-      
+
       // Get filename from Content-Disposition header or use default
       const contentDisposition = response.headers["content-disposition"];
       let filename = "Hoa_don.xlsx";
       if (contentDisposition) {
         try {
-          filename = contentDisposition
-            .split("filename=")[1]
-            .split('"')[1] || filename;
-        } catch (e) {
+          filename =
+            contentDisposition.split("filename=")[1].split('"')[1] || filename;
+        } catch (e: any) {
           // Use default filename if parsing fails
+          console.error(e);
         }
       }
-      
+
       downloadExcelFile(response.data, filename);
 
       // Log export action
       await ActivityLogApi.createActivityLog({
-        userType: 'ADMIN',
+        userType: "ADMIN",
         userId: 0,
-        userName: 'Admin',
-        actionType: 'EXPORT_REPORT',
-        description: 'Xuất báo cáo hóa đơn',
-        entityType: 'INVOICE',
-        status: 'SUCCESS',
+        userName: "Admin",
+        actionType: "EXPORT_REPORT",
+        description: "Xuất báo cáo hóa đơn",
+        entityType: "INVOICE",
+        status: "SUCCESS",
         details: JSON.stringify({
           filters: filters,
           filename: filename,
@@ -78,15 +99,15 @@ const InvoiceListScreen = () => {
 
       // Log error
       await ActivityLogApi.createActivityLog({
-        userType: 'ADMIN',
+        userType: "ADMIN",
         userId: 0,
-        userName: 'Admin',
-        actionType: 'EXPORT_REPORT',
-        description: 'Lỗi xuất báo cáo hóa đơn',
-        entityType: 'INVOICE',
-        status: 'FAILED',
+        userName: "Admin",
+        actionType: "EXPORT_REPORT",
+        description: "Lỗi xuất báo cáo hóa đơn",
+        entityType: "INVOICE",
+        status: "FAILED",
         details: (error as Error).message,
-      }).catch(e => console.error('Failed to log error:', e));
+      }).catch((e) => console.error("Failed to log error:", e));
 
       alert("Lỗi khi xuất file Excel");
     } finally {
@@ -102,7 +123,9 @@ const InvoiceListScreen = () => {
         alignItems="center"
         mb={2}
       >
-        <Typography variant="h4" fontWeight={600}>Danh sách Hóa đơn</Typography>
+        <Typography variant="h4" fontWeight={600}>
+          Danh sách Hóa đơn
+        </Typography>
         <Button
           variant="contained"
           color="success"
@@ -154,16 +177,30 @@ const InvoiceListScreen = () => {
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell width={80} sx={{ whiteSpace: 'nowrap' }}>Thao tác</TableCell>
-              <TableCell width={120} sx={{ whiteSpace: 'nowrap' }}>Mã hóa đơn</TableCell>
+              <TableCell width={80} sx={{ whiteSpace: "nowrap" }}>
+                Thao tác
+              </TableCell>
+              <TableCell width={120} sx={{ whiteSpace: "nowrap" }}>
+                Mã hóa đơn
+              </TableCell>
               <TableCell width={150}>Khách hàng</TableCell>
-              <TableCell width={120} sx={{ whiteSpace: 'nowrap' }}>Ngày tạo</TableCell>
-              <TableCell width={130} align="right" sx={{ whiteSpace: 'nowrap' }}>Tổng tiền</TableCell>
-              <TableCell width={120} sx={{ whiteSpace: 'nowrap' }}>Trạng thái</TableCell>
+              <TableCell width={120} sx={{ whiteSpace: "nowrap" }}>
+                Ngày tạo
+              </TableCell>
+              <TableCell
+                width={130}
+                align="right"
+                sx={{ whiteSpace: "nowrap" }}
+              >
+                Tổng tiền
+              </TableCell>
+              <TableCell width={120} sx={{ whiteSpace: "nowrap" }}>
+                Trạng thái
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {invoices.map(inv => (
+            {invoices.map((inv) => (
               <TableRow key={inv.id} hover>
                 <TableCell>
                   <IconButton
@@ -178,41 +215,49 @@ const InvoiceListScreen = () => {
                     onClose={handleMenuClose}
                   >
                     <MenuItem onClick={() => handleViewDetail(inv.id)}>
-                      <VisibilityIcon fontSize="small" sx={{ mr: 1 }} /> Xem chi tiết
+                      <VisibilityIcon fontSize="small" sx={{ mr: 1 }} /> Xem chi
+                      tiết
                     </MenuItem>
-                    <MenuItem onClick={() => handleDeleteInvoice(inv.id)} sx={{ color: 'error.main' }}>
+                    <MenuItem
+                      onClick={() => handleDeleteInvoice(inv.id)}
+                      sx={{ color: "error.main" }}
+                    >
                       <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Xoá
                     </MenuItem>
                   </Menu>
                 </TableCell>
                 <TableCell>{inv.invoiceCode}</TableCell>
                 <TableCell>{inv.customerName}</TableCell>
-                <TableCell>{new Date(inv.createdAt).toLocaleDateString('vi-VN')}</TableCell>
-                <TableCell align="right">{inv.total.toLocaleString()}₫</TableCell>
+                <TableCell>
+                  {new Date(inv.createdAt).toLocaleDateString("vi-VN")}
+                </TableCell>
+                <TableCell align="right">
+                  {inv.total.toLocaleString()}₫
+                </TableCell>
                 <TableCell>
                   <Chip
                     size="small"
                     label={
-                      inv.status === 'PAID'
-                        ? 'Đã thanh toán'
-                        : inv.status === 'UNPAID'
-                        ? 'Chưa thanh toán'
-                        : inv.status === 'CREATED'
-                        ? 'Đã tạo'
-                        : inv.status === 'CANCELLED'
-                        ? 'Đã huỷ'
-                        : 'Quá hạn'
+                      inv.status === "PAID"
+                        ? "Đã thanh toán"
+                        : inv.status === "UNPAID"
+                        ? "Chưa thanh toán"
+                        : inv.status === "CREATED"
+                        ? "Đã tạo"
+                        : inv.status === "CANCELLED"
+                        ? "Đã huỷ"
+                        : "Quá hạn"
                     }
                     color={
-                      inv.status === 'PAID'
-                        ? 'success'
-                        : inv.status === 'UNPAID'
-                        ? 'warning'
-                        : inv.status === 'CREATED'
-                        ? 'success'
-                        : inv.status === 'CANCELLED'
-                        ? 'error'
-                        : 'error'
+                      inv.status === "PAID"
+                        ? "success"
+                        : inv.status === "UNPAID"
+                        ? "warning"
+                        : inv.status === "CREATED"
+                        ? "success"
+                        : inv.status === "CANCELLED"
+                        ? "error"
+                        : "error"
                     }
                   />
                 </TableCell>

@@ -13,28 +13,32 @@ import {
   Alert,
   Switch,
   Tooltip,
-} from '@mui/material';
-import BlockIcon from '@mui/icons-material/Block';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { useState } from 'react';
-import { useCustomers, type Customer } from '../../hooks/useCustomers';
-import { CustomerAdminApi } from '../../api/customer/CustomerAdminApi';
-import { useAdminPermissions } from '../../hooks/useAdminPermissions';
-
+} from "@mui/material";
+import BlockIcon from "@mui/icons-material/Block";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { useState } from "react";
+import { useCustomers, type Customer } from "../../hooks/useCustomers";
+import { CustomerAdminApi } from "../../api/customer/CustomerAdminApi";
+import { useAdminPermissions } from "../../hooks/useAdminPermissions";
 
 const PartnerListScreen = () => {
   const { customers, loading, error, refetch } = useCustomers();
-  const { isSuperAdmin, canChangeStatus } = useAdminPermissions();
+  const { isSuperAdmin } = useAdminPermissions();
   const [toggling, setToggling] = useState<number | null>(null);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const handleToggleBlock = async (customer: Customer) => {
     setToggling(customer.id);
     try {
       await CustomerAdminApi.toggleCustomerBlocked(customer.id);
       setMessage({
-        type: 'success',
-        text: `Khách hàng ${customer.blocked ? 'đã được bỏ chặn' : 'đã bị chặn'} thành công`,
+        type: "success",
+        text: `Khách hàng ${
+          customer.blocked ? "đã được bỏ chặn" : "đã bị chặn"
+        } thành công`,
       });
       setTimeout(() => {
         refetch();
@@ -42,8 +46,10 @@ const PartnerListScreen = () => {
       }, 1000);
     } catch (err: any) {
       setMessage({
-        type: 'error',
-        text: err?.response?.data?.message || 'Lỗi khi cập nhật trạng thái khách hàng',
+        type: "error",
+        text:
+          err?.response?.data?.message ||
+          "Lỗi khi cập nhật trạng thái khách hàng",
       });
     } finally {
       setToggling(null);
@@ -57,24 +63,32 @@ const PartnerListScreen = () => {
       </Typography>
 
       {message && (
-        <Alert severity={message.type} sx={{ mb: 2 }} onClose={() => setMessage(null)}>
+        <Alert
+          severity={message.type}
+          sx={{ mb: 2 }}
+          onClose={() => setMessage(null)}
+        >
           {message.text}
         </Alert>
       )}
 
-      {loading && <CircularProgress sx={{ display: 'block', margin: '20px auto' }} />}
+      {loading && (
+        <CircularProgress sx={{ display: "block", margin: "20px auto" }} />
+      )}
       {error && <Alert severity="error">Lỗi: {error}</Alert>}
       {!loading && !error && (
         <TableContainer component={Paper} sx={{ boxShadow: 2 }}>
           <Table>
-            <TableHead sx={{ bgcolor: '#f5f5f5' }}>
+            <TableHead sx={{ bgcolor: "#f5f5f5" }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Tên</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Email</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Số điện thoại</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Trạng thái</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>Hành động</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>ID</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Tên</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Email</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Số điện thoại</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Trạng thái</TableCell>
+                <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>
+                  Hành động
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -83,29 +97,43 @@ const PartnerListScreen = () => {
                   <TableRow
                     key={customer.id}
                     sx={{
-                      backgroundColor: customer.blocked ? '#ffebee' : 'inherit',
-                      '&:hover': { backgroundColor: customer.blocked ? '#ffcdd2' : '#f5f5f5' },
+                      backgroundColor: customer.blocked ? "#ffebee" : "inherit",
+                      "&:hover": {
+                        backgroundColor: customer.blocked
+                          ? "#ffcdd2"
+                          : "#f5f5f5",
+                      },
                     }}
                   >
                     <TableCell>{customer.id}</TableCell>
                     <TableCell>{customer.name}</TableCell>
-                    <TableCell>{customer.emailAddress || customer.email || '-'}</TableCell>
-                    <TableCell>{customer.phone || '-'}</TableCell>
+                    <TableCell>
+                      {customer.emailAddress || customer.email || "-"}
+                    </TableCell>
+                    <TableCell>{customer.phone || "-"}</TableCell>
                     <TableCell>
                       <Chip
-                        icon={customer.blocked ? <BlockIcon /> : <CheckCircleIcon />}
-                        label={customer.blocked ? 'Bị chặn' : 'Hoạt động'}
-                        color={customer.blocked ? 'error' : 'success'}
+                        icon={
+                          customer.blocked ? <BlockIcon /> : <CheckCircleIcon />
+                        }
+                        label={customer.blocked ? "Bị chặn" : "Hoạt động"}
+                        color={customer.blocked ? "error" : "success"}
                         variant="outlined"
                         size="small"
                       />
                     </TableCell>
                     <TableCell align="center">
-                      <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể thay đổi" : ""}>
+                      <Tooltip
+                        title={
+                          !isSuperAdmin ? "Chỉ SuperAdmin có thể thay đổi" : ""
+                        }
+                      >
                         <span>
                           <Switch
                             checked={!customer.blocked}
-                            onChange={() => isSuperAdmin && handleToggleBlock(customer)}
+                            onChange={() =>
+                              isSuperAdmin && handleToggleBlock(customer)
+                            }
                             disabled={toggling === customer.id || !isSuperAdmin}
                             color="primary"
                           />
@@ -117,7 +145,9 @@ const PartnerListScreen = () => {
               ) : (
                 <TableRow>
                   <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
-                    <Typography color="textSecondary">Không có khách hàng nào</Typography>
+                    <Typography color="textSecondary">
+                      Không có khách hàng nào
+                    </Typography>
                   </TableCell>
                 </TableRow>
               )}

@@ -10,10 +10,10 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
-import axios from "axios";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../store/store";
 import { faqList } from "../../constants/faq";
+import { ChatbotApi } from "../../api/chat/ChatbotApi";
 
 export interface Message {
   sender: "user" | "bot";
@@ -30,26 +30,16 @@ const ChatContainer = () => {
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
 
+    const customerId = customer?.id ? customer.id : null;
+
     // Push user message
-    const newMessages = [...messages, { sender: "user", text }];
-    setMessages(newMessages);
+    setMessages((prev) => [...prev, { sender: "user", text: text }]);
 
     try {
-      const res = await axios.post(
-        `http://localhost:8080/api/public/chatbot${
-          customer?.id ? `?userId=${customer.id}` : ""
-        }`,
-        {
-          message: text,
-        }
-      );
+      const chatbotReply = await ChatbotApi.sendMessage(customerId, text);
 
-      console.log("ai tra loi: ", res.data.response);
-
-      const botReply = res.data.response;
-
-      setMessages((prev) => [...prev, { sender: "bot", text: botReply }]);
-    } catch (error) {
+      setMessages((prev) => [...prev, { sender: "bot", text: chatbotReply }]);
+    } catch (_: unknown) {
       setMessages((prev) => [
         ...prev,
         { sender: "bot", text: "Lỗi kết nối server!" },

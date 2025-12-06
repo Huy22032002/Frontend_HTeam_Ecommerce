@@ -23,23 +23,25 @@ interface SidebarProps {
 const canAccessItem = (item: CmsNavItem, userRole: any[]): boolean => {
   // If no required role specified, everyone can access
   if (!item.requiredRole) return true;
-  
+
   // Convert roles to strings
-  const roleStrings = userRole.map((r: any) => {
-    if (typeof r === 'object' && r && r.name) {
-      return String(r.name).toUpperCase();
-    }
-    if (typeof r === 'string') {
-      return r.toUpperCase();
-    }
-    return '';
-  }).filter((r: string) => r !== '');
-  
+  const roleStrings = userRole
+    .map((r: any) => {
+      if (typeof r === "object" && r && r.name) {
+        return String(r.name).toUpperCase();
+      }
+      if (typeof r === "string") {
+        return r.toUpperCase();
+      }
+      return "";
+    })
+    .filter((r: string) => r !== "");
+
   // If SUPER_ADMIN is required, check if user is SUPER_ADMIN
-  if (item.requiredRole === 'SUPER_ADMIN') {
-    return roleStrings.some(r => r === 'SUPERADMIN' || r === 'SUPER_ADMIN');
+  if (item.requiredRole === "SUPER_ADMIN") {
+    return roleStrings.some((r) => r === "SUPERADMIN" || r === "SUPER_ADMIN");
   }
-  
+
   return true;
 };
 
@@ -55,11 +57,12 @@ const renderItem = (
     return null;
   }
 
-  const hasChildren = !!item.children?.length;
+  // const hasChildren = !!item.children?.length;
   const active = item.path && currentPath.startsWith(item.path);
-  
+
   // Filter children based on role
-  const accessibleChildren = item.children?.filter(child => canAccessItem(child, userRole)) || [];
+  const accessibleChildren =
+    item.children?.filter((child) => canAccessItem(child, userRole)) || [];
   const hasAccessibleChildren = accessibleChildren.length > 0;
 
   return (

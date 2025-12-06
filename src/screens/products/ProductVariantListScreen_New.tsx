@@ -68,14 +68,14 @@ const ProductVariantListScreen = () => {
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
   // Thông báo
-  const [thông_báo, set_thông_báo] = useState<{
-    mở: boolean;
-    loại: "thành_công" | "lỗi" | "cảnh_báo";
-    tin_nhắn: string;
+  const [notification, setNotification] = useState<{
+    open: boolean;
+    type: "success" | "error" | "warning";
+    message: string;
   }>({
-    mở: false,
-    loại: "thành_công",
-    tin_nhắn: "",
+    open: false,
+    type: "success",
+    message: "",
   });
 
   // Edit dialog state
@@ -176,35 +176,32 @@ const ProductVariantListScreen = () => {
 
       if (editDialog.type === "variant" && editDialog.variantId) {
         // Cập nhật variant
-        const kết_quả = await VariantsApi.cập_nhật_variant(
-          editDialog.variantId,
-          {
-            name: editDialog.name,
-            code: editDialog.code,
-          }
-        );
+        const result = await VariantsApi.updateVariant(editDialog.variantId, {
+          name: editDialog.name,
+          code: editDialog.code,
+        });
 
-        if (kết_quả?.thành_công) {
-          set_thông_báo({
-            mở: true,
-            loại: "thành_công",
-            tin_nhắn: "✅ Cập nhật variant thành công!",
+        if (result?.success) {
+          setNotification({
+            open: true,
+            type: "success",
+            message: "✅ Cập nhật variant thành công!",
           });
           handleCloseDialog();
           // Tải lại dữ liệu
           fetchVariants();
         } else {
-          set_thông_báo({
-            mở: true,
-            loại: "lỗi",
-            tin_nhắn: `❌ Lỗi (${kết_quả?.mã_lỗi || "500"}): ${
-              kết_quả?.lỗi || "Lỗi cập nhật variant"
+          setNotification({
+            open: true,
+            type: "error",
+            message: `❌ Lỗi (${result?.errorCode || "500"}): ${
+              result?.error || "Lỗi cập nhật variant"
             }`,
           });
         }
       } else if (editDialog.type === "option" && editDialog.optionId) {
         // Cập nhật option
-        const kết_quả = await VariantsOptionsApi.cập_nhật_option(
+        const result = await VariantsOptionsApi.updateOption(
           editDialog.optionId,
           {
             value: editDialog.value,
@@ -215,31 +212,31 @@ const ProductVariantListScreen = () => {
           }
         );
 
-        if (kết_quả?.thành_công) {
-          set_thông_báo({
-            mở: true,
-            loại: "thành_công",
-            tin_nhắn: "✅ Cập nhật option thành công!",
+        if (result?.success) {
+          setNotification({
+            open: true,
+            type: "success",
+            message: "✅ Cập nhật option thành công!",
           });
           handleCloseDialog();
           // Tải lại dữ liệu
           fetchVariants();
         } else {
-          set_thông_báo({
-            mở: true,
-            loại: "lỗi",
-            tin_nhắn: `❌ Lỗi (${kết_quả?.mã_lỗi || "500"}): ${
-              kết_quả?.lỗi || "Lỗi cập nhật option"
+          setNotification({
+            open: true,
+            type: "error",
+            message: `❌ Lỗi (${result?.errorCode || "500"}): ${
+              result?.error || "Lỗi cập nhật option"
             }`,
           });
         }
       }
     } catch (err) {
       console.error("Lỗi khi cập nhật:", err);
-      set_thông_báo({
-        mở: true,
-        loại: "lỗi",
-        tin_nhắn: "❌ Lỗi không mong muốn xảy ra. Vui lòng thử lại.",
+      setNotification({
+        open: true,
+        type: "error",
+        message: "❌ Lỗi không mong muốn xảy ra. Vui lòng thử lại.",
       });
     } finally {
       setIsLoading(false);
@@ -279,57 +276,57 @@ const ProductVariantListScreen = () => {
 
       if (deleteConfirm.type === "variant" && deleteConfirm.variantId) {
         // Xoá variant
-        const kết_quả = await VariantsApi.xoá_variant(deleteConfirm.variantId);
+        const result = await VariantsApi.deleteVariant(deleteConfirm.variantId);
 
-        if (kết_quả?.thành_công) {
-          set_thông_báo({
-            mở: true,
-            loại: "thành_công",
-            tin_nhắn: "✅ Xoá variant thành công!",
+        if (result?.success) {
+          setNotification({
+            open: true,
+            type: "success",
+            message: "✅ Xoá variant thành công!",
           });
           handleCloseDeleteConfirm();
           // Tải lại dữ liệu
           fetchVariants();
         } else {
-          set_thông_báo({
-            mở: true,
-            loại: "lỗi",
-            tin_nhắn: `❌ Lỗi (${kết_quả?.mã_lỗi || "500"}): ${
-              kết_quả?.lỗi || "Lỗi xoá variant"
+          setNotification({
+            open: true,
+            type: "error",
+            message: `❌ Lỗi (${result?.errorCode || "500"}): ${
+              result?.error || "Lỗi xoá variant"
             }`,
           });
         }
       } else if (deleteConfirm.type === "option" && deleteConfirm.optionId) {
         // Xoá option
-        const kết_quả = await VariantsOptionsApi.xoá_option(
+        const result = await VariantsOptionsApi.deleteOption(
           deleteConfirm.optionId
         );
 
-        if (kết_quả?.thành_công) {
-          set_thông_báo({
-            mở: true,
-            loại: "thành_công",
-            tin_nhắn: "✅ Xoá option thành công!",
+        if (result?.success) {
+          setNotification({
+            open: true,
+            type: "success",
+            message: "✅ Xoá option thành công!",
           });
           handleCloseDeleteConfirm();
           // Tải lại dữ liệu
           fetchVariants();
         } else {
-          set_thông_báo({
-            mở: true,
-            loại: "lỗi",
-            tin_nhắn: `❌ Lỗi (${kết_quả?.mã_lỗi || "500"}): ${
-              kết_quả?.lỗi || "Lỗi xoá option"
+          setNotification({
+            open: true,
+            type: "error",
+            message: `❌ Lỗi (${result?.errorCode || "500"}): ${
+              result?.error || "Lỗi xoá option"
             }`,
           });
         }
       }
     } catch (err) {
       console.error("Lỗi khi xoá:", err);
-      set_thông_báo({
-        mở: true,
-        loại: "lỗi",
-        tin_nhắn: "❌ Lỗi không mong muốn xảy ra. Vui lòng thử lại.",
+      setNotification({
+        open: true,
+        type: "error",
+        message: "❌ Lỗi không mong muốn xảy ra. Vui lòng thử lại.",
       });
     } finally {
       setIsLoading(false);
@@ -406,13 +403,13 @@ const ProductVariantListScreen = () => {
       )}
 
       {/* Notification Alert */}
-      {thông_báo.mở && (
+      {notification.open && (
         <Alert
-          severity={thông_báo.loại === "thành_công" ? "success" : "error"}
-          onClose={() => set_thông_báo({ ...thông_báo, mở: false })}
+          severity={notification.type === "success" ? "success" : "error"}
+          onClose={() => setNotification({ ...notification, open: false })}
           sx={{ mb: 2 }}
         >
-          {thông_báo.tin_nhắn}
+          {notification.message}
         </Alert>
       )}
 
@@ -478,7 +475,12 @@ const ProductVariantListScreen = () => {
                 <option value={20}>20</option>
                 <option value={50}>50</option>
               </select>
-              <span style={{ marginLeft: "auto", color: theme.palette.text.secondary }}>
+              <span
+                style={{
+                  marginLeft: "auto",
+                  color: theme.palette.text.secondary,
+                }}
+              >
                 Tổng: {totalItems} biến thể
               </span>
             </Box>
@@ -499,13 +501,16 @@ const ProductVariantListScreen = () => {
               <Table>
                 <TableHead
                   sx={{
-                    bgcolor: theme.palette.mode === "dark" ? "#1e1e1e" : "#f5f5f5",
+                    bgcolor:
+                      theme.palette.mode === "dark" ? "#1e1e1e" : "#f5f5f5",
                   }}
                 >
                   <TableRow>
                     <TableCell sx={{ width: "40px" }}></TableCell>
                     <TableCell sx={{ fontWeight: "bold" }}>Code</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" }}>Tên Variant</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>
+                      Tên Variant
+                    </TableCell>
                     <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>
                       Số Options
                     </TableCell>

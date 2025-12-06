@@ -22,7 +22,7 @@ export const OTPApi = {
     console.log("phone gui di: ", phone, "otp: ", code);
 
     try {
-      const res = await axios.post(`${API_BASE}/public/otp/verify`, null, {
+      await axios.post(`${API_BASE}/public/otp/verify`, null, {
         params: { phone, code },
       });
 

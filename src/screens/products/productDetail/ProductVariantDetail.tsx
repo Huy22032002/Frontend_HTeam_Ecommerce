@@ -670,7 +670,7 @@ const ProductVariantDetail = () => {
           {/* Filter Review */}
           <Tabs
             value={filter}
-            onChange={(e, v) => setFilter(v)}
+            onChange={(_, v) => setFilter(v)}
             centered
             sx={{
               "& .MuiTabs-indicator": {
@@ -848,7 +848,7 @@ const ProductVariantDetail = () => {
             <Pagination
               count={totalPages}
               page={page}
-              onChange={(e, v) => setPage(v)}
+              onChange={(_, v) => setPage(v)}
             />
           </Box>
         </Box>

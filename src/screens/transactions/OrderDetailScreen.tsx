@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -24,26 +24,26 @@ import {
   FormControl,
   InputLabel,
   Select,
-} from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import DeleteIcon from '@mui/icons-material/Delete';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import PrintIcon from '@mui/icons-material/Print';
-import { useNavigate, useParams } from 'react-router-dom';
-import { OrderApi } from '../../api/order/OrderApi';
-import { InvoiceApi } from '../../api/invoice/InvoiceApi';
-import type { OrderReadableDTO } from '../../models/orders/Order';
-import { formatCurrency } from '../../utils/formatCurrency';
-import { printOrderDetail } from '../../utils/printUtils';
-import OrderPrintTemplate from '../../components/print/OrderPrintTemplate';
+} from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import DeleteIcon from "@mui/icons-material/Delete";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import PrintIcon from "@mui/icons-material/Print";
+import { useNavigate, useParams } from "react-router-dom";
+import { OrderApi } from "../../api/order/OrderApi";
+import { InvoiceApi } from "../../api/invoice/InvoiceApi";
+import type { OrderReadableDTO } from "../../models/orders/Order";
+import { formatCurrency } from "../../utils/formatCurrency";
+import { printOrderDetail } from "../../utils/printUtils";
+import OrderPrintTemplate from "../../components/print/OrderPrintTemplate";
 
-const SHIPPING_METHODS = ['GHN', 'GHTK', 'SPX', 'VTP', 'EMS'];
+const SHIPPING_METHODS = ["GHN", "GHTK", "SPX", "VTP", "EMS"];
 
 const OrderDetailScreen: React.FC = () => {
   const navigate = useNavigate();
   const { orderId } = useParams<{ orderId: string }>();
-  
+
   const [order, setOrder] = useState<OrderReadableDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,61 +51,68 @@ const OrderDetailScreen: React.FC = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [openCancelDialog, setOpenCancelDialog] = useState(false);
   const [openShippingDialog, setOpenShippingDialog] = useState(false);
-  const [selectedShippingMethod, setSelectedShippingMethod] = useState('GHN');
+  const [selectedShippingMethod, setSelectedShippingMethod] = useState("GHN");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  }>({
     open: false,
-    message: '',
-    severity: 'success',
+    message: "",
+    severity: "success",
   });
 
   // Detect if accessed from admin panel or customer
-  const isAdminPanel = window.location.pathname.startsWith('/admin');
+  const isAdminPanel = window.location.pathname.startsWith("/admin");
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PENDING':
-        return 'warning';
-      case 'APPROVED':
-        return 'info';
-      case 'PROCESSING':
-        return 'warning';
-      case 'SHIPPING':
-        return 'info';
-      case 'DELIVERED':
-        return 'success';
-      case 'CANCELLED':
-        return 'error';
+      case "PENDING":
+        return "warning";
+      case "APPROVED":
+        return "info";
+      case "PROCESSING":
+        return "warning";
+      case "SHIPPING":
+        return "info";
+      case "DELIVERED":
+        return "success";
+      case "CANCELLED":
+        return "error";
       default:
-        return 'default';
+        return "default";
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'PENDING':
-        return 'Chờ xác nhận';
-      case 'APPROVED':
-        return 'Đã xác nhận';
-      case 'PROCESSING':
-        return 'Đang xử lý';
-      case 'SHIPPING':
-        return 'Đang giao';
-      case 'DELIVERED':
-        return 'Đã nhận';
-      case 'CANCELLED':
-        return 'Đã huỷ';
+      case "PENDING":
+        return "Chờ xác nhận";
+      case "APPROVED":
+        return "Đã xác nhận";
+      case "PROCESSING":
+        return "Đang xử lý";
+      case "SHIPPING":
+        return "Đang giao";
+      case "DELIVERED":
+        return "Đã nhận";
+      case "CANCELLED":
+        return "Đã huỷ";
       default:
         return status;
     }
   };
 
-  const canTransitionTo = (currentStatus: string, nextStatus: string): boolean => {
+  const canTransitionTo = (
+    currentStatus: string,
+    nextStatus: string
+  ): boolean => {
     const transitions: { [key: string]: string[] } = {
-      PENDING: ['APPROVED', 'CANCELLED'],
-      APPROVED: ['PROCESSING', 'CANCELLED'],
-      PROCESSING: ['SHIPPING', 'CANCELLED'],
-      SHIPPING: ['DELIVERED'],
+      PENDING: ["APPROVED", "CANCELLED"],
+      APPROVED: ["PROCESSING", "CANCELLED"],
+      PROCESSING: ["SHIPPING", "CANCELLED"],
+      SHIPPING: ["DELIVERED"],
       DELIVERED: [],
       CANCELLED: [],
     };
@@ -118,25 +125,25 @@ const OrderDetailScreen: React.FC = () => {
       return false;
     }
     // Check if any deposit has SUCCESS status
-    return order.deposits.some((deposit: any) => deposit.status === 'SUCCESS');
+    return order.deposits.some((deposit: any) => deposit.status === "SUCCESS");
   };
 
   // Get payment status message for tooltip
   const getPaymentStatusMessage = (): string => {
     if (!order?.deposits || order.deposits.length === 0) {
-      return 'Chưa có thông tin thanh toán';
+      return "Chưa có thông tin thanh toán";
     }
-    
+
     const lastDeposit = order.deposits[0]; // Get latest deposit
     switch (lastDeposit.status) {
-      case 'SUCCESS':
-        return 'Đã thanh toán thành công';
-      case 'PENDING':
-        return 'Chờ xử lý thanh toán';
-      case 'FAILED':
-        return 'Thanh toán thất bại';
+      case "COMPLETED":
+        return "Đã thanh toán thành công";
+      case "PENDING":
+        return "Chờ xử lý thanh toán";
+      case "FAILED":
+        return "Thanh toán thất bại";
       default:
-        return 'Trạng thái thanh toán: ' + lastDeposit.status;
+        return "Trạng thái thanh toán: " + lastDeposit.status;
     }
   };
 
@@ -146,13 +153,15 @@ const OrderDetailScreen: React.FC = () => {
     if (!canTransitionTo(order.status, newStatus)) {
       setSnackbar({
         open: true,
-        message: `❌ Không thể chuyển từ ${getStatusLabel(order.status)} sang ${getStatusLabel(newStatus)}`,
-        severity: 'error',
+        message: `❌ Không thể chuyển từ ${getStatusLabel(
+          order.status
+        )} sang ${getStatusLabel(newStatus)}`,
+        severity: "error",
       });
       return;
     }
 
-    if (newStatus === 'SHIPPING') {
+    if (newStatus === "SHIPPING") {
       setOpenShippingDialog(true);
       return;
     }
@@ -160,20 +169,22 @@ const OrderDetailScreen: React.FC = () => {
     try {
       setUpdatingStatus(true);
       await OrderApi.updateOrderStatus(orderId, newStatus);
-      
-      setOrder(prev => prev ? { ...prev, status: newStatus as any } : null);
-      
+
+      setOrder((prev) => (prev ? { ...prev, status: newStatus as any } : null));
+
       setSnackbar({
         open: true,
         message: `✅ Cập nhật trạng thái thành ${getStatusLabel(newStatus)}`,
-        severity: 'success',
+        severity: "success",
       });
     } catch (err: any) {
-      console.error('Error updating order status:', err);
+      console.error("Error updating order status:", err);
       setSnackbar({
         open: true,
-        message: `❌ ${err?.response?.data?.message || 'Lỗi khi cập nhật trạng thái'}`,
-        severity: 'error',
+        message: `❌ ${
+          err?.response?.data?.message || "Lỗi khi cập nhật trạng thái"
+        }`,
+        severity: "error",
       });
     } finally {
       setUpdatingStatus(false);
@@ -185,22 +196,26 @@ const OrderDetailScreen: React.FC = () => {
 
     try {
       setUpdatingStatus(true);
-      await OrderApi.updateOrderStatus(orderId, 'SHIPPING');
-      
-      setOrder(prev => prev ? { ...prev, status: 'SHIPPING' as any } : null);
+      await OrderApi.updateOrderStatus(orderId, "SHIPPING");
+
+      setOrder((prev) =>
+        prev ? { ...prev, status: "SHIPPING" as any } : null
+      );
       setOpenShippingDialog(false);
-      
+
       setSnackbar({
         open: true,
         message: `✅ Hàng đã được giao cho ĐVVC ${selectedShippingMethod}`,
-        severity: 'success',
+        severity: "success",
       });
     } catch (err: any) {
-      console.error('Error confirming shipping:', err);
+      console.error("Error confirming shipping:", err);
       setSnackbar({
         open: true,
-        message: `❌ ${err?.response?.data?.message || 'Lỗi khi xác nhận giao hàng'}`,
-        severity: 'error',
+        message: `❌ ${
+          err?.response?.data?.message || "Lỗi khi xác nhận giao hàng"
+        }`,
+        severity: "error",
       });
     } finally {
       setUpdatingStatus(false);
@@ -209,17 +224,19 @@ const OrderDetailScreen: React.FC = () => {
 
   const handlePrint = () => {
     if (!order) return;
-    
-    const printElement = document.getElementById('order-print-template');
+
+    const printElement = document.getElementById("order-print-template");
     if (printElement) {
-      const printContainer = printElement.querySelector('.print-container');
+      const printContainer = printElement.querySelector(".print-container");
       if (printContainer) {
         printOrderDetail(printContainer.outerHTML);
       }
     }
   };
 
-  const handleOpenInvoiceMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleOpenInvoiceMenu = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
     if (order?.invoices && order.invoices.length > 0) {
       setAnchorEl(event.currentTarget);
     }
@@ -237,7 +254,7 @@ const OrderDetailScreen: React.FC = () => {
   useEffect(() => {
     const fetchOrder = async () => {
       if (!orderId) {
-        setError('Không tìm thấy ID đơn hàng');
+        setError("Không tìm thấy ID đơn hàng");
         setLoading(false);
         return;
       }
@@ -248,8 +265,10 @@ const OrderDetailScreen: React.FC = () => {
         const orderData = response.data;
         setOrder(orderData);
       } catch (err: any) {
-        console.error('Error fetching order:', err);
-        setError(err?.response?.data?.message || 'Lỗi khi lấy chi tiết đơn hàng');
+        console.error("Error fetching order:", err);
+        setError(
+          err?.response?.data?.message || "Lỗi khi lấy chi tiết đơn hàng"
+        );
       } finally {
         setLoading(false);
       }
@@ -259,7 +278,7 @@ const OrderDetailScreen: React.FC = () => {
   }, [orderId]);
 
   const handleCancelOrder = async () => {
-    if (!window.confirm('Bạn có chắc chắn muốn huỷ đơn hàng này không?')) {
+    if (!window.confirm("Bạn có chắc chắn muốn huỷ đơn hàng này không?")) {
       return;
     }
 
@@ -270,18 +289,18 @@ const OrderDetailScreen: React.FC = () => {
       await OrderApi.delete(orderId);
       setSnackbar({
         open: true,
-        message: '✅ Huỷ đơn hàng thành công!',
-        severity: 'success',
+        message: "✅ Huỷ đơn hàng thành công!",
+        severity: "success",
       });
       setTimeout(() => {
-        navigate('/admin/orders');
+        navigate("/admin/orders");
       }, 1500);
     } catch (err: any) {
-      console.error('Error canceling order:', err);
+      console.error("Error canceling order:", err);
       setSnackbar({
         open: true,
-        message: `❌ ${err?.response?.data?.message || 'Lỗi khi huỷ đơn hàng'}`,
-        severity: 'error',
+        message: `❌ ${err?.response?.data?.message || "Lỗi khi huỷ đơn hàng"}`,
+        severity: "error",
       });
     } finally {
       setCanceling(false);
@@ -302,28 +321,38 @@ const OrderDetailScreen: React.FC = () => {
 
       setSnackbar({
         open: true,
-        message: '✅ Xuất hoá đơn thành công!',
-        severity: 'success',
+        message: "✅ Xuất hoá đơn thành công!",
+        severity: "success",
       });
 
       setTimeout(() => {
         navigate(`/admin/invoices/${newInvoice.id}`);
       }, 1500);
     } catch (err: any) {
-      console.error('Error creating invoice:', err);
+      console.error("Error creating invoice:", err);
 
-      const errorMsg = err?.response?.data?.message || err.message || 'Lỗi khi tạo hoá đơn';
+      const errorMsg =
+        err?.response?.data?.message || err.message || "Lỗi khi tạo hoá đơn";
       setSnackbar({
         open: true,
         message: `❌ ${errorMsg}`,
-        severity: 'error',
+        severity: "error",
       });
     }
   };
 
   if (loading) {
     return (
-      <Container maxWidth={false} sx={{ py: 4, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Container
+        maxWidth={false}
+        sx={{
+          py: 4,
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <CircularProgress />
       </Container>
     );
@@ -331,46 +360,94 @@ const OrderDetailScreen: React.FC = () => {
 
   if (error || !order) {
     return (
-      <Container maxWidth={false} sx={{ py: 4, minHeight: '100vh' }}>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)} sx={{ mb: 3 }}>Quay lại</Button>
-        <Alert severity="error">{error || 'Không tìm thấy đơn hàng'}</Alert>
+      <Container maxWidth={false} sx={{ py: 4, minHeight: "100vh" }}>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate(-1)}
+          sx={{ mb: 3 }}
+        >
+          Quay lại
+        </Button>
+        <Alert severity="error">{error || "Không tìm thấy đơn hàng"}</Alert>
       </Container>
     );
   }
 
-  const subtotal = order.items ? order.items.reduce((sum: number, item: any) => sum + item.finalPrice * item.quantity, 0) : 0;
+  const subtotal = order.items
+    ? order.items.reduce(
+        (sum: number, item: any) => sum + item.finalPrice * item.quantity,
+        0
+      )
+    : 0;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#f5f7fa' }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+        backgroundColor: "#f5f7fa",
+      }}
+    >
       <Container maxWidth="lg" sx={{ flex: 1, py: 3 }}>
         {/* Header */}
-        <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', p: 3, borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        <Box
+          sx={{
+            mb: 4,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            backgroundColor: "white",
+            p: 3,
+            borderRadius: 2,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          }}
+        >
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: '#1565c0', mb: 0.5 }}>
+            <Typography
+              variant="h4"
+              sx={{ fontWeight: 700, color: "#1565c0", mb: 0.5 }}
+            >
               📋 {order.orderCode}
             </Typography>
-            <Typography variant="body2" sx={{ color: '#999', display: 'flex', gap: 1, alignItems: 'center' }}>
-              <span>Khách: <strong style={{color: '#666'}}>{order.customerName}</strong></span>
+            <Typography
+              variant="body2"
+              sx={{
+                color: "#999",
+                display: "flex",
+                gap: 1,
+                alignItems: "center",
+              }}
+            >
+              <span>
+                Khách:{" "}
+                <strong style={{ color: "#666" }}>{order.customerName}</strong>
+              </span>
               <span>•</span>
-              <Chip label={getStatusLabel(order.status)} color={getStatusColor(order.status) as any} size="small" sx={{ml: 1}} />
+              <Chip
+                label={getStatusLabel(order.status)}
+                color={getStatusColor(order.status) as any}
+                size="small"
+                sx={{ ml: 1 }}
+              />
             </Typography>
           </Box>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button 
-              size="small" 
-              startIcon={<PrintIcon />} 
-              variant="contained" 
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              size="small"
+              startIcon={<PrintIcon />}
+              variant="contained"
               onClick={handlePrint}
-              sx={{ textTransform: 'none', backgroundColor: '#4CAF50' }}
+              sx={{ textTransform: "none", backgroundColor: "#4CAF50" }}
             >
               In
             </Button>
-            <Button 
+            <Button
               size="small"
               startIcon={<ArrowBackIcon />}
               variant="outlined"
               onClick={() => navigate(-1)}
-              sx={{ textTransform: 'none' }}
+              sx={{ textTransform: "none" }}
             >
               Quay lại
             </Button>
@@ -378,26 +455,78 @@ const OrderDetailScreen: React.FC = () => {
         </Box>
 
         {/* Order Info & Shipping Info */}
-        <Box className="order-print-area" sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr' }, gap: 2, mb: 3 }}>
+        <Box
+          className="order-print-area"
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1fr" },
+            gap: 2,
+            mb: 3,
+          }}
+        >
           {/* Thông Tin Đơn Hàng */}
-          <Paper sx={{ p: 3, mb: 2, backgroundColor: 'white', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-            <Typography sx={{ fontSize: '13px', fontWeight: 700, mb: 2, color: '#1565c0', display: 'flex', alignItems: 'center', gap: 0.8 }}>
+          <Paper
+            sx={{
+              p: 3,
+              mb: 2,
+              backgroundColor: "white",
+              borderRadius: 2,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: "13px",
+                fontWeight: 700,
+                mb: 2,
+                color: "#1565c0",
+                display: "flex",
+                alignItems: "center",
+                gap: 0.8,
+              }}
+            >
               ℹ️ THÔNG TIN ĐƠN HÀNG
             </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2.5 }}>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                gap: 2.5,
+              }}
+            >
               <Box>
-                <Typography sx={{ fontSize: '11px', color: '#999', mb: 0.6, textTransform: 'uppercase', fontWeight: 700, letterSpacing: 0.5 }}>
+                <Typography
+                  sx={{
+                    fontSize: "11px",
+                    color: "#999",
+                    mb: 0.6,
+                    textTransform: "uppercase",
+                    fontWeight: 700,
+                    letterSpacing: 0.5,
+                  }}
+                >
                   Khách hàng
                 </Typography>
-                <Typography sx={{ fontWeight: 600, color: '#1976d2', fontSize: '14px' }}>
+                <Typography
+                  sx={{ fontWeight: 600, color: "#1976d2", fontSize: "14px" }}
+                >
                   {order.customerName}
                 </Typography>
               </Box>
               <Box>
-                <Typography sx={{ fontSize: '11px', color: '#999', mb: 0.6, textTransform: 'uppercase', fontWeight: 700, letterSpacing: 0.5 }}>
+                <Typography
+                  sx={{
+                    fontSize: "11px",
+                    color: "#999",
+                    mb: 0.6,
+                    textTransform: "uppercase",
+                    fontWeight: 700,
+                    letterSpacing: 0.5,
+                  }}
+                >
                   Trạng thái
                 </Typography>
-                <Chip 
+                <Chip
                   size="small"
                   label={getStatusLabel(order.status)}
                   color={getStatusColor(order.status) as any}
@@ -405,18 +534,40 @@ const OrderDetailScreen: React.FC = () => {
                 />
               </Box>
               <Box>
-                <Typography sx={{ fontSize: '11px', color: '#999', mb: 0.6, textTransform: 'uppercase', fontWeight: 700, letterSpacing: 0.5 }}>
+                <Typography
+                  sx={{
+                    fontSize: "11px",
+                    color: "#999",
+                    mb: 0.6,
+                    textTransform: "uppercase",
+                    fontWeight: 700,
+                    letterSpacing: 0.5,
+                  }}
+                >
                   Ngày tạo
                 </Typography>
-                <Typography sx={{ fontWeight: 500, fontSize: '14px', color: '#666' }}>
-                  📅 {new Date(order.createdAt).toLocaleDateString('vi-VN')}
+                <Typography
+                  sx={{ fontWeight: 500, fontSize: "14px", color: "#666" }}
+                >
+                  📅 {new Date(order.createdAt).toLocaleDateString("vi-VN")}
                 </Typography>
               </Box>
               <Box>
-                <Typography sx={{ fontSize: '11px', color: '#999', mb: 0.6, textTransform: 'uppercase', fontWeight: 700, letterSpacing: 0.5 }}>
+                <Typography
+                  sx={{
+                    fontSize: "11px",
+                    color: "#999",
+                    mb: 0.6,
+                    textTransform: "uppercase",
+                    fontWeight: 700,
+                    letterSpacing: 0.5,
+                  }}
+                >
                   Mã đơn hàng
                 </Typography>
-                <Typography sx={{ fontWeight: 600, fontSize: '14px', color: '#1976d2' }}>
+                <Typography
+                  sx={{ fontWeight: 600, fontSize: "14px", color: "#1976d2" }}
+                >
                   {order.orderCode}
                 </Typography>
               </Box>
@@ -424,117 +575,310 @@ const OrderDetailScreen: React.FC = () => {
           </Paper>
 
           {/* Thông Tin Giao Hàng */}
-          <Paper sx={{ p: 3, mb: 2, backgroundColor: 'white', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', borderLeft: '4px solid #4CAF50' }}>
-            <Typography sx={{ fontSize: '13px', fontWeight: 700, mb: 2.5, color: '#2e7d32', display: 'flex', alignItems: 'center', gap: 0.8 }}>
+          <Paper
+            sx={{
+              p: 3,
+              mb: 2,
+              backgroundColor: "white",
+              borderRadius: 2,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+              borderLeft: "4px solid #4CAF50",
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: "13px",
+                fontWeight: 700,
+                mb: 2.5,
+                color: "#2e7d32",
+                display: "flex",
+                alignItems: "center",
+                gap: 0.8,
+              }}
+            >
               🏠 THÔNG TIN GIAO HÀNG
             </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2.5 }}>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                gap: 2.5,
+              }}
+            >
               <Box>
-                <Typography sx={{ fontSize: '11px', color: '#999', mb: 0.6, textTransform: 'uppercase', fontWeight: 700, letterSpacing: 0.5 }}>
+                <Typography
+                  sx={{
+                    fontSize: "11px",
+                    color: "#999",
+                    mb: 0.6,
+                    textTransform: "uppercase",
+                    fontWeight: 700,
+                    letterSpacing: 0.5,
+                  }}
+                >
                   Người nhận
                 </Typography>
-                <Typography sx={{ fontWeight: 600, fontSize: '14px', color: '#333' }}>
-                  {order.receiverName || '—'}
+                <Typography
+                  sx={{ fontWeight: 600, fontSize: "14px", color: "#333" }}
+                >
+                  {order.receiverName || "—"}
                 </Typography>
               </Box>
               <Box>
-                <Typography sx={{ fontSize: '11px', color: '#999', mb: 0.6, textTransform: 'uppercase', fontWeight: 700, letterSpacing: 0.5 }}>
+                <Typography
+                  sx={{
+                    fontSize: "11px",
+                    color: "#999",
+                    mb: 0.6,
+                    textTransform: "uppercase",
+                    fontWeight: 700,
+                    letterSpacing: 0.5,
+                  }}
+                >
                   Điện thoại
                 </Typography>
-                <Typography sx={{ fontWeight: 600, fontSize: '14px', color: '#333' }}>
-                  {order.receiverPhoneNumber || '—'}
+                <Typography
+                  sx={{ fontWeight: 600, fontSize: "14px", color: "#333" }}
+                >
+                  {order.receiverPhoneNumber || "—"}
                 </Typography>
               </Box>
             </Box>
-            <Box sx={{ mt: 2.5, pt: 2.5, borderTop: '1px solid #e8ebf0' }}>
-              <Typography sx={{ fontSize: '11px', color: '#999', mb: 0.6, textTransform: 'uppercase', fontWeight: 700, letterSpacing: 0.5 }}>
+            <Box sx={{ mt: 2.5, pt: 2.5, borderTop: "1px solid #e8ebf0" }}>
+              <Typography
+                sx={{
+                  fontSize: "11px",
+                  color: "#999",
+                  mb: 0.6,
+                  textTransform: "uppercase",
+                  fontWeight: 700,
+                  letterSpacing: 0.5,
+                }}
+              >
                 Địa chỉ giao hàng
               </Typography>
-              <Typography sx={{ fontWeight: 500, fontSize: '14px', color: '#333', lineHeight: 1.6, backgroundColor: '#f9f9f9', p: 1.5, borderRadius: 1 }}>
-                📍 {order.shippingAddress || '—'}
+              <Typography
+                sx={{
+                  fontWeight: 500,
+                  fontSize: "14px",
+                  color: "#333",
+                  lineHeight: 1.6,
+                  backgroundColor: "#f9f9f9",
+                  p: 1.5,
+                  borderRadius: 1,
+                }}
+              >
+                📍 {order.shippingAddress || "—"}
               </Typography>
             </Box>
-            <Box sx={{ mt: 2.5, pt: 2.5, borderTop: '1px solid #e8ebf0' }}>
-              <Typography sx={{ fontSize: '11px', color: '#999', mb: 0.6, textTransform: 'uppercase', fontWeight: 700, letterSpacing: 0.5 }}>
+            <Box sx={{ mt: 2.5, pt: 2.5, borderTop: "1px solid #e8ebf0" }}>
+              <Typography
+                sx={{
+                  fontSize: "11px",
+                  color: "#999",
+                  mb: 0.6,
+                  textTransform: "uppercase",
+                  fontWeight: 700,
+                  letterSpacing: 0.5,
+                }}
+              >
                 Ghi chú
               </Typography>
-              <Typography sx={{ fontWeight: 500, fontSize: '14px', color: '#333', lineHeight: 1.6, backgroundColor: '#f9f9f9', p: 1.5, borderRadius: 1 }}>
-                📍 {order.notes || '—'}
+              <Typography
+                sx={{
+                  fontWeight: 500,
+                  fontSize: "14px",
+                  color: "#333",
+                  lineHeight: 1.6,
+                  backgroundColor: "#f9f9f9",
+                  p: 1.5,
+                  borderRadius: 1,
+                }}
+              >
+                📍 {order.notes || "—"}
               </Typography>
             </Box>
           </Paper>
 
           {/* Thông Tin Thanh Toán */}
-          <Paper sx={{ p: 3, mb: 2, backgroundColor: 'white', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', borderLeft: '4px solid #1565c0' }}>
-            <Typography sx={{ fontSize: '13px', fontWeight: 700, mb: 2.5, color: '#1565c0', display: 'flex', alignItems: 'center', gap: 0.8 }}>
+          <Paper
+            sx={{
+              p: 3,
+              mb: 2,
+              backgroundColor: "white",
+              borderRadius: 2,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+              borderLeft: "4px solid #1565c0",
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: "13px",
+                fontWeight: 700,
+                mb: 2.5,
+                color: "#1565c0",
+                display: "flex",
+                alignItems: "center",
+                gap: 0.8,
+              }}
+            >
               💳 THÔNG TIN THANH TOÁN
             </Typography>
             {order.deposits && order.deposits.length > 0 ? (
               <Box>
                 {order.deposits.map((transaction: any, idx: number) => (
-                  <Box 
+                  <Box
                     key={idx}
-                    sx={{ 
-                      p: 2, 
-                      mb: 1.5, 
-                      backgroundColor: '#f9f9f9', 
+                    sx={{
+                      p: 2,
+                      mb: 1.5,
+                      backgroundColor: "#f9f9f9",
                       borderRadius: 1,
-                      borderLeft: `4px solid ${transaction.status === 'SUCCESS' ? '#4CAF50' : transaction.status === 'PENDING' ? '#ff9800' : '#f44336'}`
+                      borderLeft: `4px solid ${
+                        transaction.status === "SUCCESS"
+                          ? "#4CAF50"
+                          : transaction.status === "PENDING"
+                          ? "#ff9800"
+                          : "#f44336"
+                      }`,
                     }}
                   >
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr 1fr' }, gap: 1.5 }}>
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: {
+                          xs: "1fr",
+                          sm: "1fr 1fr 1fr 1fr",
+                        },
+                        gap: 1.5,
+                      }}
+                    >
                       <Box>
-                        <Typography sx={{ fontSize: '10px', color: '#999', fontWeight: 700, mb: 0.3 }}>
+                        <Typography
+                          sx={{
+                            fontSize: "10px",
+                            color: "#999",
+                            fontWeight: 700,
+                            mb: 0.3,
+                          }}
+                        >
                           LOẠI THANH TOÁN
                         </Typography>
-                        <Typography sx={{ fontWeight: 600, fontSize: '13px', color: '#333' }}>
-                          {transaction.paymentType || 'N/A'}
+                        <Typography
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: "13px",
+                            color: "#333",
+                          }}
+                        >
+                          {transaction.paymentType || "N/A"}
                         </Typography>
                       </Box>
                       <Box>
-                        <Typography sx={{ fontSize: '10px', color: '#999', fontWeight: 700, mb: 0.3 }}>
+                        <Typography
+                          sx={{
+                            fontSize: "10px",
+                            color: "#999",
+                            fontWeight: 700,
+                            mb: 0.3,
+                          }}
+                        >
                           TRẠNG THÁI
                         </Typography>
                         <Chip
                           size="small"
                           label={
-                            transaction.status === 'SUCCESS' ? '✓ Thành công' :
-                            transaction.status === 'PENDING' ? '⏳ Chờ xử lý' :
-                            transaction.status === 'FAILED' ? '✗ Thất bại' :
-                            transaction.status
+                            transaction.status === "SUCCESS"
+                              ? "✓ Thành công"
+                              : transaction.status === "PENDING"
+                              ? "⏳ Chờ xử lý"
+                              : transaction.status === "FAILED"
+                              ? "✗ Thất bại"
+                              : transaction.status
                           }
                           color={
-                            transaction.status === 'SUCCESS' ? 'success' :
-                            transaction.status === 'PENDING' ? 'warning' :
-                            'error'
+                            transaction.status === "SUCCESS"
+                              ? "success"
+                              : transaction.status === "PENDING"
+                              ? "warning"
+                              : "error"
                           }
                           variant="outlined"
                           sx={{ fontWeight: 600 }}
                         />
                       </Box>
                       <Box>
-                        <Typography sx={{ fontSize: '10px', color: '#999', fontWeight: 700, mb: 0.3 }}>
+                        <Typography
+                          sx={{
+                            fontSize: "10px",
+                            color: "#999",
+                            fontWeight: 700,
+                            mb: 0.3,
+                          }}
+                        >
                           SỐ TIỀN
                         </Typography>
-                        <Typography sx={{ fontWeight: 700, fontSize: '13px', color: '#1976d2' }}>
+                        <Typography
+                          sx={{
+                            fontWeight: 700,
+                            fontSize: "13px",
+                            color: "#1976d2",
+                          }}
+                        >
                           {formatCurrency(transaction.amount)}
                         </Typography>
                       </Box>
                       <Box>
-                        <Typography sx={{ fontSize: '10px', color: '#999', fontWeight: 700, mb: 0.3 }}>
+                        <Typography
+                          sx={{
+                            fontSize: "10px",
+                            color: "#999",
+                            fontWeight: 700,
+                            mb: 0.3,
+                          }}
+                        >
                           NGÀY GIAO DỊCH
                         </Typography>
-                        <Typography sx={{ fontWeight: 500, fontSize: '12px', color: '#666' }}>
-                          {transaction.transactionDate ? new Date(transaction.transactionDate).toLocaleDateString('vi-VN') : 'N/A'}
+                        <Typography
+                          sx={{
+                            fontWeight: 500,
+                            fontSize: "12px",
+                            color: "#666",
+                          }}
+                        >
+                          {transaction.transactionDate
+                            ? new Date(
+                                transaction.transactionDate
+                              ).toLocaleDateString("vi-VN")
+                            : "N/A"}
                         </Typography>
                       </Box>
                     </Box>
                     {transaction.details && (
-                      <Box sx={{ mt: 1.5, pt: 1.5, borderTop: '1px solid #e0e0e0' }}>
-                        <Typography sx={{ fontSize: '10px', color: '#999', fontWeight: 700, mb: 0.3 }}>
+                      <Box
+                        sx={{
+                          mt: 1.5,
+                          pt: 1.5,
+                          borderTop: "1px solid #e0e0e0",
+                        }}
+                      >
+                        <Typography
+                          sx={{
+                            fontSize: "10px",
+                            color: "#999",
+                            fontWeight: 700,
+                            mb: 0.3,
+                          }}
+                        >
                           CHI TIẾT
                         </Typography>
-                        <Typography sx={{ fontSize: '12px', color: '#666', fontStyle: 'italic' }}>
+                        <Typography
+                          sx={{
+                            fontSize: "12px",
+                            color: "#666",
+                            fontStyle: "italic",
+                          }}
+                        >
                           {transaction.details}
                         </Typography>
                       </Box>
@@ -543,58 +887,155 @@ const OrderDetailScreen: React.FC = () => {
                 ))}
               </Box>
             ) : (
-              <Typography sx={{ fontSize: '13px', color: '#999', fontStyle: 'italic' }}>
+              <Typography
+                sx={{ fontSize: "13px", color: "#999", fontStyle: "italic" }}
+              >
                 Chưa có thông tin thanh toán
               </Typography>
             )}
           </Paper>
 
           {/* Chi Tiết Sản Phẩm */}
-          <Paper sx={{ backgroundColor: 'white', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
-            <Box sx={{ p: 3, pb: 0, borderBottom: '2px solid #f5f7fa' }}>
-              <Typography sx={{ fontSize: '13px', fontWeight: 700, color: '#1565c0', display: 'flex', alignItems: 'center', gap: 0.8 }}>
+          <Paper
+            sx={{
+              backgroundColor: "white",
+              borderRadius: 2,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+              overflow: "hidden",
+            }}
+          >
+            <Box sx={{ p: 3, pb: 0, borderBottom: "2px solid #f5f7fa" }}>
+              <Typography
+                sx={{
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  color: "#1565c0",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.8,
+                }}
+              >
                 🛍️ CHI TIẾT SẢN PHẨM
               </Typography>
             </Box>
             <TableContainer>
               <Table size="small">
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: '#f5f7fa', borderBottom: '2px solid #1976d2' }}>
-                    <TableCell sx={{ fontWeight: 700, color: '#1565c0', fontSize: '12px', py: 1.5 }}>Tên hàng</TableCell>
-                    <TableCell sx={{ fontWeight: 700, color: '#1565c0', fontSize: '12px', py: 1.5 }} align="center">Số lượng</TableCell>
-                    <TableCell sx={{ fontWeight: 700, color: '#1565c0', fontSize: '12px', py: 1.5 }} align="right">Đơn giá</TableCell>
-                    <TableCell sx={{ fontWeight: 700, color: '#1565c0', fontSize: '12px', py: 1.5 }} align="right">Thành tiền</TableCell>
+                  <TableRow
+                    sx={{
+                      backgroundColor: "#f5f7fa",
+                      borderBottom: "2px solid #1976d2",
+                    }}
+                  >
+                    <TableCell
+                      sx={{
+                        fontWeight: 700,
+                        color: "#1565c0",
+                        fontSize: "12px",
+                        py: 1.5,
+                      }}
+                    >
+                      Tên hàng
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 700,
+                        color: "#1565c0",
+                        fontSize: "12px",
+                        py: 1.5,
+                      }}
+                      align="center"
+                    >
+                      Số lượng
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 700,
+                        color: "#1565c0",
+                        fontSize: "12px",
+                        py: 1.5,
+                      }}
+                      align="right"
+                    >
+                      Đơn giá
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 700,
+                        color: "#1565c0",
+                        fontSize: "12px",
+                        py: 1.5,
+                      }}
+                      align="right"
+                    >
+                      Thành tiền
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {order.items && order.items.length > 0 ? (
                     order.items.map((item: any, index: number) => (
-                      <TableRow 
-                        key={index} 
-                        sx={{ 
-                          borderBottom: '1px solid #e8ebf0', 
-                          '&:hover': { backgroundColor: '#f9fafb' },
-                          '&:last-child': { borderBottom: 'none' }
+                      <TableRow
+                        key={index}
+                        sx={{
+                          borderBottom: "1px solid #e8ebf0",
+                          "&:hover": { backgroundColor: "#f9fafb" },
+                          "&:last-child": { borderBottom: "none" },
                         }}
                       >
-                        <TableCell sx={{ fontSize: '13px', py: 2 }}>
-                          <Typography sx={{ fontWeight: 700, fontSize: '13px', color: '#333' }}>{item.productName || 'Không rõ'}</Typography>
-                          <Typography sx={{ fontSize: '11px', color: '#999', mt: 0.3, fontStyle: 'italic' }}>SKU: {item.sku}</Typography>
+                        <TableCell sx={{ fontSize: "13px", py: 2 }}>
+                          <Typography
+                            sx={{
+                              fontWeight: 700,
+                              fontSize: "13px",
+                              color: "#333",
+                            }}
+                          >
+                            {item.productName || "Không rõ"}
+                          </Typography>
+                          <Typography
+                            sx={{
+                              fontSize: "11px",
+                              color: "#999",
+                              mt: 0.3,
+                              fontStyle: "italic",
+                            }}
+                          >
+                            SKU: {item.sku}
+                          </Typography>
                         </TableCell>
-                        <TableCell align="center" sx={{ fontSize: '13px', py: 2, fontWeight: 600 }}>
+                        <TableCell
+                          align="center"
+                          sx={{ fontSize: "13px", py: 2, fontWeight: 600 }}
+                        >
                           {item.quantity}
                         </TableCell>
-                        <TableCell align="right" sx={{ fontSize: '13px', py: 2, fontWeight: 500 }}>
+                        <TableCell
+                          align="right"
+                          sx={{ fontSize: "13px", py: 2, fontWeight: 500 }}
+                        >
                           {formatCurrency(item.finalPrice)}
                         </TableCell>
-                        <TableCell align="right" sx={{ fontSize: '13px', py: 2, fontWeight: 700, color: '#1976d2' }}>
+                        <TableCell
+                          align="right"
+                          sx={{
+                            fontSize: "13px",
+                            py: 2,
+                            fontWeight: 700,
+                            color: "#1976d2",
+                          }}
+                        >
                           {formatCurrency(item.finalPrice * item.quantity)}
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={4} align="center" sx={{ py: 3, color: '#999', fontSize: '13px' }}>
+                      <TableCell
+                        colSpan={4}
+                        align="center"
+                        sx={{ py: 3, color: "#999", fontSize: "13px" }}
+                      >
                         Không có sản phẩm
                       </TableCell>
                     </TableRow>
@@ -605,36 +1046,115 @@ const OrderDetailScreen: React.FC = () => {
           </Paper>
 
           {/* Summary & Actions */}
-          <Paper sx={{ p: 3, backgroundColor: 'white', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, gap: 3 }}>
+          <Paper
+            sx={{
+              p: 3,
+              backgroundColor: "white",
+              borderRadius: 2,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                mb: 3,
+                gap: 3,
+              }}
+            >
               {/* Breakdown */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: '1fr 1fr 1fr 1fr' }, gap: 1.5, flex: 1 }}>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr 1fr", sm: "1fr 1fr 1fr 1fr" },
+                  gap: 1.5,
+                  flex: 1,
+                }}
+              >
                 <Box>
-                  <Typography sx={{ fontSize: '11px', color: '#999', fontWeight: 600, mb: 0.4 }}>Tổng tiền</Typography>
-                  <Typography sx={{ fontWeight: 700, fontSize: '14px', color: '#1976d2' }}>
+                  <Typography
+                    sx={{
+                      fontSize: "11px",
+                      color: "#999",
+                      fontWeight: 600,
+                      mb: 0.4,
+                    }}
+                  >
+                    Tổng tiền
+                  </Typography>
+                  <Typography
+                    sx={{ fontWeight: 700, fontSize: "14px", color: "#1976d2" }}
+                  >
                     {formatCurrency(subtotal)}
                   </Typography>
                 </Box>
 
                 <Box>
-                  <Typography sx={{ fontSize: '11px', color: '#999', fontWeight: 600, mb: 0.4 }}>Giảm giá</Typography>
-                  <Typography sx={{ fontWeight: 700, fontSize: '14px', color: order.totalDiscount && order.totalDiscount > 0 ? '#f57c00' : '#999' }}>
-                    {order.totalDiscount && order.totalDiscount > 0 ? `-${formatCurrency(order.totalDiscount)}` : formatCurrency(0)}
+                  <Typography
+                    sx={{
+                      fontSize: "11px",
+                      color: "#999",
+                      fontWeight: 600,
+                      mb: 0.4,
+                    }}
+                  >
+                    Giảm giá
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: "14px",
+                      color:
+                        order.totalDiscount && order.totalDiscount > 0
+                          ? "#f57c00"
+                          : "#999",
+                    }}
+                  >
+                    {order.totalDiscount && order.totalDiscount > 0
+                      ? `-${formatCurrency(order.totalDiscount)}`
+                      : formatCurrency(0)}
                   </Typography>
                 </Box>
 
                 <Box>
-                  <Typography sx={{ fontSize: '11px', color: '#999', fontWeight: 600, mb: 0.4 }}>Phí vận chuyển</Typography>
-                  <Typography sx={{ fontWeight: 700, fontSize: '14px', color: '#666' }}>
+                  <Typography
+                    sx={{
+                      fontSize: "11px",
+                      color: "#999",
+                      fontWeight: 600,
+                      mb: 0.4,
+                    }}
+                  >
+                    Phí vận chuyển
+                  </Typography>
+                  <Typography
+                    sx={{ fontWeight: 700, fontSize: "14px", color: "#666" }}
+                  >
                     {formatCurrency(0)}
                   </Typography>
                 </Box>
 
-                <Box sx={{ backgroundColor: '#1565c0', p: 1.5, borderRadius: 1, textAlign: 'center' }}>
-                  <Typography sx={{ fontSize: '10px', color: '#e3f2fd', fontWeight: 600, mb: 0.3 }}>
+                <Box
+                  sx={{
+                    backgroundColor: "#1565c0",
+                    p: 1.5,
+                    borderRadius: 1,
+                    textAlign: "center",
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontSize: "10px",
+                      color: "#e3f2fd",
+                      fontWeight: 600,
+                      mb: 0.3,
+                    }}
+                  >
                     TỔNG CỘNG
                   </Typography>
-                  <Typography sx={{ fontWeight: 700, fontSize: '16px', color: '#fff' }}>
+                  <Typography
+                    sx={{ fontWeight: 700, fontSize: "16px", color: "#fff" }}
+                  >
                     {formatCurrency(order.total)}
                   </Typography>
                 </Box>
@@ -642,160 +1162,201 @@ const OrderDetailScreen: React.FC = () => {
             </Box>
 
             {/* Action Buttons */}
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end', flexDirection: 'column' }}>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 1,
+                flexWrap: "wrap",
+                justifyContent: "flex-end",
+                flexDirection: "column",
+              }}
+            >
               {/* Payment Warning - Show if trying to ship without payment */}
-              {order.status === 'PROCESSING' && !isPaymentCompleted() && (
+              {order.status === "PROCESSING" && !isPaymentCompleted() && (
                 <Alert severity="warning" sx={{ mb: 2 }}>
-                  ⚠️ <strong>Thanh toán chưa hoàn thành!</strong> Không thể giao hàng cho ĐVVC khi chưa thanh toán thành công. 
-                  {getPaymentStatusMessage() && ` (${getPaymentStatusMessage()})`}
+                  ⚠️ <strong>Thanh toán chưa hoàn thành!</strong> Không thể giao
+                  hàng cho ĐVVC khi chưa thanh toán thành công.
+                  {getPaymentStatusMessage() &&
+                    ` (${getPaymentStatusMessage()})`}
                 </Alert>
               )}
 
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-              {/* Status Transition Buttons */}
-              {order.status === 'PENDING' && (
-                <>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 1,
+                  flexWrap: "wrap",
+                  justifyContent: "flex-end",
+                }}
+              >
+                {/* Status Transition Buttons */}
+                {order.status === "PENDING" && (
+                  <>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="success"
+                      onClick={() => handleUpdateOrderStatus("APPROVED")}
+                      disabled={updatingStatus}
+                      sx={{ textTransform: "none" }}
+                    >
+                      ✓ Xác nhận
+                    </Button>
+                  </>
+                )}
+
+                {order.status === "APPROVED" && (
                   <Button
                     size="small"
                     variant="contained"
-                    color="success"
-                    onClick={() => handleUpdateOrderStatus('APPROVED')}
+                    color="info"
+                    onClick={() => handleUpdateOrderStatus("PROCESSING")}
                     disabled={updatingStatus}
-                    sx={{ textTransform: 'none' }}
+                    sx={{ textTransform: "none" }}
                   >
-                    ✓ Xác nhận
+                    ▶ Chuẩn bị
                   </Button>
-                </>
-              )}
+                )}
 
-              {order.status === 'APPROVED' && (
-                <Button
-                  size="small"
-                  variant="contained"
-                  color="info"
-                  onClick={() => handleUpdateOrderStatus('PROCESSING')}
-                  disabled={updatingStatus}
-                  sx={{ textTransform: 'none' }}
-                >
-                  ▶ Chuẩn bị
-                </Button>
-              )}
+                {order.status === "PROCESSING" && (
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleUpdateOrderStatus("SHIPPING")}
+                    disabled={updatingStatus || !isPaymentCompleted()}
+                    title={
+                      !isPaymentCompleted()
+                        ? getPaymentStatusMessage()
+                        : "Giao cho ĐVVC"
+                    }
+                    sx={{ textTransform: "none" }}
+                  >
+                    📦 Giao ĐVVC
+                  </Button>
+                )}
 
-              {order.status === 'PROCESSING' && (
-                <Button
-                  size="small"
-                  variant="contained"
-                  color="primary"
-                  onClick={() => handleUpdateOrderStatus('SHIPPING')}
-                  disabled={updatingStatus || !isPaymentCompleted()}
-                  title={!isPaymentCompleted() ? getPaymentStatusMessage() : 'Giao cho ĐVVC'}
-                  sx={{ textTransform: 'none' }}
-                >
-                  📦 Giao ĐVVC
-                </Button>
-              )}
-
-              {order.status === 'SHIPPING' && (
-                <>
-                  {isAdminPanel ? (
-                    // Admin: Confirm delivery button
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="success"
-                      onClick={() => handleUpdateOrderStatus('DELIVERED')}
-                      disabled={updatingStatus}
-                      sx={{ textTransform: 'none' }}
-                    >
-                      ✓ Xác nhận đã giao
-                    </Button>
-                  ) : (
-                    // Customer: Mark as received button
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="success"
-                      onClick={() => handleUpdateOrderStatus('DELIVERED')}
-                      disabled={updatingStatus}
-                      sx={{ textTransform: 'none' }}
-                    >
-                      📦 Tôi đã nhận hàng
-                    </Button>
-                  )}
-                </>
-              )}
-
-              {/* Invoice Buttons - Only show when DELIVERED */}
-              {order.status === 'DELIVERED' && (
-                <>
-                  {order.invoices && order.invoices.length > 0 ? (
-                    <>
-                      <Button 
+                {order.status === "SHIPPING" && (
+                  <>
+                    {isAdminPanel ? (
+                      // Admin: Confirm delivery button
+                      <Button
                         size="small"
-                        variant="contained" 
-                        color="success" 
-                        startIcon={<VisibilityIcon />}
-                        onClick={handleOpenInvoiceMenu}
-                        sx={{ textTransform: 'none' }}
+                        variant="contained"
+                        color="success"
+                        onClick={() => handleUpdateOrderStatus("DELIVERED")}
+                        disabled={updatingStatus}
+                        sx={{ textTransform: "none" }}
                       >
-                        👁️ Xem HD ({order.invoices.length})
+                        ✓ Xác nhận đã giao
                       </Button>
-                      <Menu
-                        anchorEl={anchorEl}
-                        open={Boolean(anchorEl)}
-                        onClose={handleCloseInvoiceMenu}
+                    ) : (
+                      // Customer: Mark as received button
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="success"
+                        onClick={() => handleUpdateOrderStatus("DELIVERED")}
+                        disabled={updatingStatus}
+                        sx={{ textTransform: "none" }}
                       >
-                        {order.invoices.map((invoice, idx) => (
-                          <MenuItem key={idx} onClick={() => handleSelectInvoice(invoice.id)}>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                              <Typography variant="body2" sx={{ fontWeight: '600' }}>
-                                {invoice.invoiceCode}
-                              </Typography>
-                              <Typography variant="caption" sx={{ color: '#666' }}>
-                                {invoice.createdAt ? new Date(invoice.createdAt).toLocaleString('vi-VN') : 'N/A'}
-                              </Typography>
-                            </Box>
-                          </MenuItem>
-                        ))}
-                      </Menu>
-                    </>
-                  ) : (
-                    <Button 
+                        📦 Tôi đã nhận hàng
+                      </Button>
+                    )}
+                  </>
+                )}
+
+                {/* Invoice Buttons - Only show when DELIVERED */}
+                {order.status === "DELIVERED" && (
+                  <>
+                    {order.invoices && order.invoices.length > 0 ? (
+                      <>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          color="success"
+                          startIcon={<VisibilityIcon />}
+                          onClick={handleOpenInvoiceMenu}
+                          sx={{ textTransform: "none" }}
+                        >
+                          👁️ Xem HD ({order.invoices.length})
+                        </Button>
+                        <Menu
+                          anchorEl={anchorEl}
+                          open={Boolean(anchorEl)}
+                          onClose={handleCloseInvoiceMenu}
+                        >
+                          {order.invoices.map((invoice, idx) => (
+                            <MenuItem
+                              key={idx}
+                              onClick={() => handleSelectInvoice(invoice.id)}
+                            >
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  width: "100%",
+                                }}
+                              >
+                                <Typography
+                                  variant="body2"
+                                  sx={{ fontWeight: "600" }}
+                                >
+                                  {invoice.invoiceCode}
+                                </Typography>
+                                <Typography
+                                  variant="caption"
+                                  sx={{ color: "#666" }}
+                                >
+                                  {invoice.createdAt
+                                    ? new Date(
+                                        invoice.createdAt
+                                      ).toLocaleString("vi-VN")
+                                    : "N/A"}
+                                </Typography>
+                              </Box>
+                            </MenuItem>
+                          ))}
+                        </Menu>
+                      </>
+                    ) : (
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="success"
+                        startIcon={<FileDownloadIcon />}
+                        onClick={handleExportInvoice}
+                        sx={{ textTransform: "none" }}
+                      >
+                        📥 Xuất HD
+                      </Button>
+                    )}
+                  </>
+                )}
+
+                {order.status !== "DELIVERED" &&
+                  order.status !== "CANCELLED" && (
+                    <Button
                       size="small"
-                      variant="contained" 
-                      color="success" 
-                      startIcon={<FileDownloadIcon />}
-                      onClick={handleExportInvoice} 
-                      sx={{ textTransform: 'none' }}
+                      variant="contained"
+                      color="error"
+                      startIcon={<DeleteIcon />}
+                      onClick={() => setOpenCancelDialog(true)}
+                      sx={{ textTransform: "none" }}
                     >
-                      📥 Xuất HD
+                      Huỷ
                     </Button>
                   )}
-                </>
-              )}
 
-              {order.status !== 'DELIVERED' && order.status !== 'CANCELLED' && (
-                <Button 
+                <Button
                   size="small"
-                  variant="contained" 
-                  color="error" 
-                  startIcon={<DeleteIcon />}
-                  onClick={() => setOpenCancelDialog(true)}
-                  sx={{ textTransform: 'none' }}
+                  variant="outlined"
+                  startIcon={<ArrowBackIcon />}
+                  onClick={() => navigate(-1)}
+                  sx={{ textTransform: "none" }}
                 >
-                  Huỷ
+                  Quay lại
                 </Button>
-              )}
-
-              <Button
-                size="small"
-                variant="outlined"
-                startIcon={<ArrowBackIcon />}
-                onClick={() => navigate(-1)}
-                sx={{ textTransform: 'none' }}
-              >
-                Quay lại
-              </Button>
               </Box>
             </Box>
           </Paper>
@@ -803,13 +1364,20 @@ const OrderDetailScreen: React.FC = () => {
       </Container>
 
       {/* Hidden Print Template */}
-      <Box id="order-print-template" sx={{ display: 'none' }}>
+      <Box id="order-print-template" sx={{ display: "none" }}>
         <OrderPrintTemplate order={order!} />
       </Box>
 
       {/* Shipping Method Dialog */}
-      <Dialog open={openShippingDialog} onClose={() => setOpenShippingDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, color: '#1565c0', fontSize: '18px' }}>
+      <Dialog
+        open={openShippingDialog}
+        onClose={() => setOpenShippingDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle
+          sx={{ fontWeight: 700, color: "#1565c0", fontSize: "18px" }}
+        >
           📦 Chọn Phương Thức Vận Chuyển
         </DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
@@ -832,7 +1400,7 @@ const OrderDetailScreen: React.FC = () => {
           <Button
             variant="outlined"
             onClick={() => setOpenShippingDialog(false)}
-            sx={{ textTransform: 'none' }}
+            sx={{ textTransform: "none" }}
           >
             Hủy
           </Button>
@@ -841,7 +1409,7 @@ const OrderDetailScreen: React.FC = () => {
             color="success"
             onClick={handleConfirmShipping}
             disabled={updatingStatus}
-            sx={{ textTransform: 'none' }}
+            sx={{ textTransform: "none" }}
           >
             ✓ Xác nhận
           </Button>
@@ -849,23 +1417,32 @@ const OrderDetailScreen: React.FC = () => {
       </Dialog>
 
       {/* Cancel Order Dialog */}
-      <Dialog open={openCancelDialog} onClose={() => setOpenCancelDialog(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, color: '#d32f2f', fontSize: '18px' }}>
+      <Dialog
+        open={openCancelDialog}
+        onClose={() => setOpenCancelDialog(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle
+          sx={{ fontWeight: 700, color: "#d32f2f", fontSize: "18px" }}
+        >
           ⚠️ Huỷ Đơn Hàng
         </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
-          <Typography sx={{ color: '#666', mb: 2 }}>
-            Bạn có chắc chắn muốn huỷ đơn hàng <strong>{order?.orderCode}</strong> không?
+          <Typography sx={{ color: "#666", mb: 2 }}>
+            Bạn có chắc chắn muốn huỷ đơn hàng{" "}
+            <strong>{order?.orderCode}</strong> không?
           </Typography>
-          <Typography sx={{ color: '#999', fontSize: '13px' }}>
-            Hành động này không thể hoàn tác. Đơn hàng sẽ chuyển sang trạng thái "Đã huỷ".
+          <Typography sx={{ color: "#999", fontSize: "13px" }}>
+            Hành động này không thể hoàn tác. Đơn hàng sẽ chuyển sang trạng thái
+            "Đã huỷ".
           </Typography>
         </DialogContent>
         <DialogActions sx={{ p: 2, gap: 1 }}>
           <Button
             variant="outlined"
             onClick={() => setOpenCancelDialog(false)}
-            sx={{ textTransform: 'none' }}
+            sx={{ textTransform: "none" }}
           >
             Hủy bỏ
           </Button>
@@ -874,7 +1451,7 @@ const OrderDetailScreen: React.FC = () => {
             color="error"
             onClick={handleCancelOrder}
             disabled={canceling}
-            sx={{ textTransform: 'none' }}
+            sx={{ textTransform: "none" }}
           >
             ✓ Xác nhận huỷ
           </Button>
@@ -886,12 +1463,12 @@ const OrderDetailScreen: React.FC = () => {
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       >
         <Alert
           onClose={() => setSnackbar({ ...snackbar, open: false })}
           severity={snackbar.severity}
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
           {snackbar.message}
         </Alert>

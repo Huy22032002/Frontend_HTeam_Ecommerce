@@ -54,6 +54,7 @@ const useCreateFlashSale = () => {
         err?.response?.data?.errorMessage ||
         err?.message ||
         "Lỗi khi tạo flash sale";
+      setError(err); //set Error
       throw new Error(errorMessage);
     } finally {
       setLoading(false);

@@ -5,7 +5,7 @@ export interface FlashSaleItemDTO {
   flashPrice: number;
   maxPerUser?: number;
   limitQuantity: number;
-  soldQuantity?: number;
-  option: ProductOption;
+  soldQuantity: number;
+  option: ProductOption | null;
   endTime: string;
 }

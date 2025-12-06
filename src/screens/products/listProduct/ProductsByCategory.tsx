@@ -8,7 +8,6 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import useProductByCategory from "./ProductByCategory.hook";
-import ManufacturerTabs from "../../../components/manufacturer/ManufacturerTabs";
 import FilterSideBar from "../../../components/product/FilterSideBar";
 import { useParams, useNavigate } from "react-router-dom";
 import ProductVariantList from "../../../components/product/ProductVariantsList";
@@ -28,7 +27,6 @@ const ProductsByCategory = () => {
   const {
     //manufacturer
     getListManufacturerByCategory,
-    manufacturers,
     //variants
     variants,
     getListProductByCategoryId,
@@ -88,7 +86,7 @@ const ProductsByCategory = () => {
     // 1) Lọc mặc định: variant có option còn hàng (nếu không có filter nào được apply)
     // 2) Sort theo sortBy từ FilterSideBar hoặc selectedValue (Autocomplete cũ)
 
-    const hasAnyFilter = Object.values(filters).some(value => {
+    const hasAnyFilter = Object.values(filters).some((value) => {
       if (Array.isArray(value)) return value.length > 0;
       return value !== undefined && value !== null;
     });
@@ -111,7 +109,7 @@ const ProductsByCategory = () => {
         .filter((o: any) => o.availability?.productStatus)
         .map((o: any) => {
           const price = o.availability?.salePrice;
-          return price && price > 0 ? price : (o.availability?.regularPrice || 0);
+          return price && price > 0 ? price : o.availability?.regularPrice || 0;
         });
       return prices.length > 0 ? Math.min(...prices) : 0;
     };
@@ -161,7 +159,10 @@ const ProductsByCategory = () => {
 
       <Box display="flex" flexDirection="row" sx={{ width: "100%", gap: 2 }}>
         {/* left : sideBarFilter */}
-        <FilterSideBar onFilterChange={handleFilterChange} hideCategories={true} />
+        <FilterSideBar
+          onFilterChange={handleFilterChange}
+          hideCategories={true}
+        />
         {/* right: filter + list products */}
         <Box sx={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
           {/* filter */}
@@ -187,7 +188,7 @@ const ProductsByCategory = () => {
           </Box>
           {/* list variants  */}
           <Box sx={{ overflow: "hidden" }}>
-            <ProductVariantList 
+            <ProductVariantList
               data={filteredVariants}
               maxColumns={{ xs: 1, sm: 2, md: 2, lg: 4, xl: 4 }}
               onItemClick={(item) => navigate(`/product/${item.id}`)}

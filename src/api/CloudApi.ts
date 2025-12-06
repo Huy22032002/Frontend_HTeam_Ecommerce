@@ -1,11 +1,6 @@
 import axios from "axios";
 const API_BASE = import.meta.env.VITE_BASE_URL + "/api";
 
-function getAuthHeader() {
-  const token = localStorage.getItem("token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
 export const CloudApi = {
   uploadImages: async (formData: FormData): Promise<string[] | null> => {
     try {

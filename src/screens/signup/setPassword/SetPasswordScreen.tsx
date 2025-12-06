@@ -87,9 +87,7 @@ const SetPasswordScreen = () => {
           background: "white",
         }}
       >
-        <Typography mb={2} variant="h3">
-          Tạo mật khẩu
-        </Typography>
+        <Typography variant="h3">Tạo mật khẩu</Typography>
 
         <Typography sx={{ textAlign: "center", color: "gray" }}>
           Đặt mật khẩu cho tài khoản <strong>{phone}</strong>

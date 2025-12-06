@@ -261,6 +261,8 @@ const ProductVariantListModalForFlashSale: React.FC<
       flashPrice: option.availability.salePrice,
       soldQuantity: 0,
       limitQuantity: option.availability.quantity,
+      endTime: "", //fix
+      option: null, //fix
     };
 
     if (newSelected.has(optionSku)) {

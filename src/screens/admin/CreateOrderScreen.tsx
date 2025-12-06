@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -26,20 +26,23 @@ import {
   Alert,
   Paper,
   Chip,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { useNavigate } from 'react-router-dom';
-import { useCreateOrder } from '../../hooks/useCreateOrder';
-import { useCustomerDeliveryAddresses } from '../../hooks/useCustomerDeliveryAddresses';
-import CustomerListModal from '../../components/modals/CustomerListModal';
-import ProductVariantListModal from '../../components/modals/ProductVariantListModal';
-import type { ProductOption } from '../../models/products/ProductVariantOption';
-import type { ProductVariants } from '../../models/products/ProductVariant';
-import type { OrderItemDisplay } from '../../models/orders/CreateOrderRequest';
-import { formatCurrency } from '../../utils/formatCurrency';
-import { OrderApi } from '../../api/order/OrderApi';
-import { VIETNAM_PROVINCES, getDistrictsByProvince } from '../../utils/vietnamAddresses';
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { useNavigate } from "react-router-dom";
+import { useCreateOrder } from "../../hooks/useCreateOrder";
+import { useCustomerDeliveryAddresses } from "../../hooks/useCustomerDeliveryAddresses";
+import CustomerListModal from "../../components/modals/CustomerListModal";
+import ProductVariantListModal from "../../components/modals/ProductVariantListModal";
+import type { ProductOption } from "../../models/products/ProductVariantOption";
+import type { ProductVariants } from "../../models/products/ProductVariant";
+import type { OrderItemDisplay } from "../../models/orders/CreateOrderRequest";
+import { formatCurrency } from "../../utils/formatCurrency";
+import { OrderApi } from "../../api/order/OrderApi";
+import {
+  VIETNAM_PROVINCES,
+  getDistrictsByProvince,
+} from "../../utils/vietnamAddresses";
 
 const CreateOrderScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -49,53 +52,62 @@ const CreateOrderScreen: React.FC = () => {
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [showProductModal, setShowProductModal] = useState(false);
   const [showPromotionModal, setShowPromotionModal] = useState(false);
-  const [selectedItemForPromotion, setSelectedItemForPromotion] = useState<OrderItemDisplay | null>(null);
+  const [selectedItemForPromotion, setSelectedItemForPromotion] =
+    useState<OrderItemDisplay | null>(null);
   const [availablePromotions, setAvailablePromotions] = useState<any[]>([]);
   const [loadingPromotions, setLoadingPromotions] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
 
   // Fetch saved delivery addresses for selected customer
-  const { deliveryAddresses, loading: loadingSavedAddresses } = useCustomerDeliveryAddresses(order.state.selectedCustomer?.id);
+  const { deliveryAddresses, loading: loadingSavedAddresses } =
+    useCustomerDeliveryAddresses(order.state.selectedCustomer?.id);
 
   // Address states
-  const [selectedProvince, setSelectedProvince] = useState<string>('');
-  const [selectedDistrict, setSelectedDistrict] = useState<string>('');
-  const [streetAddress, setStreetAddress] = useState('');
-  const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<number | null>(null);
+  const [selectedProvince, setSelectedProvince] = useState<string>("");
+  const [selectedDistrict, setSelectedDistrict] = useState<string>("");
+  const [streetAddress, setStreetAddress] = useState("");
+  const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<
+    number | null
+  >(null);
 
   // Get districts for selected province
-  const availableDistricts = selectedProvince ? getDistrictsByProvince(selectedProvince) : [];
+  const availableDistricts = selectedProvince
+    ? getDistrictsByProvince(selectedProvince)
+    : [];
 
   // Handle selecting a saved delivery address
-  const handleSelectSavedAddress = (address: typeof deliveryAddresses[0]) => {
+  const handleSelectSavedAddress = (address: (typeof deliveryAddresses)[0]) => {
     setSelectedSavedAddressId(address.id);
-    
+
     // Set form data from saved address
     order.setReceiverPhoneNumber(address.phone);
 
     // Parse fullAddress
-    const parts = address.fullAddress.split(",").map(p => p.trim());
-    
+    const parts = address.fullAddress.split(",").map((p) => p.trim());
+
     if (parts.length >= 2) {
       const provinceName = parts[parts.length - 1];
       const districtName = parts.length >= 3 ? parts[parts.length - 2] : "";
-      const street = parts.slice(0, parts.length - 2).join(", ").trim();
+      const street = parts
+        .slice(0, parts.length - 2)
+        .join(", ")
+        .trim();
 
       // Find matching province
       const matchingProvince = VIETNAM_PROVINCES.find(
-        p => p.name.toUpperCase() === provinceName.toUpperCase()
+        (p) => p.name.toUpperCase() === provinceName.toUpperCase()
       );
 
       if (matchingProvince) {
         setSelectedProvince(matchingProvince.id);
-        
+
         // Find matching district
         if (districtName) {
           const districts = getDistrictsByProvince(matchingProvince.id);
           const matchingDistrict = districts.find(
-            d => d.name.toUpperCase() === districtName.toUpperCase()
+            (d) => d.name.toUpperCase() === districtName.toUpperCase()
           );
-          
+
           if (matchingDistrict) {
             setSelectedDistrict(matchingDistrict.id);
           } else {
@@ -114,14 +126,17 @@ const CreateOrderScreen: React.FC = () => {
   };
 
   // Handle chọn sản phẩm
-  const handleSelectProduct = async (option: ProductOption, variant: ProductVariants) => {
+  const handleSelectProduct = async (
+    option: ProductOption,
+    variant: ProductVariants
+  ) => {
     const newItem: OrderItemDisplay = {
       variantId: variant.id,
       productVariantOptionId: option.id || 0,
       sku: option.sku,
       quantity: 1,
       price: option.availability?.salePrice || 0,
-      productName: '', // Sẽ được cập nhật từ API
+      productName: "", // Sẽ được cập nhật từ API
       variantName: variant.name,
       optionValue: option.value,
     };
@@ -139,7 +154,7 @@ const CreateOrderScreen: React.FC = () => {
       const promotions = await order.fetchPromotionsForSku(item.sku);
       setAvailablePromotions(promotions || []);
     } catch (error) {
-      console.error('Error fetching promotions:', error);
+      console.error("Error fetching promotions:", error);
     } finally {
       setLoadingPromotions(false);
     }
@@ -163,22 +178,26 @@ const CreateOrderScreen: React.FC = () => {
   // Handle submit order
   const handleSubmitOrder = async () => {
     // Check if any item has missing price
-    const itemsWithoutPrice = order.state.selectedItems.filter(item => !item.price || item.price <= 0);
+    const itemsWithoutPrice = order.state.selectedItems.filter(
+      (item) => !item.price || item.price <= 0
+    );
     if (itemsWithoutPrice.length > 0) {
-      order.setError('❌ Có sản phẩm không có giá. Vui lòng kiểm tra lại!');
+      order.setError("❌ Có sản phẩm không có giá. Vui lòng kiểm tra lại!");
       return;
     }
 
     // Build full address from province, district, and street
-    const provinceName = VIETNAM_PROVINCES.find((p) => p.id === selectedProvince)?.name || '';
-    const districtName = availableDistricts.find((d) => d.id === selectedDistrict)?.name || '';
-    
+    const provinceName =
+      VIETNAM_PROVINCES.find((p) => p.id === selectedProvince)?.name || "";
+    const districtName =
+      availableDistricts.find((d) => d.id === selectedDistrict)?.name || "";
+
     const fullAddress = [streetAddress, districtName, provinceName]
       .filter(Boolean)
-      .join(', ');
+      .join(", ");
 
     if (!fullAddress.trim()) {
-      order.setError('❌ Vui lòng nhập đầy đủ địa chỉ giao hàng');
+      order.setError("❌ Vui lòng nhập đầy đủ địa chỉ giao hàng");
       return;
     }
 
@@ -193,32 +212,52 @@ const CreateOrderScreen: React.FC = () => {
     setSubmitLoading(true);
     try {
       await OrderApi.create(orderRequest as any);
-      alert('✅ Tạo đơn hàng thành công!');
+      alert("✅ Tạo đơn hàng thành công!");
       order.reset();
-      navigate('/admin/orders');
+      navigate("/admin/orders");
     } catch (error: any) {
-      console.error('Error creating order:', error);
-      order.setError(error?.response?.data?.message || '❌ Lỗi khi tạo đơn hàng');
+      console.error("Error creating order:", error);
+      order.setError(
+        error?.response?.data?.message || "❌ Lỗi khi tạo đơn hàng"
+      );
     } finally {
       setSubmitLoading(false);
     }
   };
 
   return (
-    <Container maxWidth={false} sx={{ py: 4, backgroundColor: '#f8f9fa', minHeight: '100vh', px: { xs: 2, sm: 3, md: 4 } }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+    <Container
+      maxWidth={false}
+      sx={{
+        py: 4,
+        backgroundColor: "#f8f9fa",
+        minHeight: "100vh",
+        px: { xs: 2, sm: 3, md: 4 },
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 4,
+        }}
+      >
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+          <Typography
+            variant="h4"
+            sx={{ fontWeight: "bold", color: "#1976d2" }}
+          >
             📋 Tạo Đơn Hàng Mới
           </Typography>
-          <Typography variant="body2" sx={{ color: '#666', mt: 0.5 }}>
+          <Typography variant="body2" sx={{ color: "#666", mt: 0.5 }}>
             Tạo và quản lý đơn hàng mới cho khách hàng
           </Typography>
         </Box>
         <Button
           variant="outlined"
           onClick={() => navigate(-1)}
-          sx={{ textTransform: 'none', px: 3 }}
+          sx={{ textTransform: "none", px: 3 }}
         >
           ← Quay Lại
         </Button>
@@ -226,39 +265,71 @@ const CreateOrderScreen: React.FC = () => {
 
       {/* Error Alert */}
       {order.state.error && (
-        <Alert 
-          severity="error" 
-          sx={{ mb: 3, borderRadius: 1 }} 
+        <Alert
+          severity="error"
+          sx={{ mb: 3, borderRadius: 1 }}
           onClose={() => order.setError(null)}
         >
           {order.state.error}
         </Alert>
       )}
 
-      <Box sx={{ display: 'flex', gap: 4, alignItems: 'flex-start' }}>
+      <Box sx={{ display: "flex", gap: 4, alignItems: "flex-start" }}>
         {/* Left: Full Width Form Sections */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
           {/* Customer Selection */}
-          <Card sx={{ mb: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', borderRadius: 2 }}>
-            <CardHeader 
-              title="👥 Thông Tin Khách Hàng" 
-              sx={{ backgroundColor: '#f5f7fa', borderBottom: '2px solid #e8ebf0' }}
+          <Card
+            sx={{
+              mb: 3,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              borderRadius: 2,
+            }}
+          >
+            <CardHeader
+              title="👥 Thông Tin Khách Hàng"
+              sx={{
+                backgroundColor: "#f5f7fa",
+                borderBottom: "2px solid #e8ebf0",
+              }}
             />
             <CardContent sx={{ pt: 2.5, pb: 2 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 2,
+                }}
+              >
                 <Box sx={{ flex: 1 }}>
                   {order.state.selectedCustomer ? (
                     <Box>
-                      <Typography variant="h6" sx={{ fontWeight: '700', color: '#1976d2', mb: 1 }}>
+                      <Typography
+                        variant="h6"
+                        sx={{ fontWeight: "700", color: "#1976d2", mb: 1 }}
+                      >
                         {order.state.selectedCustomer.name}
                       </Typography>
-                      <Typography variant="body2" sx={{ color: '#666', mt: 0.5, fontSize: '0.95rem' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "#666", mt: 0.5, fontSize: "0.95rem" }}
+                      >
                         📧 {order.state.selectedCustomer.emailAddress}
                       </Typography>
                     </Box>
                   ) : (
-                    <Box sx={{ padding: '16px 20px', backgroundColor: '#fff3e0', borderRadius: 1, border: '1px solid #ffe0b2' }}>
-                      <Typography variant="body2" sx={{ color: '#e65100', fontWeight: '500' }}>
+                    <Box
+                      sx={{
+                        padding: "16px 20px",
+                        backgroundColor: "#fff3e0",
+                        borderRadius: 1,
+                        border: "1px solid #ffe0b2",
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "#e65100", fontWeight: "500" }}
+                      >
                         ⚠️ Chưa chọn khách hàng
                       </Typography>
                     </Box>
@@ -267,7 +338,7 @@ const CreateOrderScreen: React.FC = () => {
                 <Button
                   variant="contained"
                   onClick={() => setShowCustomerModal(true)}
-                  sx={{ whiteSpace: 'nowrap', textTransform: 'none', px: 3 }}
+                  sx={{ whiteSpace: "nowrap", textTransform: "none", px: 3 }}
                 >
                   🔍 Chọn Khách Hàng
                 </Button>
@@ -276,7 +347,14 @@ const CreateOrderScreen: React.FC = () => {
           </Card>
 
           {/* Product Selection */}
-          <Card sx={{ mb: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', borderRadius: 2, minHeight: 400 }}>
+          <Card
+            sx={{
+              mb: 3,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              borderRadius: 2,
+              minHeight: 400,
+            }}
+          >
             <CardHeader
               title="📦 Sản Phẩm"
               action={
@@ -285,33 +363,53 @@ const CreateOrderScreen: React.FC = () => {
                   startIcon={<AddIcon />}
                   onClick={() => setShowProductModal(true)}
                   size="small"
-                  sx={{ textTransform: 'none' }}
+                  sx={{ textTransform: "none" }}
                 >
                   + Thêm Sản Phẩm
                 </Button>
               }
-              sx={{ backgroundColor: '#f5f7fa', borderBottom: '2px solid #e8ebf0' }}
+              sx={{
+                backgroundColor: "#f5f7fa",
+                borderBottom: "2px solid #e8ebf0",
+              }}
             />
             <CardContent sx={{ pt: 2.5, pb: 2 }}>
               {order.state.selectedItems.length > 0 ? (
                 <TableContainer>
                   <Table size="small">
-                    <TableHead sx={{ bgcolor: '#f0f2f5' }}>
+                    <TableHead sx={{ bgcolor: "#f0f2f5" }}>
                       <TableRow>
-                        <TableCell sx={{ fontWeight: '600', color: '#1976d2' }}>Sản Phẩm</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: '600', color: '#1976d2' }}>
+                        <TableCell sx={{ fontWeight: "600", color: "#1976d2" }}>
+                          Sản Phẩm
+                        </TableCell>
+                        <TableCell
+                          align="right"
+                          sx={{ fontWeight: "600", color: "#1976d2" }}
+                        >
                           Giá
                         </TableCell>
-                        <TableCell align="center" sx={{ fontWeight: '600', color: '#1976d2' }}>
+                        <TableCell
+                          align="center"
+                          sx={{ fontWeight: "600", color: "#1976d2" }}
+                        >
                           Số Lượng
                         </TableCell>
-                        <TableCell align="right" sx={{ fontWeight: '600', color: '#1976d2' }}>
+                        <TableCell
+                          align="right"
+                          sx={{ fontWeight: "600", color: "#1976d2" }}
+                        >
                           Khuyến Mãi
                         </TableCell>
-                        <TableCell align="right" sx={{ fontWeight: '600', color: '#1976d2' }}>
+                        <TableCell
+                          align="right"
+                          sx={{ fontWeight: "600", color: "#1976d2" }}
+                        >
                           Thành Tiền
                         </TableCell>
-                        <TableCell align="center" sx={{ fontWeight: '600', color: '#1976d2' }}>
+                        <TableCell
+                          align="center"
+                          sx={{ fontWeight: "600", color: "#1976d2" }}
+                        >
                           Hành Động
                         </TableCell>
                       </TableRow>
@@ -320,21 +418,29 @@ const CreateOrderScreen: React.FC = () => {
                       {order.state.selectedItems.map((item) => {
                         const itemTotal =
                           item.price * item.quantity -
-                          (item.discountAmount ? item.discountAmount * item.quantity : 0);
+                          (item.discountAmount
+                            ? item.discountAmount * item.quantity
+                            : 0);
                         return (
-                          <TableRow 
+                          <TableRow
                             key={item.productVariantOptionId}
-                            sx={{ 
-                              '&:hover': { backgroundColor: '#f9f9f9' },
-                              borderBottom: '1px solid #e0e0e0'
+                            sx={{
+                              "&:hover": { backgroundColor: "#f9f9f9" },
+                              borderBottom: "1px solid #e0e0e0",
                             }}
                           >
                             <TableCell>
                               <Box>
-                                <Typography variant="body2" sx={{ fontWeight: '600', color: '#1976d2' }}>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ fontWeight: "600", color: "#1976d2" }}
+                                >
                                   {item.variantName}
                                 </Typography>
-                                <Typography variant="caption" sx={{ color: '#666' }}>
+                                <Typography
+                                  variant="caption"
+                                  sx={{ color: "#666" }}
+                                >
                                   {item.optionValue} (SKU: {item.sku})
                                 </Typography>
                               </Box>
@@ -358,13 +464,22 @@ const CreateOrderScreen: React.FC = () => {
                               />
                             </TableCell>
                             <TableCell align="right">
-                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  gap: 1,
+                                }}
+                              >
                                 {item.promotionName ? (
                                   <Typography variant="caption">
                                     {item.promotionName}
                                   </Typography>
                                 ) : (
-                                  <Typography variant="caption" sx={{ color: '#999' }}>
+                                  <Typography
+                                    variant="caption"
+                                    sx={{ color: "#999" }}
+                                  >
                                     Không
                                   </Typography>
                                 )}
@@ -378,7 +493,9 @@ const CreateOrderScreen: React.FC = () => {
                               </Box>
                             </TableCell>
                             <TableCell align="right">
-                              <Typography sx={{ fontWeight: 'bold', color: '#2196f3' }}>
+                              <Typography
+                                sx={{ fontWeight: "bold", color: "#2196f3" }}
+                              >
                                 {formatCurrency(itemTotal)}
                               </Typography>
                             </TableCell>
@@ -402,8 +519,16 @@ const CreateOrderScreen: React.FC = () => {
                   </Table>
                 </TableContainer>
               ) : (
-                <Box sx={{ textAlign: 'center', py: 4, backgroundColor: '#fafafa', borderRadius: 1, border: '2px dashed #e0e0e0' }}>
-                  <Typography variant="body2" sx={{ color: '#999' }}>
+                <Box
+                  sx={{
+                    textAlign: "center",
+                    py: 4,
+                    backgroundColor: "#fafafa",
+                    borderRadius: 1,
+                    border: "2px dashed #e0e0e0",
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: "#999" }}>
                     📭 Chưa có sản phẩm nào
                   </Typography>
                 </Box>
@@ -412,51 +537,102 @@ const CreateOrderScreen: React.FC = () => {
           </Card>
 
           {/* Shipping Address */}
-          <Card sx={{ mb: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', borderRadius: 2, minHeight: 250 }}>
-            <CardHeader 
-              title="🏠 Địa Chỉ Giao Hàng" 
-              sx={{ backgroundColor: '#f5f7fa', borderBottom: '2px solid #e8ebf0' }}
+          <Card
+            sx={{
+              mb: 3,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              borderRadius: 2,
+              minHeight: 250,
+            }}
+          >
+            <CardHeader
+              title="🏠 Địa Chỉ Giao Hàng"
+              sx={{
+                backgroundColor: "#f5f7fa",
+                borderBottom: "2px solid #e8ebf0",
+              }}
             />
             <CardContent sx={{ pt: 2.5, pb: 2 }}>
               {/* Saved Delivery Addresses Section */}
               {deliveryAddresses.length > 0 && (
-                <Box sx={{ mb: 3, p: 2, bgcolor: '#f0f8ff', borderRadius: 1, border: '1px solid #b3d9ff' }}>
+                <Box
+                  sx={{
+                    mb: 3,
+                    p: 2,
+                    bgcolor: "#f0f8ff",
+                    borderRadius: 1,
+                    border: "1px solid #b3d9ff",
+                  }}
+                >
                   <Typography variant="subtitle2" fontWeight={600} mb={2}>
                     📌 Chọn một địa chỉ đã lưu của khách hàng:
                   </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  <Box
+                    sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}
+                  >
                     {deliveryAddresses.map((addr) => (
                       <Paper
                         key={addr.id}
                         sx={{
                           p: 1.5,
-                          cursor: 'pointer',
-                          border: selectedSavedAddressId === addr.id ? '2px solid #1976d2' : '1px solid #ddd',
+                          cursor: "pointer",
+                          border:
+                            selectedSavedAddressId === addr.id
+                              ? "2px solid #1976d2"
+                              : "1px solid #ddd",
                           borderRadius: 1,
-                          transition: 'all 0.3s',
-                          backgroundColor: selectedSavedAddressId === addr.id ? '#e3f2fd' : 'transparent',
-                          '&:hover': {
-                            bgcolor: '#e3f2fd',
-                            borderColor: '#1976d2',
-                            boxShadow: '0 2px 8px rgba(25, 118, 210, 0.1)',
+                          transition: "all 0.3s",
+                          backgroundColor:
+                            selectedSavedAddressId === addr.id
+                              ? "#e3f2fd"
+                              : "transparent",
+                          "&:hover": {
+                            bgcolor: "#e3f2fd",
+                            borderColor: "#1976d2",
+                            boxShadow: "0 2px 8px rgba(25, 118, 210, 0.1)",
                           },
                         }}
                         onClick={() => handleSelectSavedAddress(addr)}
                       >
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "flex-start",
+                          }}
+                        >
                           <Box sx={{ flex: 1 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                                mb: 0.5,
+                              }}
+                            >
                               <Typography variant="body2" fontWeight={600}>
                                 {addr.recipientName}
                               </Typography>
                               {addr.isDefault && (
-                                <Chip label="Mặc định" size="small" color="success" variant="outlined" />
+                                <Chip
+                                  label="Mặc định"
+                                  size="small"
+                                  color="success"
+                                  variant="outlined"
+                                />
                               )}
                             </Box>
-                            <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 0.5 }}>
+                            <Typography
+                              variant="caption"
+                              color="textSecondary"
+                              sx={{ display: "block", mt: 0.5 }}
+                            >
                               📞 {addr.phone}
                             </Typography>
-                            <Typography variant="body2" sx={{ mt: 1, color: '#555' }}>
+                            <Typography
+                              variant="body2"
+                              sx={{ mt: 1, color: "#555" }}
+                            >
                               {addr.fullAddress}
                             </Typography>
                           </Box>
@@ -475,35 +651,44 @@ const CreateOrderScreen: React.FC = () => {
                   </Box>
                   <Divider sx={{ my: 2 }} />
                   <Typography variant="caption" color="textSecondary">
-                    💡 Nhấp vào một địa chỉ để sử dụng hoặc điền thông tin thủ công bên dưới
+                    💡 Nhấp vào một địa chỉ để sử dụng hoặc điền thông tin thủ
+                    công bên dưới
                   </Typography>
                 </Box>
               )}
 
               {loadingSavedAddresses && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
+                >
                   <CircularProgress size={20} />
-                  <Typography variant="caption">Đang tải danh sách địa chỉ đã lưu...</Typography>
+                  <Typography variant="caption">
+                    Đang tải danh sách địa chỉ đã lưu...
+                  </Typography>
                 </Box>
               )}
 
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
                 {/* Province & District Row */}
-                <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'flex-start' }}>
+                <Box
+                  sx={{ display: "flex", gap: 2.5, alignItems: "flex-start" }}
+                >
                   {/* Province Selection */}
                   <FormControl fullWidth size="small" sx={{ flex: 1 }}>
-                    <InputLabel sx={{ color: '#666' }}>Tỉnh/Thành Phố</InputLabel>
+                    <InputLabel sx={{ color: "#666" }}>
+                      Tỉnh/Thành Phố
+                    </InputLabel>
                     <Select
                       label="Tỉnh/Thành Phố"
                       value={selectedProvince}
                       onChange={(e) => {
                         setSelectedProvince(e.target.value as string);
-                        setSelectedDistrict(''); // Reset district when province changes
+                        setSelectedDistrict(""); // Reset district when province changes
                       }}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
-                          '&:hover fieldset': {
-                            borderColor: '#1976d2',
+                        "& .MuiOutlinedInput-root": {
+                          "&:hover fieldset": {
+                            borderColor: "#1976d2",
                           },
                         },
                       }}
@@ -520,16 +705,23 @@ const CreateOrderScreen: React.FC = () => {
                   </FormControl>
 
                   {/* District Selection */}
-                  <FormControl fullWidth size="small" disabled={!selectedProvince} sx={{ flex: 1 }}>
+                  <FormControl
+                    fullWidth
+                    size="small"
+                    disabled={!selectedProvince}
+                    sx={{ flex: 1 }}
+                  >
                     <InputLabel>Quận/Huyện</InputLabel>
                     <Select
                       label="Quận/Huyện"
                       value={selectedDistrict}
-                      onChange={(e) => setSelectedDistrict(e.target.value as string)}
+                      onChange={(e) =>
+                        setSelectedDistrict(e.target.value as string)
+                      }
                       sx={{
-                        '& .MuiOutlinedInput-root': {
-                          '&:hover fieldset': {
-                            borderColor: '#1976d2',
+                        "& .MuiOutlinedInput-root": {
+                          "&:hover fieldset": {
+                            borderColor: "#1976d2",
                           },
                         },
                       }}
@@ -555,9 +747,9 @@ const CreateOrderScreen: React.FC = () => {
                   onChange={(e) => setStreetAddress(e.target.value)}
                   placeholder="VD: 123 Đường ABC"
                   sx={{
-                    '& .MuiOutlinedInput-root': {
-                      '&:hover fieldset': {
-                        borderColor: '#1976d2',
+                    "& .MuiOutlinedInput-root": {
+                      "&:hover fieldset": {
+                        borderColor: "#1976d2",
                       },
                     },
                   }}
@@ -573,9 +765,9 @@ const CreateOrderScreen: React.FC = () => {
                   placeholder="VD: 0987654321"
                   type="tel"
                   sx={{
-                    '& .MuiOutlinedInput-root': {
-                      '&:hover fieldset': {
-                        borderColor: '#1976d2',
+                    "& .MuiOutlinedInput-root": {
+                      "&:hover fieldset": {
+                        borderColor: "#1976d2",
                       },
                     },
                   }}
@@ -583,20 +775,36 @@ const CreateOrderScreen: React.FC = () => {
 
                 {/* Display full address preview */}
                 {selectedProvince && selectedDistrict && (
-                  <Paper sx={{ 
-                    p: 2, 
-                    backgroundColor: '#e3f2fd', 
-                    borderRadius: 1,
-                    border: '1px solid #90caf9',
-                    boxShadow: '0 2px 4px rgba(25, 118, 210, 0.1)'
-                  }}>
-                    <Typography variant="caption" sx={{ color: '#1565c0', fontWeight: '600' }}>
+                  <Paper
+                    sx={{
+                      p: 2,
+                      backgroundColor: "#e3f2fd",
+                      borderRadius: 1,
+                      border: "1px solid #90caf9",
+                      boxShadow: "0 2px 4px rgba(25, 118, 210, 0.1)",
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "#1565c0", fontWeight: "600" }}
+                    >
                       ✓ Địa chỉ giao hàng:
                     </Typography>
-                    <Typography variant="body2" sx={{ mt: 0.5, color: '#1565c0', fontWeight: '500' }}>
-                      {streetAddress ? `${streetAddress}, ` : ''}
-                      {VIETNAM_PROVINCES.find((p) => p.id === selectedProvince)?.name}, 
-                      {availableDistricts.find((d) => d.id === selectedDistrict)?.name}
+                    <Typography
+                      variant="body2"
+                      sx={{ mt: 0.5, color: "#1565c0", fontWeight: "500" }}
+                    >
+                      {streetAddress ? `${streetAddress}, ` : ""}
+                      {
+                        VIETNAM_PROVINCES.find((p) => p.id === selectedProvince)
+                          ?.name
+                      }
+                      ,
+                      {
+                        availableDistricts.find(
+                          (d) => d.id === selectedDistrict
+                        )?.name
+                      }
                     </Typography>
                   </Paper>
                 )}
@@ -605,10 +813,15 @@ const CreateOrderScreen: React.FC = () => {
           </Card>
 
           {/* Notes */}
-          <Card sx={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)', borderRadius: 2 }}>
-            <CardHeader 
-              title="📝 Ghi Chú Đơn Hàng" 
-              sx={{ backgroundColor: '#f5f7fa', borderBottom: '2px solid #e8ebf0' }}
+          <Card
+            sx={{ boxShadow: "0 2px 8px rgba(0,0,0,0.1)", borderRadius: 2 }}
+          >
+            <CardHeader
+              title="📝 Ghi Chú Đơn Hàng"
+              sx={{
+                backgroundColor: "#f5f7fa",
+                borderBottom: "2px solid #e8ebf0",
+              }}
             />
             <CardContent sx={{ pt: 2.5, pb: 2 }}>
               <TextField
@@ -620,9 +833,9 @@ const CreateOrderScreen: React.FC = () => {
                 onChange={(e) => order.setNotes(e.target.value)}
                 placeholder="Nhập ghi chú cho đơn hàng..."
                 sx={{
-                  '& .MuiOutlinedInput-root': {
-                    '&:hover fieldset': {
-                      borderColor: '#1976d2',
+                  "& .MuiOutlinedInput-root": {
+                    "&:hover fieldset": {
+                      borderColor: "#1976d2",
                     },
                   },
                 }}
@@ -632,64 +845,76 @@ const CreateOrderScreen: React.FC = () => {
         </Box>
 
         {/* Right: Payment & Summary */}
-        <Box sx={{ width: 350, flexShrink: 0, position: 'sticky', top: 80 }}>
-          <Card sx={{ 
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-            borderRadius: 2,
-            height: '100%'
-          }}>
-            <CardHeader 
-              title="💼 Tóm Tắt Đơn Hàng" 
-              sx={{ backgroundColor: '#1976d2', color: 'white' }}
+        <Box sx={{ width: 350, flexShrink: 0, position: "sticky", top: 80 }}>
+          <Card
+            sx={{
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              borderRadius: 2,
+              height: "100%",
+            }}
+          >
+            <CardHeader
+              title="💼 Tóm Tắt Đơn Hàng"
+              sx={{ backgroundColor: "#1976d2", color: "white" }}
             />
-                <CardContent sx={{ pt: 2.5, pb: 2 }}>
-                  {/* Payment Method */}
-                  <FormControl fullWidth sx={{ mb: 3 }}>
-                    <InputLabel>Chọn phương thức</InputLabel>
-                    <Select
-                      value={order.state.paymentMethod}
-                      label="Chọn phương thức"
-                      onChange={(e) =>
-                        order.setPaymentMethod(
-                          e.target.value as
-                            | 'CASH'
-                            | 'TRANSFER'
-                            | 'CARD'
-                            | 'E_WALLET'
-                        )
-                      }
+            <CardContent sx={{ pt: 2.5, pb: 2 }}>
+              {/* Payment Method */}
+              <FormControl fullWidth sx={{ mb: 3 }}>
+                <InputLabel>Chọn phương thức</InputLabel>
+                <Select
+                  value={order.state.paymentMethod}
+                  label="Chọn phương thức"
+                  onChange={(e) =>
+                    order.setPaymentMethod(e.target.value as "CASH" | "MOMO")
+                  }
                   sx={{
-                    '& .MuiOutlinedInput-root': {
-                      '&:hover fieldset': {
-                        borderColor: '#1976d2',
+                    "& .MuiOutlinedInput-root": {
+                      "&:hover fieldset": {
+                        borderColor: "#1976d2",
                       },
                     },
                   }}
                 >
                   <MenuItem value="CASH">💵 Tiền Mặt</MenuItem>
-                  <MenuItem value="TRANSFER">🏦 Chuyển Khoản</MenuItem>
-                  <MenuItem value="CARD">💳 Thẻ Tín Dụng</MenuItem>
-                  <MenuItem value="E_WALLET">📱 Ví Điện Tử</MenuItem>
+                  <MenuItem value="MOMO">📱 Ví Điện Tử</MenuItem>
                 </Select>
               </FormControl>
 
               <Divider sx={{ my: 3 }} />
 
               {/* Order Summary */}
-              <Typography variant="body2" sx={{ fontWeight: '600', mb: 2, color: '#1976d2' }}>
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: "600", mb: 2, color: "#1976d2" }}
+              >
                 📊 Chi Tiết Đơn Hàng
               </Typography>
 
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="body2" sx={{ color: '#666' }}>📦 Số lượng:</Typography>
-                <Typography variant="body2" sx={{ fontWeight: '600', color: '#1976d2' }}>
-                  {order.state.selectedItems.reduce((sum, item) => sum + item.quantity, 0)} cái
+              <Box
+                sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
+              >
+                <Typography variant="body2" sx={{ color: "#666" }}>
+                  📦 Số lượng:
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: "600", color: "#1976d2" }}
+                >
+                  {order.state.selectedItems.reduce(
+                    (sum, item) => sum + item.quantity,
+                    0
+                  )}{" "}
+                  cái
                 </Typography>
               </Box>
 
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="body2" sx={{ color: '#666' }}>Giá gốc:</Typography>
-                <Typography variant="body2" sx={{ fontWeight: '600' }}>
+              <Box
+                sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
+              >
+                <Typography variant="body2" sx={{ color: "#666" }}>
+                  Giá gốc:
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: "600" }}>
                   {formatCurrency(
                     order.state.selectedItems.reduce(
                       (sum, item) => sum + item.price * item.quantity,
@@ -699,17 +924,30 @@ const CreateOrderScreen: React.FC = () => {
                 </Typography>
               </Box>
 
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, pb: 2, borderBottom: '1px solid #e0e0e0' }}>
-                <Typography variant="body2" sx={{ color: '#666' }}>Giảm giá:</Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  mb: 2,
+                  pb: 2,
+                  borderBottom: "1px solid #e0e0e0",
+                }}
+              >
+                <Typography variant="body2" sx={{ color: "#666" }}>
+                  Giảm giá:
+                </Typography>
                 <Typography
                   variant="body2"
-                  sx={{ fontWeight: '600', color: '#f44336' }}
+                  sx={{ fontWeight: "600", color: "#f44336" }}
                 >
                   -
                   {formatCurrency(
                     order.state.selectedItems.reduce(
                       (sum, item) =>
-                        sum + (item.discountAmount ? item.discountAmount * item.quantity : 0),
+                        sum +
+                        (item.discountAmount
+                          ? item.discountAmount * item.quantity
+                          : 0),
                       0
                     )
                   )}
@@ -721,21 +959,24 @@ const CreateOrderScreen: React.FC = () => {
               {/* Total */}
               <Box
                 sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
                   p: 2,
-                  backgroundColor: '#e3f2fd',
+                  backgroundColor: "#e3f2fd",
                   borderRadius: 1,
-                  border: '2px solid #1976d2'
+                  border: "2px solid #1976d2",
                 }}
               >
-                <Typography variant="h6" sx={{ fontWeight: '600', color: '#1565c0' }}>
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: "600", color: "#1565c0" }}
+                >
                   💰 TỔNG:
                 </Typography>
                 <Typography
                   variant="h5"
-                  sx={{ fontWeight: 'bold', color: '#1565c0' }}
+                  sx={{ fontWeight: "bold", color: "#1565c0" }}
                 >
                   {formatCurrency(order.state.totalAmount)}
                 </Typography>
@@ -744,7 +985,7 @@ const CreateOrderScreen: React.FC = () => {
               <Divider sx={{ my: 3 }} />
 
               {/* Action Buttons */}
-              <Box sx={{ display: 'flex', gap: 1.5 }}>
+              <Box sx={{ display: "flex", gap: 1.5 }}>
                 <Button
                   fullWidth
                   variant="outlined"
@@ -752,15 +993,15 @@ const CreateOrderScreen: React.FC = () => {
                     order.reset();
                     navigate(-1);
                   }}
-                  sx={{ 
-                    textTransform: 'none',
-                    borderColor: '#e0e0e0',
-                    color: '#666',
+                  sx={{
+                    textTransform: "none",
+                    borderColor: "#e0e0e0",
+                    color: "#666",
                     py: 1.2,
-                    '&:hover': {
-                      borderColor: '#999',
-                      backgroundColor: '#f5f5f5'
-                    }
+                    "&:hover": {
+                      borderColor: "#999",
+                      backgroundColor: "#f5f5f5",
+                    },
                   }}
                 >
                   ❌ Hủy
@@ -775,25 +1016,25 @@ const CreateOrderScreen: React.FC = () => {
                     !order.state.selectedCustomer
                   }
                   sx={{
-                    textTransform: 'none',
-                    backgroundColor: '#1976d2',
-                    fontWeight: '600',
+                    textTransform: "none",
+                    backgroundColor: "#1976d2",
+                    fontWeight: "600",
                     py: 1.2,
-                    '&:hover': {
-                      backgroundColor: '#1565c0'
+                    "&:hover": {
+                      backgroundColor: "#1565c0",
                     },
-                    '&:disabled': {
-                      backgroundColor: '#ccc'
-                    }
+                    "&:disabled": {
+                      backgroundColor: "#ccc",
+                    },
                   }}
                 >
                   {submitLoading ? (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <CircularProgress size={20} sx={{ color: 'white' }} />
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <CircularProgress size={20} sx={{ color: "white" }} />
                       Đang xử lý...
                     </Box>
                   ) : (
-                    '✅ Tạo Đơn Hàng'
+                    "✅ Tạo Đơn Hàng"
                   )}
                 </Button>
               </Box>
@@ -817,17 +1058,24 @@ const CreateOrderScreen: React.FC = () => {
       />
 
       {/* Promotion Modal */}
-      <Dialog open={showPromotionModal} onClose={() => setShowPromotionModal(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Chọn Khuyến Mãi cho {selectedItemForPromotion?.optionValue}</DialogTitle>
+      <Dialog
+        open={showPromotionModal}
+        onClose={() => setShowPromotionModal(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Chọn Khuyến Mãi cho {selectedItemForPromotion?.optionValue}
+        </DialogTitle>
         <DialogContent>
           {loadingPromotions ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+            <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
               <CircularProgress />
             </Box>
           ) : (
             <Box sx={{ pt: 2 }}>
               {availablePromotions.length > 0 ? (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                   <Button
                     variant="outlined"
                     onClick={() => handleSelectPromotion(null)}
@@ -840,26 +1088,29 @@ const CreateOrderScreen: React.FC = () => {
                       key={promo.id}
                       sx={{
                         p: 2,
-                        cursor: 'pointer',
-                        border: '1px solid #ddd',
-                        '&:hover': { bgcolor: '#f5f5f5' },
+                        cursor: "pointer",
+                        border: "1px solid #ddd",
+                        "&:hover": { bgcolor: "#f5f5f5" },
                       }}
                       onClick={() => handleSelectPromotion(promo)}
                     >
-                      <Typography sx={{ fontWeight: 'bold' }}>
+                      <Typography sx={{ fontWeight: "bold" }}>
                         {promo.name}
                       </Typography>
                       <Typography variant="body2">
                         Giảm: {formatCurrency(promo.discountValue || 0)}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: '#666' }}>
+                      <Typography variant="caption" sx={{ color: "#666" }}>
                         {promo.description}
                       </Typography>
                     </Paper>
                   ))}
                 </Box>
               ) : (
-                <Typography variant="body2" sx={{ color: '#999', textAlign: 'center', py: 3 }}>
+                <Typography
+                  variant="body2"
+                  sx={{ color: "#999", textAlign: "center", py: 3 }}
+                >
                   Không có khuyến mãi nào cho sản phẩm này
                 </Typography>
               )}

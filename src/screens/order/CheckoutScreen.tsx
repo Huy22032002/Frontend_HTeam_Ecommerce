@@ -93,7 +93,7 @@ export default function CheckoutScreen() {
   ) => {
     setFormData((prev) => ({
       ...prev,
-      paymentMethod: e.target.value as "CASH" | "TRANSFER" | "CARD" | "MOMO",
+      paymentMethod: e.target.value as "CASH" | "MOMO",
     }));
   };
 
@@ -298,7 +298,6 @@ export default function CheckoutScreen() {
                   open={openForm}
                   onClose={() => setOpenForm(false)}
                   onSubmit={addAddress}
-                  initialData={null}
                 />
               </Stack>
             </CardContent>

@@ -71,7 +71,9 @@ const AddDeliveryForm = ({
     const provinceDistricts = selectedProvince?.districts || [];
     setDistricts(provinceDistricts);
 
-    const selectedDistrict = provinceDistricts.find((d) => d.name === district);
+    const selectedDistrict = provinceDistricts.find(
+      (d: any) => d.name === district
+    );
     const districtWards = selectedDistrict?.wards || [];
     setWards(districtWards);
 

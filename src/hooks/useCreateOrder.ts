@@ -1,12 +1,16 @@
-import { useState } from 'react';
-import type { OrderItem, OrderItemDisplay, CreateOrderRequest } from '../models/orders/CreateOrderRequest';
-import type { ReadableCustomer } from '../models/customer/ReadableCustomer';
-import { PromotionApi } from '../api/promotion/PromotionApi';
+import { useState } from "react";
+import type {
+  OrderItem,
+  OrderItemDisplay,
+  CreateOrderRequest,
+} from "../models/orders/CreateOrderRequest";
+import type { ReadableCustomer } from "../models/customer/ReadableCustomer";
+import { PromotionApi } from "../api/promotion/PromotionApi";
 
 export interface CreateOrderState {
   selectedCustomer: ReadableCustomer | null;
   selectedItems: OrderItemDisplay[];
-  paymentMethod: 'CASH' | 'TRANSFER' | 'CARD' | 'E_WALLET';
+  paymentMethod: "CASH" | "MOMO";
   notes: string;
   shippingAddress: string;
   receiverPhoneNumber: string;
@@ -19,10 +23,10 @@ export const useCreateOrder = () => {
   const [state, setState] = useState<CreateOrderState>({
     selectedCustomer: null,
     selectedItems: [],
-    paymentMethod: 'CASH',
-    notes: '',
-    shippingAddress: '',
-    receiverPhoneNumber: '',
+    paymentMethod: "CASH",
+    notes: "",
+    shippingAddress: "",
+    receiverPhoneNumber: "",
     totalAmount: 0,
     loading: false,
     error: null,
@@ -30,7 +34,7 @@ export const useCreateOrder = () => {
 
   // Chọn khách hàng
   const setCustomer = (customer: ReadableCustomer | null) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       selectedCustomer: customer,
     }));
@@ -38,16 +42,16 @@ export const useCreateOrder = () => {
 
   // Thêm sản phẩm vào đơn hàng
   const addItem = (item: OrderItemDisplay) => {
-    setState(prev => {
+    setState((prev) => {
       const existingItem = prev.selectedItems.find(
-        i => i.productVariantOptionId === item.productVariantOptionId
+        (i) => i.productVariantOptionId === item.productVariantOptionId
       );
 
       let updatedItems: OrderItemDisplay[];
 
       if (existingItem) {
         // Nếu sản phẩm đã tồn tại, cộng thêm số lượng
-        updatedItems = prev.selectedItems.map(i =>
+        updatedItems = prev.selectedItems.map((i) =>
           i.productVariantOptionId === item.productVariantOptionId
             ? { ...i, quantity: i.quantity + item.quantity }
             : i
@@ -74,12 +78,15 @@ export const useCreateOrder = () => {
   };
 
   // Cập nhật số lượng sản phẩm
-  const updateItemQuantity = (productVariantOptionId: number, quantity: number) => {
-    setState(prev => {
+  const updateItemQuantity = (
+    productVariantOptionId: number,
+    quantity: number
+  ) => {
+    setState((prev) => {
       if (quantity <= 0) {
         // Xoá sản phẩm nếu số lượng <= 0
         const updatedItems = prev.selectedItems.filter(
-          i => i.productVariantOptionId !== productVariantOptionId
+          (i) => i.productVariantOptionId !== productVariantOptionId
         );
         const total = updatedItems.reduce((sum, i) => {
           const itemTotal = i.price * i.quantity;
@@ -94,7 +101,7 @@ export const useCreateOrder = () => {
         };
       }
 
-      const updatedItems = prev.selectedItems.map(i =>
+      const updatedItems = prev.selectedItems.map((i) =>
         i.productVariantOptionId === productVariantOptionId
           ? { ...i, quantity }
           : i
@@ -116,9 +123,9 @@ export const useCreateOrder = () => {
 
   // Xoá sản phẩm khỏi đơn hàng
   const removeItem = (productVariantOptionId: number) => {
-    setState(prev => {
+    setState((prev) => {
       const updatedItems = prev.selectedItems.filter(
-        i => i.productVariantOptionId !== productVariantOptionId
+        (i) => i.productVariantOptionId !== productVariantOptionId
       );
       const total = updatedItems.reduce((sum, i) => {
         const itemTotal = i.price * i.quantity;
@@ -135,9 +142,14 @@ export const useCreateOrder = () => {
   };
 
   // Cập nhật promotion cho sản phẩm
-  const updateItemPromotion = (productVariantOptionId: number, promotionId?: number, discountAmount?: number, promotionName?: string) => {
-    setState(prev => {
-      const updatedItems = prev.selectedItems.map(i =>
+  const updateItemPromotion = (
+    productVariantOptionId: number,
+    promotionId?: number,
+    discountAmount?: number,
+    promotionName?: string
+  ) => {
+    setState((prev) => {
+      const updatedItems = prev.selectedItems.map((i) =>
         i.productVariantOptionId === productVariantOptionId
           ? { ...i, promotionId, discountAmount, promotionName }
           : i
@@ -158,8 +170,8 @@ export const useCreateOrder = () => {
   };
 
   // Cập nhật phương thức thanh toán
-  const setPaymentMethod = (method: 'CASH' | 'TRANSFER' | 'CARD' | 'E_WALLET') => {
-    setState(prev => ({
+  const setPaymentMethod = (method: "CASH" | "MOMO") => {
+    setState((prev) => ({
       ...prev,
       paymentMethod: method,
     }));
@@ -167,7 +179,7 @@ export const useCreateOrder = () => {
 
   // Cập nhật ghi chú
   const setNotes = (notes: string) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       notes,
     }));
@@ -175,7 +187,7 @@ export const useCreateOrder = () => {
 
   // Cập nhật địa chỉ giao hàng
   const setShippingAddress = (address: string) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       shippingAddress: address,
     }));
@@ -183,7 +195,7 @@ export const useCreateOrder = () => {
 
   // Cập nhật số điện thoại người nhận
   const setReceiverPhoneNumber = (phoneNumber: string) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       receiverPhoneNumber: phoneNumber,
     }));
@@ -195,7 +207,7 @@ export const useCreateOrder = () => {
       const response = await PromotionApi.getByProductSku(sku);
       return response.data;
     } catch (error) {
-      console.error('Error fetching promotions:', error);
+      console.error("Error fetching promotions:", error);
       return [];
     }
   };
@@ -203,28 +215,31 @@ export const useCreateOrder = () => {
   // Xây dựng request để gửi đến backend
   const buildOrderRequest = (): CreateOrderRequest | null => {
     if (!state.selectedCustomer) {
-      setState(prev => ({ ...prev, error: 'Vui lòng chọn khách hàng' }));
+      setState((prev) => ({ ...prev, error: "Vui lòng chọn khách hàng" }));
       return null;
     }
 
     if (state.selectedItems.length === 0) {
-      setState(prev => ({ ...prev, error: 'Vui lòng thêm ít nhất 1 sản phẩm' }));
+      setState((prev) => ({
+        ...prev,
+        error: "Vui lòng thêm ít nhất 1 sản phẩm",
+      }));
       return null;
     }
 
     // Lấy userId từ localStorage
     let userId: number | null = null;
     try {
-      const userStr = localStorage.getItem('user');
+      const userStr = localStorage.getItem("user");
       if (userStr) {
         const user = JSON.parse(userStr);
         userId = user?.id || null;
       }
     } catch (error) {
-      console.error('Error getting userId:', error);
+      console.error("Error getting userId:", error);
     }
 
-    const items: OrderItem[] = state.selectedItems.map(item => ({
+    const items: OrderItem[] = state.selectedItems.map((item) => ({
       variantId: item.variantId,
       productVariantOptionId: item.productVariantOptionId,
       sku: item.sku,
@@ -251,10 +266,10 @@ export const useCreateOrder = () => {
     setState({
       selectedCustomer: null,
       selectedItems: [],
-      paymentMethod: 'CASH',
-      notes: '',
-      shippingAddress: '',
-      receiverPhoneNumber: '',
+      paymentMethod: "CASH",
+      notes: "",
+      shippingAddress: "",
+      receiverPhoneNumber: "",
       totalAmount: 0,
       loading: false,
       error: null,
@@ -275,7 +290,9 @@ export const useCreateOrder = () => {
     fetchPromotionsForSku,
     buildOrderRequest,
     reset,
-    setLoading: (loading: boolean) => setState(prev => ({ ...prev, loading })),
-    setError: (error: string | null) => setState(prev => ({ ...prev, error })),
+    setLoading: (loading: boolean) =>
+      setState((prev) => ({ ...prev, loading })),
+    setError: (error: string | null) =>
+      setState((prev) => ({ ...prev, error })),
   };
 };

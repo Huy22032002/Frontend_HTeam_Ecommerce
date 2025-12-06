@@ -39,23 +39,28 @@ const RemainingLabel = styled(Box)(() => ({
 }));
 
 const FlashSaleDetailCard: React.FC<FlashSaleCardProps> = ({ item }) => {
+  const navigate = useNavigate();
+
+  if (!item.option) return null;
+
   const discountPercent = Math.round(
     ((item.option.availability.regularPrice - item.flashPrice) /
       item.option.availability.regularPrice) *
       100
   );
 
-  const navigate = useNavigate();
-
   return (
     <Card
       sx={{ position: "relative", borderRadius: 2, overflow: "hidden" }}
-      onClick={() => navigate(`/product/${item.option.variantId}`)}
+      onClick={() => {
+        if (!item.option?.variantId) return;
+        navigate(`/product/${item.option.variantId}`);
+      }}
     >
       <DiscountLabel>-{discountPercent}%</DiscountLabel>
       <img
-        src={item.option.images[0].productImageUrl}
-        alt={item.option.name}
+        src={item?.option?.images?.[0]?.productImageUrl || undefined}
+        alt={item?.option?.name ? item.option.name : undefined}
         style={{ width: "100%", height: 180, objectFit: "cover" }}
       />
       <CardContent>
@@ -63,7 +68,7 @@ const FlashSaleDetailCard: React.FC<FlashSaleCardProps> = ({ item }) => {
           variant="body2"
           sx={{ fontWeight: 500, height: 40, overflow: "hidden" }}
         >
-          {item.option.name}
+          {item?.option?.name ? item.option.name : undefined}
         </Typography>
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
           <Typography variant="body1" sx={{ fontWeight: "bold", color: "red" }}>
@@ -73,7 +78,10 @@ const FlashSaleDetailCard: React.FC<FlashSaleCardProps> = ({ item }) => {
             variant="body2"
             sx={{ textDecoration: "line-through", color: "#999" }}
           >
-            {item.option.availability.regularPrice.toLocaleString("vi-VN")} ₫
+            {item.option?.availability.regularPrice
+              ? item.option.availability.regularPrice.toLocaleString("vi-VN")
+              : null}{" "}
+            ₫
           </Typography>
         </Stack>
         <Box sx={{ mt: 1 }}>

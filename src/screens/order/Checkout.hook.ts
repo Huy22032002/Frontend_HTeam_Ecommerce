@@ -43,8 +43,8 @@ const useCheckout = () => {
   const [orderId, setOrderId] = useState(null);
 
   // Address states
-  const [selectedProvince, setSelectedProvince] = useState("");
-  const [selectedDistrict, setSelectedDistrict] = useState("");
+  // const [selectedProvince, setSelectedProvince] = useState("");
+  // const [selectedDistrict, setSelectedDistrict] = useState("");
   const [openForm, setOpenForm] = useState(false);
 
   //getListDelivery of Customer
@@ -122,7 +122,7 @@ const useCheckout = () => {
     receiverPhoneNumber: "",
     shippingAddress: "",
     notes: "",
-    paymentMethod: "CASH" as "CASH" | "TRANSFER" | "CARD" | "MOMO",
+    paymentMethod: "CASH" as "CASH" | "MOMO",
   });
 
   //tên + sdt + địa chỉ + note

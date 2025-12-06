@@ -15,3 +15,5 @@ export function useExternalSDK(url: string, onload: () => void) {
     };
   }, [url, onload]);
 }
+
+// tải 1 script từ bên ngoài khi 1 component dc render

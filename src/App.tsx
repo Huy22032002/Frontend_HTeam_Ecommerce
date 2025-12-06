@@ -40,6 +40,7 @@ function AppContent() {
     location.pathname === "/login" ||
     location.pathname === "/signup" ||
     location.pathname === "/otp" ||
+    location.pathname === "/signup/set-password" ||
     location.pathname === "/forget-password";
 
   return (

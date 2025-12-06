@@ -44,7 +44,7 @@ export interface OrderReadableDTO {
   id: number;
   orderCode: string;
   customerId?: number; // ID khách hàng
-  customerName: string;
+  customerName: string; //tên hoặc sđt dùng để đăng ký tài khoản
   total: number;
   totalDiscount?: number; // Tổng tiền giảm từ promotions
   status:

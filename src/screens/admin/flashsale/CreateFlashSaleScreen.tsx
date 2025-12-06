@@ -43,6 +43,8 @@ const CreateFlashSaleScreen = () => {
       flashPrice: flashSaleItem.flashPrice,
       limitQuantity: flashSaleItem.limitQuantity,
       soldQuantity: 0,
+      endTime: "", //fix
+      option: null, //fix
     }));
 
     setItems(newItems);
