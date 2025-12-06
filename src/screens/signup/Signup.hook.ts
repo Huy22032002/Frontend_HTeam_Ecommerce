@@ -1,19 +1,36 @@
 import { useState } from "react";
 import { loginFacebook, loginGoogle } from "../../api/customer/CustomerAuth";
 import { useNavigate } from "react-router-dom";
+import { OTPApi } from "../../api/OtpApi";
 
 const useSignup = () => {
-  //navgate
+  //navigate
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const validateEmail = (value: string) => {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const validatePhone = (value: string) => {
+    const regex = /^(?:\+84|0)(?:3|5|7|8|9)\d{8}$/;
     return regex.test(value);
   };
+
+  //đăng ký = sđt
+  const handleSignUpPhone = async () => {
+    if (!phone || error) return;
+
+    try {
+      const res = await OTPApi.sendOtp(phone);
+      console.log(res);
+      navigate("/otp", { state: { phone } });
+    } catch (error: any) {
+      console.error("Lỗi gửi OTP:", error);
+      setError(error.message);
+    }
+  };
+
+  //-------------
 
   const handleLoginFB = async (accessTokenFB: string) => {
     setLoading(true);
@@ -65,15 +82,17 @@ const useSignup = () => {
   };
 
   return {
-    email,
-    setEmail,
-    validateEmail,
+    phone,
+    setPhone,
+    validatePhone,
     error,
     setError,
     loading,
     //handle login oauth
     handleLoginFB,
     handleLoginGG,
+    //signup
+    handleSignUpPhone,
   };
 };
 

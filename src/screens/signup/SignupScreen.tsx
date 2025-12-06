@@ -18,14 +18,16 @@ const SignupScreen = () => {
   const colors = tokens(theme.palette.mode);
 
   const {
-    email,
-    setEmail,
-    validateEmail,
+    phone,
+    setPhone,
+    validatePhone,
     error,
     setError,
     //handle login
     handleLoginFB,
     handleLoginGG,
+    //sign up phone
+    handleSignUpPhone,
   } = useSignup();
 
   return (
@@ -51,21 +53,25 @@ const SignupScreen = () => {
           Đăng ký
         </Typography>
 
-        {/* email */}
+        {/* sdt */}
         <TextField
           required
-          value={email}
-          label="Email"
-          placeholder="Email"
+          value={phone}
+          label="Số điện thoại"
+          placeholder="Nhập số điện thoại Việt Nam"
           variant="outlined"
-          type="email"
+          type="tel"
           onChange={(e) => {
-            setEmail(e.target.value);
+            setPhone(e.target.value);
             if (!e.target.value) {
-              setError("Vui lòng nhập email");
-            } else if (!validateEmail(e.target.value)) {
-              setError("Email không hợp lệ!");
-            } else {
+              setError("Vui lòng nhập số điện thoại");
+            } else if (!validatePhone(e.target.value)) {
+              setError("Số điện thoại không hợp lệ!");
+            } else if (
+              error === "Vui lòng nhập số điện thoại" ||
+              error === "Số điện thoại không hợp lệ!"
+            ) {
+              // chỉ clear nếu lỗi hiện tại là do input
               setError("");
             }
           }}
@@ -79,8 +85,8 @@ const SignupScreen = () => {
             backgroundColor: colors.redAccent[500],
           }}
           variant="contained"
-          disabled={Boolean(error) || !email}
-          //   onClick={handleLogin}
+          disabled={Boolean(error) || !phone}
+          onClick={handleSignUpPhone}
         >
           TIẾP THEO
         </Button>

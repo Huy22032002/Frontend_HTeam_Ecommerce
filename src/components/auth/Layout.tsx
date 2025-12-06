@@ -22,7 +22,7 @@ const AuthLayout = ({ children, screenName }: AuthLayoutProps) => {
       }}
     >
       <HeaderAuth
-        title="Shepop"
+        title="HEcommerce"
         subtitle={screenName === "login" ? "Đăng nhập" : "Đăng ký"}
       />
 
@@ -33,7 +33,6 @@ const AuthLayout = ({ children, screenName }: AuthLayoutProps) => {
           sx={{
             flex: 1,
             background: colors.greenAccent[100],
-            //background: "url(/banner.png) center/cover no-repeat",
           }}
         />
 

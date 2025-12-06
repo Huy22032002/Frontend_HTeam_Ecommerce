@@ -1,0 +1,221 @@
+import {
+  Box,
+  Typography,
+  Autocomplete,
+  TextField,
+  useTheme,
+  Pagination,
+} from "@mui/material";
+import { useEffect, useState } from "react";
+import useProductByCategory from "./ProductByCategory.hook";
+import FilterSideBar from "../../../components/product/FilterSideBar";
+import { useParams, useNavigate } from "react-router-dom";
+import ProductVariantList from "../../../components/product/ProductVariantsList";
+import { tokens } from "../../../theme/theme";
+
+const ProductsByCategory = () => {
+  const { categoryId } = useParams<{ categoryId: string }>();
+  const navigate = useNavigate();
+
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
+
+  //combo box
+  const options = ["Nổi bật nhất", "Giá thấp -> cao", "Giá cao -> thấp"];
+  const [selectedValue, setSelectedValue] = useState(options[0]);
+
+  const {
+    //manufacturer
+    getListManufacturerByCategory,
+    //variants
+    variants,
+    getListProductByCategoryId,
+    getListProductWithFilters,
+    //category
+    categoryName,
+    currentPage,
+    totalPages,
+  } = useProductByCategory();
+
+  useEffect(() => {
+    if (categoryId) {
+      getListManufacturerByCategory(Number(categoryId));
+      getListProductByCategoryId(Number(categoryId), 0);
+      // Tự động set category filter với category name
+      // Note: Lấy category name từ categoryName state sau khi load
+    }
+  }, [categoryId]);
+
+  // Tự động áp dụng category filter khi categoryName được load
+  useEffect(() => {
+    if (categoryName && !filters.categories?.includes(categoryName)) {
+      const newFilters = { ...filters, categories: [categoryName] };
+      setFilters(newFilters);
+      // Gọi API với category filter mặc định
+      handleFilterChange(newFilters);
+    }
+  }, [categoryName]);
+
+  //filter
+  const [filteredVariants, setFilteredVariants] = useState(variants);
+  const [filters, setFilters] = useState<{
+    minPrice?: number;
+    maxPrice?: number;
+    available?: boolean;
+    hasSalePrice?: boolean;
+    manufacturers?: string[];
+    categories?: string[];
+    sortBy?: string;
+    sortOrder?: string;
+  }>({});
+
+  const handleFilterChange = async (newFilters: typeof filters) => {
+    setFilters(newFilters);
+    // Call API with new filters for server-side filtering
+    await getListProductWithFilters({
+      ...newFilters,
+      page: 0,
+    });
+  };
+
+  useEffect(() => {
+    let result = [...variants];
+
+    // Note: API đã xử lý filtering (price, availability, sale price, manufacturers)
+    // Ở đây chỉ cần:
+    // 1) Lọc mặc định: variant có option còn hàng (nếu không có filter nào được apply)
+    // 2) Sort theo sortBy từ FilterSideBar hoặc selectedValue (Autocomplete cũ)
+
+    const hasAnyFilter = Object.values(filters).some((value) => {
+      if (Array.isArray(value)) return value.length > 0;
+      return value !== undefined && value !== null;
+    });
+
+    // Default filter: chỉ hiển thị sản phẩm còn hàng (khi không có filter nào)
+    if (!hasAnyFilter) {
+      result = result.filter((variant) =>
+        variant.options.some(
+          (opt) =>
+            opt.availability?.productStatus === true &&
+            (opt.availability?.quantity ?? 0) > 0
+        )
+      );
+    }
+
+    // Helper: lấy giá min
+    const getSalePrice = (variant: any) => {
+      if (!variant.options || variant.options.length === 0) return 0;
+      const prices = variant.options
+        .filter((o: any) => o.availability?.productStatus)
+        .map((o: any) => {
+          const price = o.availability?.salePrice;
+          return price && price > 0 ? price : o.availability?.regularPrice || 0;
+        });
+      return prices.length > 0 ? Math.min(...prices) : 0;
+    };
+
+    // Sort theo FilterSideBar (prioritized)
+    if (filters.sortBy === "price") {
+      result.sort((a, b) => {
+        const priceA = getSalePrice(a);
+        const priceB = getSalePrice(b);
+        return filters.sortOrder === "asc" ? priceA - priceB : priceB - priceA;
+      });
+    }
+
+    // Fallback: Sort theo Autocomplete (cách cũ, compatibility)
+    if (selectedValue === "Giá thấp -> cao" && filters.sortBy !== "price") {
+      result.sort((a, b) => getSalePrice(a) - getSalePrice(b));
+    }
+
+    if (selectedValue === "Giá cao -> thấp" && filters.sortBy !== "price") {
+      result.sort((a, b) => getSalePrice(b) - getSalePrice(a));
+    }
+
+    setFilteredVariants(result);
+  }, [variants, selectedValue, filters.sortBy, filters.sortOrder]);
+
+  //-------------------
+
+  return (
+    <Box
+      display="flex"
+      flexDirection="column"
+      sx={{
+        px: { xs: 2, sm: 4, md: 8, lg: 20 },
+        background: colors.greenAccent[700],
+        paddingBottom: 4,
+        width: "100%",
+        overflow: "hidden",
+      }}
+    >
+      {/* title */}
+      <Typography my={2} fontWeight="bold" variant="h2">
+        {categoryName || ""}
+      </Typography>
+
+      {/* list manufacturers 
+      <ManufacturerTabs items={manufacturers} /> */}
+
+      <Box display="flex" flexDirection="row" sx={{ width: "100%", gap: 2 }}>
+        {/* left : sideBarFilter */}
+        <FilterSideBar
+          onFilterChange={handleFilterChange}
+          hideCategories={true}
+        />
+        {/* right: filter + list products */}
+        <Box sx={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
+          {/* filter */}
+          <Box display="flex" justifyContent="flex-end" p={2} mb={2}>
+            <Autocomplete
+              sx={{ width: 200, height: 32, background: colors.primary[400] }}
+              options={options}
+              value={selectedValue}
+              onChange={(_event, newValue) => setSelectedValue(newValue || "")}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  size="small"
+                  sx={{
+                    "& .MuiInputBase-root": {
+                      height: 32, // set height của input
+                      minHeight: "32px",
+                    },
+                  }}
+                />
+              )}
+            />
+          </Box>
+          {/* list variants  */}
+          <Box sx={{ overflow: "hidden" }}>
+            <ProductVariantList
+              data={filteredVariants}
+              maxColumns={{ xs: 1, sm: 2, md: 2, lg: 4, xl: 4 }}
+              onItemClick={(item) => navigate(`/product/${item.id}`)}
+            />
+          </Box>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+              <Pagination
+                count={totalPages}
+                page={currentPage}
+                onChange={(_event, page) => {
+                  getListProductWithFilters({
+                    ...filters,
+                    page: page - 1,
+                  });
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                color="primary"
+                size="large"
+              />
+            </Box>
+          )}
+        </Box>
+      </Box>
+    </Box>
+  );
+};
+
+export default ProductsByCategory;

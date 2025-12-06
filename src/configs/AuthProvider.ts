@@ -1,6 +1,6 @@
 export const providers = {
   google: {
-    sdkUrl: "https://accounts.google.com/gsi/client",
+    sdkUrl: "https://accounts.google.com/gsi/client", //sdk của google identify service
     init: (onSuccess: (res: any) => void, buttonRef: HTMLElement | null) => {
       window.google.accounts.id.initialize({
         client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,

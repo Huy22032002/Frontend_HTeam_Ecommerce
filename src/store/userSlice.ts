@@ -1,19 +1,28 @@
 import { createSlice } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
+import type { ReadableUser } from "../models/user/ReadableUser";
+
+interface UserState {
+  user: ReadableUser | null;
+  isAuthenticated: boolean;
+}
+
+const initialState: UserState = {
+  user: null,
+  isAuthenticated: false,
+};
 
 const slice = createSlice({
   name: "user",
-  initialState: {
-    userId: null,
-    email: null,
-  },
+  initialState,
   reducers: {
-    login: (state, action) => {
-      state.userId = action.payload.id;
-      state.email = action.payload.email;
+    login: (state, action: PayloadAction<ReadableUser>) => {
+      state.user = action.payload;
+      state.isAuthenticated = true;
     },
     logout: (state) => {
-      state.userId = null;
-      state.email = null;
+      state.user = null;
+      state.isAuthenticated = false;
     },
   },
 });

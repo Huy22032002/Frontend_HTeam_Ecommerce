@@ -22,30 +22,26 @@ const useLogin = () => {
   const handleLoginFB = async (accessTokenFB: string) => {
     setLoading(true);
     setSuccess(false);
+    setError(false);
+    setMessage("");
 
     try {
       const loginResponse = await loginFacebook(accessTokenFB);
       if (loginResponse == null) {
-        console.log(loginResponse);
-
-        setSuccess(false);
         setError(true);
+        setMessage("Đăng nhập thất bại");
         setLoading(false);
         return;
       }
-
       setLoading(false);
       setSuccess(true);
-
-      // đợi 1.5s rồi mới chuyển trang
-      setTimeout(() => {
-        navigate("/");
-      }, 1500);
+      navigate("/");
     } catch (err: unknown) {
       setSuccess(false);
       setLoading(false);
+      setError(true);
+      
       if (err instanceof Error) {
-        setError(true);
         setMessage(err.message || "Đăng nhập thất bại");
       } else {
         setMessage("Đã xảy ra lỗi không xác định");
@@ -56,6 +52,8 @@ const useLogin = () => {
   const handleLogin = async () => {
     setLoading(true);
     setSuccess(false);
+    setError(false);
+    setMessage("");
 
     const data: AuthRequest = {
       username: username,
@@ -68,6 +66,7 @@ const useLogin = () => {
       if (!loginResponse) {
         setSuccess(false);
         setError(true);
+        setMessage("Đăng nhập thất bại");
         setLoading(false);
         return;
       }
@@ -75,27 +74,34 @@ const useLogin = () => {
       setLoading(false);
       setSuccess(true);
 
-      setTimeout(() => {
-        navigate("/");
-      }, 1500);
-    } catch (err: any) {
+      navigate("/");
+    } catch (err: unknown) {
       setSuccess(false);
       setLoading(false);
       setError(true);
-      setMessage(err.errorMessage);
+      
+      if (err instanceof Error) {
+        setMessage(err.message || "Đăng nhập thất bại");
+      } else {
+        setMessage("Đã xảy ra lỗi không xác định");
+      }
     }
   };
 
   const handleLoginGG = async (jwtGoogleToken: string) => {
     setLoading(true);
     setSuccess(false);
+    setError(false);
+    setMessage("");
+
+    console.log("jwt Google: ", jwtGoogleToken);
 
     try {
       const loginResponse = await loginGoogle(jwtGoogleToken);
 
       if (loginResponse == null) {
-        setSuccess(false);
         setError(true);
+        setMessage("Đăng nhập thất bại");
         setLoading(false);
         return;
       }
@@ -103,14 +109,13 @@ const useLogin = () => {
       setLoading(false);
       setSuccess(true);
 
-      setTimeout(() => {
-        navigate("/");
-      }, 1500);
+      navigate("/");
     } catch (err: unknown) {
       setSuccess(false);
       setLoading(false);
+      setError(true);
+      
       if (err instanceof Error) {
-        setError(true);
         setMessage(err.message || "Đăng nhập thất bại");
       } else {
         setMessage("Đã xảy ra lỗi không xác định");
