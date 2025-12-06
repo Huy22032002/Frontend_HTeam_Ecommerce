@@ -4,12 +4,17 @@ import type { FlashSaleItemDTO } from "../../models/flashSale/FlashSaleItemDTO";
 import type { CreateFlashSaleDTO } from "../../models/flashSale/CreateFlashSaleDTO";
 import type { FlashSaleDTO } from "../../models/flashSale/FlashSaleDTO";
 
-function getAuthHeader() {
+export const getAuthHeader = (): Record<string, string> => {
   const token = localStorage.getItem("token");
-  return token
-    ? { Authorization: `Bearer ${token}`, "Access-Control-Allow-Origin": "*" }
-    : {};
-}
+  if (!token) return { "Content-Type": "application/json" };
+
+  return {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  };
+};
+
 const API_BASE = import.meta.env.VITE_BASE_URL;
 
 export const FlashSaleApi = {
