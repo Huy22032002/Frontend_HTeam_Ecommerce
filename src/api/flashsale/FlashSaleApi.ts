@@ -5,7 +5,7 @@ import type { CreateFlashSaleDTO } from "../../models/flashSale/CreateFlashSaleD
 import type { FlashSaleDTO } from "../../models/flashSale/FlashSaleDTO";
 
 export const getAuthHeader = (): Record<string, string> => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token") || "";
   if (!token) return { "Content-Type": "application/json" };
 
   return {
@@ -38,6 +38,7 @@ export const FlashSaleApi = {
       {
         params: { page, size },
         headers: getAuthHeader(),
+        withCredentials: true,
       }
     );
     console.log("list active flash sale items: ", response.data);
