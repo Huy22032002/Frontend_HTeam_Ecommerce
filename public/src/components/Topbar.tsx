@@ -119,7 +119,7 @@ const Topbar: React.FC = () => {
     >
       {/* left box */}
       <Box display="flex" gap={2}>
-        {/* logo */}
+        {/* logo1.png */}
         <Box
           component="img"
           src="./logo1.png"
