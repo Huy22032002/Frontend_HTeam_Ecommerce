@@ -4,9 +4,7 @@ import type { Category } from "../../models/catalogs/Category";
 const API_BASE = import.meta.env.VITE_BASE_URL + "/api";
 
 function getAuthHeader() {
-  // const token = localStorage.getItem("token");
-  const token =
-    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjEiLCJyb2xlIjpbeyJhdXRob3JpdHkiOiJbQURNSU5dIn1dLCJpYXQiOjE3NTgwMDQ2NTAsImV4cCI6MjM2MjgwNDY1MH0.OV95kgd1qw0UlrEE4oh9jBVuQiVqYVCVcP77-SxeL00";
+  const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
