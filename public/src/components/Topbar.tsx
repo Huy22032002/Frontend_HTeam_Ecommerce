@@ -122,7 +122,7 @@ const Topbar: React.FC = () => {
         {/* logo */}
         <Box
           component="img"
-          src="/src/assets/logo1.png"
+          src="./logo1.png"
           alt="Logo"
           sx={{
             height: 52,
@@ -240,7 +240,7 @@ const Topbar: React.FC = () => {
         )}
 
         {/* Chat Button */}
-        <IconButton 
+        <IconButton
           onClick={() => setOpenChatBox((prev) => !prev)}
           sx={{
             bgcolor: colors.primary[400],
@@ -312,10 +312,7 @@ const Topbar: React.FC = () => {
         />
 
         {/* Chat Box */}
-        <ChatBox 
-          isOpen={openChatBox} 
-          onClose={() => setOpenChatBox(false)} 
-        />
+        <ChatBox isOpen={openChatBox} onClose={() => setOpenChatBox(false)} />
       </Box>
     </Box>
   );
