@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FlashSaleApi } from "../../api/flashsale/FlashSaleApi";
 import type { FlashSaleItemDTO } from "../../models/flashSale/FlashSaleItemDTO";
-import banner from "../../assets/flashsale.jpg";
+import banner from "../../../public/flashsale.jpg";
 
 import { Box, Card, CardMedia, Grid, Pagination } from "@mui/material";
 
