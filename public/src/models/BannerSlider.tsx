@@ -21,11 +21,8 @@ const BannerSlider = () => {
     >
       <SwiperSlide>
         <img
-<<<<<<< HEAD:public/src/models/BannerSlider.tsx
-          src="./src/assets/banner.jpg"
-=======
           src="./banner3.jpg"
->>>>>>> d37e9e9e6e723b322142a1c6c726525497d1679c:src/models/BannerSlider.tsx
+
           alt="banner1"
           style={{
             width: "100%",
@@ -37,11 +34,8 @@ const BannerSlider = () => {
       </SwiperSlide>
       <SwiperSlide>
         <img
-<<<<<<< HEAD:public/src/models/BannerSlider.tsx
-          src="./src/assets/banner.jpg"
-=======
           src="./banner.jpg"
->>>>>>> d37e9e9e6e723b322142a1c6c726525497d1679c:src/models/BannerSlider.tsx
+
           alt="banner2"
           style={{
             width: "100%",
@@ -53,11 +47,8 @@ const BannerSlider = () => {
       </SwiperSlide>
       <SwiperSlide>
         <img
-<<<<<<< HEAD:public/src/models/BannerSlider.tsx
-          src="./src/assets/banner2.jpg"
-=======
+
           src="./banner2.jpg"
->>>>>>> d37e9e9e6e723b322142a1c6c726525497d1679c:src/models/BannerSlider.tsx
           alt="banner3"
           style={{
             width: "100%",
