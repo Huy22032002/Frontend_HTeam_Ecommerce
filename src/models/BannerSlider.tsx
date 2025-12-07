@@ -19,7 +19,7 @@ const BannerSlider = () => {
     >
       <SwiperSlide>
         <img
-          src="/src/assets/banner3.jpg"
+          src="./src/assets/banner3.jpg"
           alt="banner1"
           style={{
             width: "100%",
@@ -31,7 +31,7 @@ const BannerSlider = () => {
       </SwiperSlide>
       <SwiperSlide>
         <img
-          src="/src/assets/banner.jpg"
+          src="./src/assets/banner.jpg"
           alt="banner2"
           style={{
             width: "100%",
@@ -43,7 +43,7 @@ const BannerSlider = () => {
       </SwiperSlide>
       <SwiperSlide>
         <img
-          src="/src/assets/banner2.jpg"
+          src="./src/assets/banner2.jpg"
           alt="banner3"
           style={{
             width: "100%",
