@@ -1,7 +1,9 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import "swiper/css";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import "swiper/css/navigation";
 import "../styles/BannerSlider.css";
@@ -19,7 +21,7 @@ const BannerSlider = () => {
     >
       <SwiperSlide>
         <img
-          src="/src/assets/banner3.jpg"
+          src="./src/assets/banner.jpg"
           alt="banner1"
           style={{
             width: "100%",
@@ -31,7 +33,7 @@ const BannerSlider = () => {
       </SwiperSlide>
       <SwiperSlide>
         <img
-          src="/src/assets/banner.jpg"
+          src="./src/assets/banner.jpg"
           alt="banner2"
           style={{
             width: "100%",
@@ -43,7 +45,7 @@ const BannerSlider = () => {
       </SwiperSlide>
       <SwiperSlide>
         <img
-          src="/src/assets/banner2.jpg"
+          src="./src/assets/banner2.jpg"
           alt="banner3"
           style={{
             width: "100%",
