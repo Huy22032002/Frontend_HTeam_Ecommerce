@@ -2,6 +2,7 @@ import axios from "axios";
 import type { Order } from "../../models/dashboard/Order";
 
 const API_BASE = import.meta.env.VITE_BASE_URL + "/api/admins/orders";
+const backend_api = import.meta.env.VITE_BASE_URL;
 
 function getAuthHeader() {
   const token = localStorage.getItem("token");
@@ -43,7 +44,7 @@ export const OrderApi = {
 
   // Lấy chi tiết đơn hàng theo id cho khách hàng
   getByIdOfCustomer: (id: string) =>
-    axios.get(`http://localhost:8080/api/customers/orders/${id}`, {
+    axios.get(`${backend_api}/api/customers/orders/${id}`, {
       headers: getAuthHeader(),
     }),
 
@@ -104,4 +105,3 @@ export const OrderApi = {
     });
   },
 };
-
