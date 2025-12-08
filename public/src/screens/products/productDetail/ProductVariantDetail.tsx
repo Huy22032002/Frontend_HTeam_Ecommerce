@@ -177,6 +177,8 @@ const ProductVariantDetail = () => {
     }
   };
 
+  const isOutOfStock = (currentOption?.availability?.quantity ?? 0) <= 0;
+
   return (
     <Box sx={{ bgcolor: colors.greenAccent[700], minHeight: "100vh", py: 4 }}>
       <Container maxWidth="lg">
@@ -285,15 +287,9 @@ const ProductVariantDetail = () => {
               <Typography
                 variant="body1"
                 sx={{ fontWeight: 500 }}
-                color={
-                  (currentOption?.availability?.quantity ?? 0) > 0
-                    ? "success.main"
-                    : "error.main"
-                }
+                color={!isOutOfStock ? "success.main" : "error.main"}
               >
-                {(currentOption?.availability?.quantity ?? 0) > 0
-                  ? "Còn hàng"
-                  : "Hết hàng"}
+                {!isOutOfStock ? "Còn hàng" : "Hết hàng"}
               </Typography>
             </Stack>
 
@@ -347,43 +343,6 @@ const ProductVariantDetail = () => {
                 ))}
               </Stack>
             </Box>
-
-            {/* Price Section */}
-            {/* <Card
-              sx={{
-                bgcolor: "#fff",
-                p: 2.5,
-                mb: 3,
-                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-              }}
-            >
-              <Stack direction="row" spacing={2} alignItems="baseline">
-                <Typography variant="h3" fontWeight="bold" color="#FF6B6B">
-                  {currentOption?.availability?.salePrice?.toLocaleString()}₫
-                </Typography>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    textDecoration: "line-through",
-                    color: "#999",
-                  }}
-                >
-                  {currentOption?.availability?.regularPrice?.toLocaleString()}₫
-                </Typography>
-                <Chip
-                  label={`-${Math.round(
-                    (((currentOption?.availability?.regularPrice || 0) -
-                      (currentOption?.availability?.salePrice || 0)) /
-                      (currentOption?.availability?.regularPrice || 1)) *
-                      100
-                  )}%`}
-                  color="error"
-                  variant="filled"
-                  size="small"
-                  sx={{ fontWeight: 600 }}
-                />
-              </Stack>
-            </Card> */}
 
             <Card
               sx={{
@@ -514,7 +473,10 @@ const ProductVariantDetail = () => {
                 size="large"
                 fullWidth
                 disabled={
-                  isLoading || isFlashSaleSoldOut(flashSale) || !currentOption
+                  isLoading ||
+                  isFlashSaleSoldOut(flashSale) ||
+                  !currentOption ||
+                  currentOption.availability.quantity <= 0
                 }
                 sx={{
                   bgcolor: "#FF6B6B",
@@ -534,7 +496,9 @@ const ProductVariantDetail = () => {
                   </Stack>
                 ) : (
                   <>
-                    {isFlashSaleSoldOut(flashSale)
+                    {isOutOfStock
+                      ? "Hết hàng"
+                      : isFlashSaleSoldOut(flashSale)
                       ? "Đã bán hết Flash Sale"
                       : "🛍️ Mua ngay"}
                   </>
@@ -546,7 +510,10 @@ const ProductVariantDetail = () => {
                 size="large"
                 fullWidth
                 disabled={
-                  isLoading || isFlashSaleSoldOut(flashSale) || !currentOption
+                  isLoading ||
+                  isOutOfStock ||
+                  isFlashSaleSoldOut(flashSale) ||
+                  !currentOption
                 }
                 sx={{
                   py: 1.5,
@@ -569,7 +536,9 @@ const ProductVariantDetail = () => {
                 ) : (
                   <>
                     <AddShoppingCartIcon sx={{ mr: 1 }} />
-                    {isFlashSaleSoldOut(flashSale)
+                    {isOutOfStock
+                      ? "Hết hàng"
+                      : isFlashSaleSoldOut(flashSale)
                       ? "Đã bán hết Flash Sale"
                       : "Thêm vào giỏ"}
                   </>
