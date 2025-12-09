@@ -11,8 +11,9 @@ export const usePaymentStatusSSE = (orderId: number | null | undefined, enabled:
   useEffect(() => {
     if (!orderId || !enabled) return;
 
+    const apiUrl = import.meta.env.VITE_BASE_URL;
     const eventSource = new EventSource(
-      `/api/public/payment/status/subscribe?orderId=${orderId}`
+      `${apiUrl}/api/public/payment/status/subscribe?orderId=${orderId}`
     );
 
     console.log(`📡 SSE: Subscribing to payment status for order ${orderId}`);
