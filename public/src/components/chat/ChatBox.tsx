@@ -183,8 +183,8 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
       // Don't add to local state - wait for SSE broadcast from server
       const response = await fetch(
         `${
-          import.meta.env.VITE_API_URL || "http://localhost:8080/api"
-        }/customers/${customerId}/chat/messages`,
+          import.meta.env.VITE_BASE_URL
+        }/api/customers/${customerId}/chat/messages`,
         {
           method: "POST",
           headers: {
