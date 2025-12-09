@@ -11,6 +11,7 @@ import { MomoApi } from "../../api/MomoApi";
 import type { CreateCustomerDelivery } from "../../models/customer/CreateCustomerDelivery";
 import type { Voucher } from "../../models/vouchers/Voucher";
 import { VoucherApi } from "../../api/voucher/VoucherApi";
+import { usePaymentStatusSSE } from "../../hooks/usePaymentStatusSSE";
 
 const useCheckout = () => {
   //voucher
@@ -334,27 +335,15 @@ const useCheckout = () => {
     getAvailableVouchers();
   }, []);
 
-  // Polling: Kiểm tra trạng thái đơn hàng mỗi 3s
-  useEffect(() => {
-    if (!orderId) return;
+  // Dùng SSE hook để subscribe payment status
+  usePaymentStatusSSE(orderId, formData.paymentMethod === "MOMO");
 
-    const interval = setInterval(async () => {
-      try {
-        const response = await OrderApi.getByIdOfCustomer(orderId);
-        const order = response.data;
-        console.log("Order status:", order.status);
-        if (order.status === "APPROVED") {
-          clearInterval(interval);
-          alert("Thanh toán thành công!");
-          navigate(`/customer/orders-history`);
-        }
-      } catch (err) {
-        console.error("Lỗi khi kiểm tra trạng thái đơn hàng:", err);
-      }
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [orderId, navigate]);
+  // Polling cũ bỏ đi - thay bằng SSE
+  // useEffect(() => {
+  //   if (!orderId) return;
+  //   const interval = setInterval(async () => { ... }, 3000);
+  //   return () => clearInterval(interval);
+  // }, [orderId, navigate]);
 
   return {
     //qrcode
