@@ -181,9 +181,10 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
       // Send message via HTTP POST REST API
       // The backend will publish to RabbitMQ and broadcast via SSE
       // Don't add to local state - wait for SSE broadcast from server
+      const baseUrl = import.meta.env.VITE_BASE_URL || "https://www.hecommerce.shop";
       const response = await fetch(
         `${
-          import.meta.env.VITE_BASE_URL
+          baseUrl
         }/api/customers/${customerId}/chat/messages`,
         {
           method: "POST",

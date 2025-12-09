@@ -1,5 +1,5 @@
 import axios from "axios";
-const API_BASE = import.meta.env.VITE_BASE_URL + "/api";
+const API_BASE = (import.meta.env.VITE_BASE_URL || "https://www.hecommerce.shop") + "/api";
 
 export const OTPApi = {
   sendOtp: async (phone: string) => {

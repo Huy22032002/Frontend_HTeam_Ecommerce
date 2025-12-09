@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { MomoDTO } from "../models/MomoDTO";
-const API_BASE = import.meta.env.VITE_BASE_URL + "/api";
+const API_BASE = (import.meta.env.VITE_BASE_URL || "https://www.hecommerce.shop") + "/api";
 
 export const MomoApi = {
   createQRCode: async (amount: number, orderId: number, orderInfo: string) => {

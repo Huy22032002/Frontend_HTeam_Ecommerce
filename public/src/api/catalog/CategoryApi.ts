@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { Category } from "../../models/catalogs/Category";
 
-const API_BASE = import.meta.env.VITE_BASE_URL + "/api";
+const API_BASE = (import.meta.env.VITE_BASE_URL || "https://www.hecommerce.shop") + "/api";
 
 function getAuthHeader() {
   const token = localStorage.getItem("token");

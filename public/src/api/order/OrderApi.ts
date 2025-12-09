@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { Order } from "../../models/dashboard/Order";
 
-const API_BASE = import.meta.env.VITE_BASE_URL + "/api/admins/orders";
+const API_BASE = (import.meta.env.VITE_BASE_URL || "https://www.hecommerce.shop") + "/api/admins/orders";
 const backend_api = import.meta.env.VITE_BASE_URL;
 
 function getAuthHeader() {

@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_BASE_URL + "/api";
+const API_BASE = (import.meta.env.VITE_BASE_URL || "https://www.hecommerce.shop") + "/api";
 
 import axios from "axios";
 

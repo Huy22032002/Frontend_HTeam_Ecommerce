@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_BASE_URL + "/api/admins/dashboard";
+const API_BASE = (import.meta.env.VITE_BASE_URL || "https://www.hecommerce.shop") + "/api/admins/dashboard";
 
 function getAuthHeader() {
   const token = localStorage.getItem("token");
