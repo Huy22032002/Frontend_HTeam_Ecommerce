@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { PagedResponse } from '../../models/PagedResponse';
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL+'/api/chat' || 'https://www.hecommerce.shop' + '/api/chat';
+const API_BASE_URL = import.meta.env.VITE_BASE_URL+'/api' || 'https://www.hecommerce.shop' + '/api';
 
 // ==================== Types ====================
 export interface ChatMessage {
