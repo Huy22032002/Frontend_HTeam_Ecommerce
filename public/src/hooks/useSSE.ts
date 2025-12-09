@@ -1,7 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 
-const API_URL = import.meta.env.VITE_BASE_URL +'/api' || 'http://localhost:8080/api';
-
 /**
  * Hook để quản lý Server-Sent Events (SSE) cho real-time chat messages
  * Thay thế useWebSocket
@@ -28,8 +26,8 @@ export const useSSE = () => {
       // EventSource doesn't support custom headers, so we pass token as query parameter
       const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
       const streamUrl = userRole === 'admin' 
-        ? `${API_URL}/admins/${userId}/chat/stream/${conversationId}${tokenParam}`
-        : `${API_URL}/customers/${userId}/chat/stream/${conversationId}${tokenParam}`;
+        ? `/api/admins/${userId}/chat/stream/${conversationId}${tokenParam}`
+        : `/api/customers/${userId}/chat/stream/${conversationId}${tokenParam}`;
       
       console.log(`SSE: Connecting to ${streamUrl.replace(token || '', '***')}`);
 
