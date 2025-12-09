@@ -10,7 +10,7 @@ import type { RootState } from '../store/store';
 export const useTokenExpiration = () => {
   const navigate = useNavigate();
   const userState = useSelector((state: RootState) => state.userAuth);
-  const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
