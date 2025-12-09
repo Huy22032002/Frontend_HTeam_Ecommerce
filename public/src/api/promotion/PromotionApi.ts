@@ -37,7 +37,7 @@ export interface UpdatePromotionDTO {
 export const PromotionApi = {
   // Lấy khuyến mãi active theo SKU sản phẩm (công khai - không cần token)
   getByProductSku: (sku: string) =>
-    axios.get(`${API_BASE}/promotions/by-product-sku?sku=${sku}`),
+    axios.get(`${API_BASE}/public/promotions/by-product-sku?sku=${sku}`),
 
   // Lấy tất cả khuyến mãi active (công khai - không cần token)
   getAllActive: (filters: PromotionFilters = {}) => {
@@ -48,12 +48,12 @@ export const PromotionApi = {
       }
     });
 
-    return axios.get(`${API_BASE}/promotions/active?${params.toString()}`);
+    return axios.get(`${API_BASE}/public/promotions/active?${params.toString()}`);
   },
 
   // Lấy promotion by ID (công khai - không cần token)
   getById: (id: number) =>
-    axios.get(`${API_BASE}/promotions/${id}`),
+    axios.get(`${API_BASE}/public/promotions/${id}`),
 
   // Lấy tất cả khuyến mãi (admin)
   getAll: (filters: PromotionFilters = {}) => {
