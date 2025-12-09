@@ -19,7 +19,7 @@ export const usePaymentStatusSSE = (orderId: number | null | undefined, enabled:
     console.log(`📡 SSE: Subscribing to payment status for order ${orderId}`);
 
     // Handle connected event
-    eventSource.addEventListener("connected", (event) => {
+    eventSource.addEventListener("connected", () => {
       console.log("✅ Connected to payment status stream for order:", orderId);
     });
 
