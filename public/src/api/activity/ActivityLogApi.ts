@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { PagedResponse } from '../../models/PagedResponse';
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL +'/api'; //momo
+const API_BASE_URL = import.meta.env.VITE_BASE_URL +'/api'; //momo1
 
 
 export interface ActivityLog {
