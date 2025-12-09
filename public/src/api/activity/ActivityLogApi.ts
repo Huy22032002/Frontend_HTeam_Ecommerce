@@ -1,8 +1,7 @@
 import axios from 'axios';
 import type { PagedResponse } from '../../models/PagedResponse';
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL +'/api' || 'http://localhost:8080/api'; //momo2
-
+const API_BASE_URL = import.meta.env.VITE_BASE_URL +'/api' || 'http://localhost:8080/api'; //momo3
 
 export interface ActivityLog {
   id: string;
