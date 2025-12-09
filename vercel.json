@@ -1,5 +1,15 @@
 {
-  "buildCommand": "cd public && npm install && npm run build",
-  "outputDirectory": "public/dist",
-  "rootDirectory": "public"
+  "builds": [
+    {
+      "src": "public/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
 }
