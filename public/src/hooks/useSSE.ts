@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 
-const API_URL = (import.meta.env.VITE_BASE_URL || "https://www.hecommerce.shop") + '/api';
+const API_URL = import.meta.env.VITE_BASE_URL+'/api' || 'https://www.hecommerce.shop/api';
 
 /**
  * Hook để quản lý Server-Sent Events (SSE) cho real-time chat messages

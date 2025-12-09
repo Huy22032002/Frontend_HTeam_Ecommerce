@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Box,
   Paper,
@@ -10,16 +10,16 @@ import {
   InputAdornment,
   IconButton,
   Tooltip,
-  List,
-} from "@mui/material";
-import SendIcon from "@mui/icons-material/Send";
-import AttachFileIcon from "@mui/icons-material/AttachFile";
-import CloseIcon from "@mui/icons-material/Close";
-import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
-import { useCustomerChat } from "../../hooks/useChat";
-import { useSSE } from "../../hooks/useSSE";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../store/store";
+  List
+} from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
+import CloseIcon from '@mui/icons-material/Close';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import { useCustomerChat } from '../../hooks/useChat';
+import { useSSE } from '../../hooks/useSSE';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../store/store';
 
 interface ChatBoxProps {
   isOpen?: boolean;
@@ -27,24 +27,13 @@ interface ChatBoxProps {
 }
 
 const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
-  const customer = useSelector(
-    (state: RootState) => state.customerAuth.customer
-  );
+  const customer = useSelector((state: RootState) => state.customerAuth.customer);
   const customerId = customer?.id;
 
-  const {
-    conversation,
-    messages,
-    loading,
-    error,
-    markAsRead,
-    loadMessages,
-    messagePage: hookMessagePage,
-    totalMessagePages: hookTotalPages,
-  } = useCustomerChat(customerId || null);
+  const { conversation, messages, loading, error, markAsRead, loadMessages, messagePage: hookMessagePage, totalMessagePages: hookTotalPages } = useCustomerChat(customerId || null);
   const { subscribe } = useSSE();
 
-  const [messageText, setMessageText] = useState("");
+  const [messageText, setMessageText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [sseMessages, setSSEMessages] = useState<any[]>([]);
   const [messagePage, setMessagePage] = useState(hookMessagePage);
@@ -66,9 +55,9 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
   useEffect(() => {
     if (!connectionAttemptedRef.current) {
       connectionAttemptedRef.current = true;
-      console.log("🔌 ChatBox: Attempting SSE connection...");
+      console.log('🔌 ChatBox: Attempting SSE connection...');
     }
-
+    
     // Don't disconnect on unmount - keep the connection alive for other components
     // return () => {
     //   disconnect();
@@ -78,42 +67,39 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
   // Subscribe to SSE stream when conversation is ready
   useEffect(() => {
     if (conversation?.id && customerId) {
-      console.log("📢 ChatBox: Subscribing to conversation:", conversation.id);
-
+      console.log('📢 ChatBox: Subscribing to conversation:', conversation.id);
+      
       const unsubscribeFn = subscribe(
         conversation.id,
         (message: any) => {
-          console.log("📨 Received message from SSE:", message);
+          console.log('📨 Received message from SSE:', message);
           // Add received message to state
           setSSEMessages((prev: any[]) => [...prev, message]);
           // Mark admin messages as read
-          if (message.senderRole === "ADMIN" && message.id) {
+          if (message.senderRole === 'ADMIN' && message.id) {
             markAsRead(message.id);
           }
         },
         customerId,
-        "customer"
+        'customer'
       );
 
       return () => {
-        console.log(
-          "🔕 ChatBox: Unsubscribing from conversation:",
-          conversation.id
-        );
+        console.log('🔕 ChatBox: Unsubscribing from conversation:', conversation.id);
         if (unsubscribeFn) unsubscribeFn();
       };
     }
   }, [conversation?.id, customerId, subscribe, markAsRead]);
 
   // Combine REST messages + SSE messages, avoid duplicates
-  const messageIds = new Set(messages.map((m) => m.id));
-  const uniqueSSEMessages = sseMessages.filter((m) => !messageIds.has(m.id));
+  const messageIds = new Set(messages.map(m => m.id));
+  const uniqueSSEMessages = sseMessages.filter(m => !messageIds.has(m.id));
   const allMessages = [...messages, ...uniqueSSEMessages];
 
   // Scroll to bottom on initial load or when messages change
   useEffect(() => {
     setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+      messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
       setIsAtBottom(true);
     }, 0);
   }, [allMessages]);
@@ -121,16 +107,15 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
   // Detect new messages - auto-scroll if at bottom, show button if scrolled up
   useEffect(() => {
     if (uniqueSSEMessages.length > 0 && messagesContainerRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } =
-        messagesContainerRef.current;
+      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
       const atBottom = scrollHeight - scrollTop - clientHeight < 30;
       setIsAtBottom(atBottom);
-
+      
       if (atBottom) {
         // Auto-scroll to bottom
         setHasNewMessages(false);
         setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }, 0);
       } else {
         // Show button if not at bottom - with delay to let auto-scroll complete
@@ -143,7 +128,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
 
   // Scroll to bottom function
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     setHasNewMessages(false);
     setIsAtBottom(true);
   };
@@ -151,8 +136,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
   // Detect if user is at bottom of messages
   const handleMessagesScroll = () => {
     if (messagesContainerRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } =
-        messagesContainerRef.current;
+      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
       const atBottom = scrollHeight - scrollTop - clientHeight < 30;
       setIsAtBottom(atBottom);
       // Auto-clear button when user scrolls to bottom
@@ -164,8 +148,8 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
 
   // Đánh dấu tin nhắn từ admin là đã đọc
   useEffect(() => {
-    messages.forEach((msg) => {
-      if (msg.senderRole === "ADMIN" && !msg.isRead) {
+    messages.forEach(msg => {
+      if (msg.senderRole === 'ADMIN' && !msg.isRead) {
         markAsRead(msg.id);
       }
     });
@@ -175,43 +159,37 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
     if (!messageText.trim() || !conversation) return;
 
     const messageToSend = messageText;
-    setMessageText(""); // Clear input immediately
+    setMessageText(''); // Clear input immediately
     setIsSending(true);
     try {
       // Send message via HTTP POST REST API
       // The backend will publish to RabbitMQ and broadcast via SSE
       // Don't add to local state - wait for SSE broadcast from server
-      const baseUrl = import.meta.env.VITE_BASE_URL || "https://www.hecommerce.shop";
-      const response = await fetch(
-        `${
-          baseUrl
-        }/api/customers/${customerId}/chat/messages`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({
-            conversationId: conversation.id,
-            content: messageToSend,
-            messageType: "TEXT",
-          }),
-        }
-      );
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL+'/api' || 'https://www.hecommerce.shop/api'}/customers/${customerId}/chat/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          conversationId: conversation.id,
+          content: messageToSend,
+          messageType: 'TEXT',
+        })
+      });
 
       if (!response.ok) {
-        console.error("Failed to send message:", response.statusText);
+        console.error('Failed to send message:', response.statusText);
       }
     } catch (err) {
-      console.error("Error sending message:", err);
+      console.error('Error sending message:', err);
     } finally {
       setIsSending(false);
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -223,21 +201,19 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
     return (
       <Paper
         sx={{
-          position: "fixed",
+          position: 'fixed',
           bottom: 20,
           right: 20,
           width: 350,
           maxHeight: 500,
           boxShadow: 3,
-          display: "flex",
-          flexDirection: "column",
-          zIndex: 1000,
+          display: 'flex',
+          flexDirection: 'column',
+          zIndex: 1000
         }}
       >
-        <Box sx={{ p: 2, textAlign: "center", color: "error.main" }}>
-          <Typography variant="body2">
-            Vui lòng đăng nhập để sử dụng chat
-          </Typography>
+        <Box sx={{ p: 2, textAlign: 'center', color: 'error.main' }}>
+          <Typography variant="body2">Vui lòng đăng nhập để sử dụng chat</Typography>
         </Box>
       </Paper>
     );
@@ -246,39 +222,43 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
   return (
     <Paper
       sx={{
-        position: "fixed",
+        position: 'fixed',
         bottom: 20,
         right: 20,
         width: 380,
         height: 580,
         boxShadow: 3,
-        display: "flex",
-        flexDirection: "column",
+        display: 'flex',
+        flexDirection: 'column',
         zIndex: 1000,
-        backgroundColor: "#fff",
-        borderRadius: 2,
+        backgroundColor: '#fff',
+        borderRadius: 2
       }}
     >
       {/* Header */}
       <Box
         sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           p: 2,
-          backgroundColor: "primary.main",
-          color: "white",
-          borderRadius: "4px 4px 0 0",
+          backgroundColor: 'primary.main',
+          color: 'white',
+          borderRadius: '4px 4px 0 0'
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <ChatBubbleOutlineIcon />
-          <Typography variant="h6" sx={{ fontSize: "1rem", fontWeight: 600 }}>
-            Nhắn tin với nhân viên
+          <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600 }}>
+            Hỗ trợ khách hàng
           </Typography>
         </Box>
         {onClose && (
-          <IconButton size="small" onClick={onClose} sx={{ color: "white" }}>
+          <IconButton
+            size="small"
+            onClick={onClose}
+            sx={{ color: 'white' }}
+          >
             <CloseIcon />
           </IconButton>
         )}
@@ -290,26 +270,19 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
         onScroll={handleMessagesScroll}
         sx={{
           flex: 1,
-          overflowY: "auto",
+          overflowY: 'auto',
           p: 2,
-          backgroundColor: "#f5f5f5",
-          position: "relative",
-          minHeight: 0,
+          backgroundColor: '#f5f5f5',
+          position: 'relative',
+          minHeight: 0
         }}
       >
         {loading && !allMessages.length ? (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "100%",
-            }}
-          >
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
             <CircularProgress />
           </Box>
         ) : allMessages.length === 0 ? (
-          <Box sx={{ textAlign: "center", color: "text.secondary", py: 4 }}>
+          <Box sx={{ textAlign: 'center', color: 'text.secondary', py: 4 }}>
             <ChatBubbleOutlineIcon sx={{ fontSize: 40, mb: 1, opacity: 0.5 }} />
             <Typography variant="body2">Hãy bắt đầu cuộc hội thoại</Typography>
           </Box>
@@ -317,7 +290,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
           <List sx={{ p: 0 }}>
             {/* Load More Button */}
             {messagePage < totalMessagePages - 1 && (
-              <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                 <Button
                   variant="text"
                   size="small"
@@ -330,11 +303,9 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
                     }
                   }}
                   disabled={loadingMoreMessages}
-                  sx={{ textTransform: "none", fontSize: "0.85rem" }}
+                  sx={{ textTransform: 'none', fontSize: '0.85rem' }}
                 >
-                  {loadingMoreMessages
-                    ? "⏳ Đang tải..."
-                    : "📜 Xem thêm tin nhắn cũ"}
+                  {loadingMoreMessages ? '⏳ Đang tải...' : '📜 Xem thêm tin nhắn cũ'}
                 </Button>
               </Box>
             )}
@@ -342,57 +313,46 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
               <React.Fragment key={msg.id}>
                 <Box
                   sx={{
-                    display: "flex",
-                    flexDirection:
-                      msg.senderRole === "CUSTOMER" ? "row-reverse" : "row",
+                    display: 'flex',
+                    flexDirection: msg.senderRole === 'CUSTOMER' ? 'row-reverse' : 'row',
                     mb: 2,
-                    alignItems: "flex-start",
-                    px: 2,
+                    alignItems: 'flex-start',
+                    px: 2
                   }}
                 >
                   <Paper
                     sx={{
                       p: 1.5,
-                      backgroundColor:
-                        msg.senderRole === "CUSTOMER"
-                          ? "primary.light"
-                          : "black",
+                      backgroundColor: msg.senderRole === 'CUSTOMER' ? 'primary.light' : '#fff',
                       borderRadius: 2,
-                      maxWidth: "70%",
-                      wordBreak: "break-word",
-                      border:
-                        msg.senderRole === "ADMIN"
-                          ? "1px solid #e0e0e0"
-                          : "none",
+                      maxWidth: '70%',
+                      wordBreak: 'break-word',
+                      border: msg.senderRole === 'ADMIN' ? '1px solid #e0e0e0' : 'none'
                     }}
                   >
-                    <Typography
-                      variant="body2"
-                      sx={{ whiteSpace: "pre-wrap", color: "white" }}
-                    >
+                    <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
                       {msg.content}
                     </Typography>
                     <Typography
                       variant="caption"
                       sx={{
-                        display: "block",
+                        display: 'block',
                         mt: 0.5,
-                        textAlign:
-                          msg.senderRole === "CUSTOMER" ? "right" : "left",
-                        color: "white",
+                        textAlign: msg.senderRole === 'CUSTOMER' ? 'right' : 'left',
+                        color: 'text.secondary'
                       }}
                     >
-                      {new Date(msg.createdAt).toLocaleTimeString("vi-VN", {
-                        hour: "2-digit",
-                        minute: "2-digit",
+                      {new Date(msg.createdAt).toLocaleTimeString('vi-VN', {
+                        hour: '2-digit',
+                        minute: '2-digit'
                       })}
-                      {msg.senderRole === "CUSTOMER" && msg.isRead && " ✓"}
+                      {msg.senderRole === 'CUSTOMER' && msg.isRead && ' ✓'}
                     </Typography>
                   </Paper>
                 </Box>
               </React.Fragment>
             ))}
-
+            
             <div ref={messagesEndRef} />
           </List>
         )}
@@ -400,37 +360,27 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
 
       {/* New Messages Button - Fixed above input */}
       {hasNewMessages && !isAtBottom && (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            py: 1.5,
-            backgroundColor: "#fff",
-            borderTop: "2px solid #e0e0e0",
-            background:
-              "linear-gradient(to bottom, rgba(33, 150, 243, 0.05), transparent)",
-          }}
-        >
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 1.5, backgroundColor: '#fff', borderTop: '2px solid #e0e0e0', background: 'linear-gradient(to bottom, rgba(33, 150, 243, 0.05), transparent)' }}>
           <Button
             variant="contained"
             color="primary"
             size="small"
             onClick={scrollToBottom}
-            sx={{
-              textTransform: "none",
-              borderRadius: "20px",
-              fontSize: "0.85rem",
+            sx={{ 
+              textTransform: 'none', 
+              borderRadius: '20px', 
+              fontSize: '0.85rem',
               fontWeight: 600,
               px: 2.5,
               py: 0.8,
-              boxShadow: "0 2px 8px rgba(33, 150, 243, 0.3)",
-              transition: "all 0.2s ease",
-              "&:hover": {
-                transform: "translateY(-2px)",
-                boxShadow: "0 4px 12px rgba(33, 150, 243, 0.4)",
-              },
+              boxShadow: '0 2px 8px rgba(33, 150, 243, 0.3)',
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 4px 12px rgba(33, 150, 243, 0.4)'
+              }
             }}
-            endIcon={<span style={{ marginLeft: "4px" }}>⬇️</span>}
+            endIcon={<span style={{marginLeft: '4px'}}>⬇️</span>}
           >
             💬 Tin nhắn mới
           </Button>
@@ -438,21 +388,21 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
       )}
 
       {error && (
-        <Alert severity="error" sx={{ m: 1, fontSize: "0.875rem" }}>
+        <Alert severity="error" sx={{ m: 1, fontSize: '0.875rem' }}>
           {error}
         </Alert>
       )}
 
       {/* Input */}
-      <Box sx={{ p: 2, borderTop: "1px solid #e0e0e0" }}>
-        <Box sx={{ display: "flex", gap: 1 }}>
+      <Box sx={{ p: 2, borderTop: '1px solid #e0e0e0' }}>
+        <Box sx={{ display: 'flex', gap: 1 }}>
           <TextField
             fullWidth
             multiline
             maxRows={3}
             placeholder="Nhập tin nhắn..."
             value={messageText}
-            onChange={(e) => setMessageText(e.target.value)}
+            onChange={e => setMessageText(e.target.value)}
             onKeyPress={handleKeyPress}
             disabled={isSending || loading}
             size="small"
@@ -467,12 +417,12 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
                     </span>
                   </Tooltip>
                 </InputAdornment>
-              ),
+              )
             }}
             sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
-              },
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2
+              }
             }}
           />
           <Button
@@ -485,8 +435,8 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
             {isSending ? <CircularProgress size={20} /> : <SendIcon />}
           </Button>
         </Box>
-        {conversation?.status === "CLOSED" && (
-          <Alert severity="info" sx={{ mt: 1, fontSize: "0.75rem" }}>
+        {conversation?.status === 'CLOSED' && (
+          <Alert severity="info" sx={{ mt: 1, fontSize: '0.75rem' }}>
             Cuộc hội thoại đã đóng. Vui lòng tạo cuộc hội thoại mới để tiếp tục
           </Alert>
         )}

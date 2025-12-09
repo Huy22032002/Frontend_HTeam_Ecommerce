@@ -11,7 +11,6 @@ import { MomoApi } from "../../api/MomoApi";
 import type { CreateCustomerDelivery } from "../../models/customer/CreateCustomerDelivery";
 import type { Voucher } from "../../models/vouchers/Voucher";
 import { VoucherApi } from "../../api/voucher/VoucherApi";
-import { usePaymentStatusSSE } from "../../hooks/usePaymentStatusSSE";
 
 const useCheckout = () => {
   //voucher
@@ -44,8 +43,6 @@ const useCheckout = () => {
   const [orderId, setOrderId] = useState(null);
 
   // Address states
-  // const [selectedProvince, setSelectedProvince] = useState("");
-  // const [selectedDistrict, setSelectedDistrict] = useState("");
   const [openForm, setOpenForm] = useState(false);
 
   //getListDelivery of Customer
@@ -123,7 +120,7 @@ const useCheckout = () => {
     receiverPhoneNumber: "",
     shippingAddress: "",
     notes: "",
-    paymentMethod: "CASH" as "CASH" | "MOMO",
+    paymentMethod: "CASH" as "CASH" | "TRANSFER" | "CARD" | "MOMO",
   });
 
   //tên + sdt + địa chỉ + note
@@ -252,15 +249,12 @@ const useCheckout = () => {
             setQrCode(qrCodeResponse);
             setOrderId(data.orderId);
             setSuccessMessage("✅ Tạo QR code thành công! Vui lòng quét để thanh toán.");
-            setIsLoading(false);
             console.log("qr code: ", qrCodeResponse);
-            // SSE hook sẽ tự động handle redirect khi payment success
             return;
           }
         } catch (error) {
           console.error("MoMo payment error:", error);
           setError("Có lỗi khi khởi tạo thanh toán MoMo.");
-          setIsLoading(false);
         }
       }
 
@@ -339,15 +333,27 @@ const useCheckout = () => {
     getAvailableVouchers();
   }, []);
 
-  // Dùng SSE hook để subscribe payment status
-  usePaymentStatusSSE(orderId, formData.paymentMethod === "MOMO");
+  // Polling: Kiểm tra trạng thái đơn hàng mỗi 3s
+  useEffect(() => {
+    if (!orderId) return;
 
-  // Polling cũ bỏ đi - thay bằng SSE
-  // useEffect(() => {
-  //   if (!orderId) return;
-  //   const interval = setInterval(async () => { ... }, 3000);
-  //   return () => clearInterval(interval);
-  // }, [orderId, navigate]);
+    const interval = setInterval(async () => {
+      try {
+        const response = await OrderApi.getByIdOfCustomer(orderId);
+        const order = response.data;
+        console.log("Order status:", order.status);
+        if (order.status === "APPROVED") {
+          clearInterval(interval);
+          alert("Thanh toán thành công!");
+          navigate(`/customer/orders-history`);
+        }
+      } catch (err) {
+        console.error("Lỗi khi kiểm tra trạng thái đơn hàng:", err);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [orderId, navigate]);
 
   return {
     //qrcode
