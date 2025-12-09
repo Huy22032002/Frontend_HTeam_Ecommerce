@@ -251,12 +251,16 @@ const useCheckout = () => {
           if (qrCodeResponse) {
             setQrCode(qrCodeResponse);
             setOrderId(data.orderId);
+            setSuccessMessage("✅ Tạo QR code thành công! Vui lòng quét để thanh toán.");
+            setIsLoading(false);
             console.log("qr code: ", qrCodeResponse);
+            // SSE hook sẽ tự động handle redirect khi payment success
             return;
           }
         } catch (error) {
           console.error("MoMo payment error:", error);
           setError("Có lỗi khi khởi tạo thanh toán MoMo.");
+          setIsLoading(false);
         }
       }
 

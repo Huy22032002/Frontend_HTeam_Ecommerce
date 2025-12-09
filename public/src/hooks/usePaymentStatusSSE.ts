@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
  * Hook để subscribe vào payment status updates từ SSE
  * Khi thanh toán thành công, sẽ tự động redirect
  */
-export const usePaymentStatusSSE = (orderId: number | null, enabled: boolean = true) => {
+export const usePaymentStatusSSE = (orderId: number | null | undefined, enabled: boolean = true) => {
   const navigate = useNavigate();
 
   useEffect(() => {
