@@ -23,8 +23,16 @@ export const VariantsApi = {
   },
   getById: async (variantId: number) => {
     try {
+      const token = localStorage.getItem("token");
+      const config: any = {};
+      if (token) {
+        config.headers = {
+          Authorization: `Bearer ${token}`,
+        };
+      }
       const response = await axios.get(
-        `${API_BASE}/api/public/product/variant/${variantId}`
+        `${API_BASE}/api/public/product/variant/${variantId}`,
+        config
       );
       if (response.data) {
         return response.data;
@@ -36,14 +44,18 @@ export const VariantsApi = {
   },
   getRecommendations: async (limit: number = 10) => {
     try {
+      const token = localStorage.getItem("token");
+      const config: any = {
+        params: { limit },
+      };
+      if (token) {
+        config.headers = {
+          Authorization: `Bearer ${token}`,
+        };
+      }
       const response = await axios.get(
         `${API_BASE}/api/public/recommendations`,
-        {
-          params: { limit },
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+        config
       );
       if (response.data) {
         console.log("recommendations:", response.data);

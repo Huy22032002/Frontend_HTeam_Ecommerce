@@ -66,10 +66,11 @@ const HomeScreen = () => {
     const token = localStorage.getItem("token");
     if (token) {
       setIsLoggedIn(true);
-      getRecommendations(10);
     } else {
       setIsLoggedIn(false);
     }
+    // Lấy recommendations cho cả guest và logged-in users
+    getRecommendations(10);
   }, []);
 
   return (
@@ -218,9 +219,8 @@ const HomeScreen = () => {
         {/* Active Promotions Section */}
         <ActivePromotionsCarousel />
 
-        {/* Recommendations Section for Logged-in Customers */}
+        {/* Recommendations Section for All Users */}
         {!searchTerm.trim() &&
-          isLoggedIn &&
           (recommendedProducts.length > 0 || isLoadingRecommendations) && (
             <Card
               sx={{
