@@ -10,7 +10,6 @@ import {
   TextField,
   CircularProgress,
   Alert,
-  Grid,
   Stack,
   FormControl,
   InputLabel,
@@ -24,7 +23,6 @@ import {
 import {
   Download as DownloadIcon,
   FilterList as FilterIcon,
-  Refresh as RefreshIcon,
 } from "@mui/icons-material";
 import { AnalyticsApi, type AnalyticsFilterDTO } from "../../api/dashboard/AnalyticsApi";
 
@@ -97,7 +95,7 @@ const AnalyticsScreen = () => {
     }
   }, [filters]);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
     const categoryKey = categories[newValue].key;
     if (!stats[categoryKey as keyof typeof stats]) {
@@ -158,60 +156,52 @@ const AnalyticsScreen = () => {
     }
 
     return (
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Tổng số
-              </Typography>
-              <Typography variant="h5">
-                {currentStats.totalCount?.toLocaleString("vi-VN") || 0}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Tổng tiền
-              </Typography>
-              <Typography variant="h5">
-                {currentStats.totalAmount
-                  ? (currentStats.totalAmount / 1000000).toFixed(1) + "M"
-                  : "0"}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Trung bình
-              </Typography>
-              <Typography variant="h5">
-                {currentStats.averageAmount
-                  ? (currentStats.averageAmount / 1000000).toFixed(1) + "M"
-                  : "0"}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Bản ghi
-              </Typography>
-              <Typography variant="h5">
-                {currentStats.recordsFiltered}/{currentStats.recordsTotal}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 2, mb: 3 }}>
+        <Card>
+          <CardContent>
+            <Typography color="textSecondary" gutterBottom>
+              Tổng số
+            </Typography>
+            <Typography variant="h5">
+              {currentStats.totalCount?.toLocaleString("vi-VN") || 0}
+            </Typography>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent>
+            <Typography color="textSecondary" gutterBottom>
+              Tổng tiền
+            </Typography>
+            <Typography variant="h5">
+              {currentStats.totalAmount
+                ? (currentStats.totalAmount / 1000000).toFixed(1) + "M"
+                : "0"}
+            </Typography>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent>
+            <Typography color="textSecondary" gutterBottom>
+              Trung bình
+            </Typography>
+            <Typography variant="h5">
+              {currentStats.averageAmount
+                ? (currentStats.averageAmount / 1000000).toFixed(1) + "M"
+                : "0"}
+            </Typography>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent>
+            <Typography color="textSecondary" gutterBottom>
+              Bản ghi
+            </Typography>
+            <Typography variant="h5">
+              {currentStats.recordsFiltered}/{currentStats.recordsTotal}
+            </Typography>
+          </CardContent>
+        </Card>
+      </Box>
     );
   };
 
