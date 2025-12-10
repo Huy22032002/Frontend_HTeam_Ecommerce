@@ -35,7 +35,6 @@ const HomeScreen = () => {
   const colors = tokens(theme.palette.mode);
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const {
     //categories
@@ -61,16 +60,8 @@ const HomeScreen = () => {
   useEffect(() => {
     getAllCategories();
     getAllSuggestProducts();
-
-    // Kiểm tra xem customer có đăng nhập không
-    const token = localStorage.getItem("token");
-    if (token) {
-      setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
-    }
     // Lấy recommendations cho cả guest và logged-in users
-    getRecommendations(10);
+    getRecommendations(12);
   }, []);
 
   return (

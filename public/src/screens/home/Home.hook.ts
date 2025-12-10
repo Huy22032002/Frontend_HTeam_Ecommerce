@@ -52,7 +52,7 @@ const useHome = () => {
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const [listTopSearch, setListTopSearch] = useState<string[]>([]);
 
-  const getRecommendations = async (limit: number = 10) => {
+  const getRecommendations = async (limit: number = 12) => {
     setIsLoadingRecommendations(true);
     try {
       const data = await VariantsApi.getRecommendations(limit);
