@@ -26,12 +26,14 @@ import { useNavigate } from "react-router-dom";
 import AddDeliveryForm from "../customerLayout/listAddress/AddDeliveryForm";
 import VoucherDialog from "../../components/voucher/VoucherDialog";
 import ErrorPopup from "../../components/ErrorPopup";
+import { usePaymentStatusSSE } from "../../hooks/usePaymentStatusSSE";
 
 export default function CheckoutScreen() {
   const navigate = useNavigate();
 
   const {
     qrCode,
+    orderId,
     //state address
     listAddress,
     // streetAddress,
@@ -70,6 +72,9 @@ export default function CheckoutScreen() {
     voucherModalOpen,
     setVoucherModalOpen,
   } = useCheckout();
+
+  // 🔔 Subscribe to payment status SSE khi orderId được set (thanh toán MOMO)
+  usePaymentStatusSSE(orderId, formData.paymentMethod === "MOMO");
 
   // Initialize form with customer data
   useEffect(() => {
