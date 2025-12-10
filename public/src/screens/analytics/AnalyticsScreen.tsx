@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -24,6 +24,9 @@ import {
   Download as DownloadIcon,
   FilterList as FilterIcon,
 } from "@mui/icons-material";
+import { ResponsiveLineCanvas } from "@nivo/line";
+import { ResponsiveBarCanvas } from "@nivo/bar";
+import { ResponsivePieCanvas } from "@nivo/pie";
 import { AnalyticsApi, type AnalyticsFilterDTO } from "../../api/dashboard/AnalyticsApi";
 
 interface TabPanelProps {
@@ -94,6 +97,12 @@ const AnalyticsScreen = () => {
       setLoading(false);
     }
   }, [filters]);
+
+  // Load analytics on component mount
+  useEffect(() => {
+    const initialCategory = categories[0].key;
+    loadAnalytics(initialCategory);
+  }, []);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -209,22 +218,198 @@ const AnalyticsScreen = () => {
     const categoryKey = categories[tabValue].key;
     const currentStats = stats[categoryKey as keyof typeof stats];
 
-    if (!currentStats?.breakdown || currentStats.breakdown.length === 0) {
-      return <Typography>Không có dữ liệu phân tích</Typography>;
-    }
-
     return (
-      <Card>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Phân tích chi tiết
-          </Typography>
-          {/* Add table or list here */}
-          <Typography variant="body2" color="textSecondary">
-            Phân tích: {currentStats.breakdown.length} mục
-          </Typography>
-        </CardContent>
-      </Card>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        {/* Time Series Chart */}
+        {currentStats?.timeSeries && currentStats.timeSeries.length > 0 && (
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                📈 Xu hướng theo thời gian
+              </Typography>
+              <Box sx={{ height: 300 }}>
+                <ResponsiveLineCanvas
+                  data={currentStats.timeSeries}
+                  margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+                  xScale={{ type: "point" }}
+                  yScale={{ type: "linear", min: "auto", max: "auto" }}
+                  curve="catmullRom"
+                  axisTop={null}
+                  axisRight={null}
+                  axisBottom={{
+                    tickSize: 5,
+                    tickPadding: 5,
+                    tickRotation: 0,
+                    legend: "Ngày",
+                    legendOffset: 36,
+                    legendPosition: "middle",
+                  }}
+                  axisLeft={{
+                    tickSize: 5,
+                    tickPadding: 5,
+                    tickRotation: 0,
+                    legend: "Giá trị",
+                    legendOffset: -40,
+                    legendPosition: "middle",
+                  }}
+                  colors={{ scheme: "blue_purple" }}
+                  pointSize={6}
+                  pointColor={{ theme: "background" }}
+                  pointBorderWidth={2}
+                  pointBorderColor={{ from: "serieColor" }}
+                  legends={[
+                    {
+                      anchor: "bottom-right",
+                      direction: "column",
+                      justify: false,
+                      translateX: 100,
+                      translateY: 0,
+                      itemsSpacing: 0,
+                      itemDirection: "left-to-right",
+                      itemWidth: 80,
+                      itemHeight: 20,
+                      itemOpacity: 0.75,
+                      symbolSize: 12,
+                      symbolShape: "circle",
+                      symbolBorderColor: "rgba(0, 0, 0, .5)",
+                      effects: [
+                        {
+                          on: "hover",
+                          style: {
+                            itemBackground: "rgba(0, 0, 0, .03)",
+                            itemOpacity: 1,
+                          },
+                        },
+                      ],
+                    },
+                  ]}
+                />
+              </Box>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Breakdown Chart */}
+        {currentStats?.breakdown && currentStats.breakdown.length > 0 && (
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                📊 Phân tích chi tiết
+              </Typography>
+              <Box sx={{ height: 300 }}>
+                <ResponsiveBarCanvas
+                  data={currentStats.breakdown.slice(0, 10)}
+                  keys={["value"]}
+                  indexBy="name"
+                  margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
+                  padding={0.3}
+                  colors={{ scheme: "nivo" }}
+                  axisBottom={{
+                    tickSize: 5,
+                    tickPadding: 5,
+                    tickRotation: -45,
+                    legend: "Danh mục",
+                    legendPosition: "middle",
+                    legendOffset: 40,
+                  }}
+                  axisLeft={{
+                    tickSize: 5,
+                    tickPadding: 5,
+                    tickRotation: 0,
+                    legend: "Giá trị",
+                    legendPosition: "middle",
+                    legendOffset: -40,
+                  }}
+                  legends={[
+                    {
+                      dataFrom: "keys",
+                      anchor: "bottom-right",
+                      direction: "column",
+                      justify: false,
+                      translateX: 120,
+                      translateY: 0,
+                      itemsSpacing: 2,
+                      itemWidth: 100,
+                      itemHeight: 20,
+                      itemOpacity: 0.75,
+                      symbolSize: 12,
+                      symbolShape: "square",
+                      symbolBorderColor: "rgba(0, 0, 0, .5)",
+                      effects: [
+                        {
+                          on: "hover",
+                          style: {
+                            itemOpacity: 1,
+                          },
+                        },
+                      ],
+                    },
+                  ]}
+                />
+              </Box>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Top Items Pie Chart */}
+        {currentStats?.topItems && currentStats.topItems.length > 0 && (
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                🥇 Hàng đầu
+              </Typography>
+              <Box sx={{ height: 300 }}>
+                <ResponsivePieCanvas
+                  data={currentStats.topItems.slice(0, 8)}
+                  margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
+                  innerRadius={0.5}
+                  padAngle={0.7}
+                  cornerRadius={3}
+                  colors={{ scheme: "category10" }}
+                  borderColor={{
+                    from: "color",
+                    modifiers: [["darker", 0.6]],
+                  }}
+                  arcLinkLabelsSkipAngle={10}
+                  arcLinkLabelsTextColor="#000000"
+                  arcLabelsSkipAngle={10}
+                  legends={[
+                    {
+                      anchor: "bottom",
+                      direction: "row",
+                      justify: false,
+                      translateX: 0,
+                      translateY: 56,
+                      itemsSpacing: 0,
+                      itemWidth: 100,
+                      itemHeight: 18,
+                      itemTextColor: "#999",
+                      itemDirection: "left-to-right",
+                      itemOpacity: 1,
+                      symbolSize: 18,
+                      symbolShape: "circle",
+                      effects: [
+                        {
+                          on: "hover",
+                          style: {
+                            itemTextColor: "#000",
+                          },
+                        },
+                      ],
+                    },
+                  ]}
+                />
+              </Box>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Fallback message */}
+        {(!currentStats?.timeSeries || currentStats.timeSeries.length === 0) &&
+          (!currentStats?.breakdown || currentStats.breakdown.length === 0) && (
+            <Alert severity="info">Không có dữ liệu biểu đồ để hiển thị</Alert>
+          )}
+      </Box>
     );
   };
 
