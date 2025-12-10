@@ -86,9 +86,22 @@ const AnalyticsScreen = () => {
       setError(null);
       const filter = filters[categoryKey as keyof typeof filters];
       const response = await AnalyticsApi.getDetailedAnalytics(filter);
+      
+      // Transform backend data to Nivo format
+      const data = response.data;
+      if (data.timeSeries && Array.isArray(data.timeSeries)) {
+        data.timeSeries = [{ id: categoryKey, data: data.timeSeries }];
+      }
+      if (data.breakdown && Array.isArray(data.breakdown)) {
+        data.breakdown = data.breakdown; // Already in correct format for pie/bar
+      }
+      if (data.topItems && Array.isArray(data.topItems)) {
+        data.topItems = data.topItems; // Already in correct format
+      }
+      
       setStats((prev: any) => ({
         ...prev,
-        [categoryKey]: response.data,
+        [categoryKey]: data,
       }));
     } catch (err: any) {
       setError(err?.response?.data?.message || "Lỗi khi tải dữ liệu thống kê");
