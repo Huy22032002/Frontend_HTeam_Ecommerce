@@ -10,6 +10,7 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 //screens
 import AdminLoginScreen from "./screens/admin/AdminLoginScreen";
 import DashboardScreen from "./screens/dashboard/DashboardScreen";
+import AnalyticsScreen from "./screens/analytics/AnalyticsScreen";
 import ActivityLogScreen from "./screens/admin/ActivityLogScreen";
 import ReportsScreen from "./screens/reports/ReportsScreen";
 import UserManagementScreen from "./screens/users/UserManagementScreen";
@@ -52,8 +53,9 @@ function AdminAppContent() {
           <ProtectedRoute>
             <CmsLayout>
               <Routes>
-                <Route path="dashboard" element={<DashboardScreen />} />
-                <Route path="activity-log" element={<ActivityLogScreen />} />
+              <Route path="dashboard" element={<DashboardScreen />} />
+              <Route path="analytics" element={<AnalyticsScreen />} />
+              <Route path="activity-log" element={<ActivityLogScreen />} />
               <Route path="reports" element={<ReportsScreen />} />
               <Route path="users" element={<UserManagementScreen />} />
               <Route path="products" element={<ProductListScreen />} />
