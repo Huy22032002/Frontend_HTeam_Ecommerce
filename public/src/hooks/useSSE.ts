@@ -10,6 +10,8 @@ export const useSSE = () => {
   const eventSourceRef = useRef<Map<string, EventSource>>(new Map());
   const [isConnected, setIsConnected] = useState(false);
   const subscribersRef = useRef<Map<string, ((message: any) => void)[]>>(new Map());
+  // Track lastMessageId để tránh replay messages cũ trên reconnect
+  const lastMessageIdRef = useRef<Map<string, string>>(new Map());
 
   /**
    * Kết nối SSE cho một conversation
@@ -25,25 +27,38 @@ export const useSSE = () => {
 
     try {
       const token = localStorage.getItem('token');
-      // EventSource doesn't support custom headers, so we pass token as query parameter
-      const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
-      const streamUrl = userRole === 'admin' 
-        ? `${API_URL}/admins/${userId}/chat/stream/${conversationId}${tokenParam}`
-        : `${API_URL}/customers/${userId}/chat/stream/${conversationId}${tokenParam}`;
+      const lastMessageId = lastMessageIdRef.current.get(conversationId);
       
-      console.log(`SSE: Connecting to ${streamUrl.replace(token || '', '***')}`);
+      // Build URL with token and lastMessageId params
+      let queryParams = '';
+      if (token) {
+        queryParams += `?token=${encodeURIComponent(token)}`;
+      }
+      if (lastMessageId) {
+        queryParams += (token ? '&' : '?') + `lastMessageId=${encodeURIComponent(lastMessageId)}`;
+      }
+      
+      const streamUrl = userRole === 'admin' 
+        ? `${API_URL}/admins/${userId}/chat/stream/${conversationId}${queryParams}`
+        : `${API_URL}/customers/${userId}/chat/stream/${conversationId}${queryParams}`;
+      
+      console.log(`SSE: Connecting to stream (with lastMessageId=${lastMessageId || 'none'})`);
 
       const eventSource = new EventSource(streamUrl, {
         withCredentials: true,
       });
 
-      // Catch-up: nhận tất cả messages cũ
+      // Catch-up: nhận messages mới hoặc messages đã miss
       eventSource.addEventListener('catch-up', (event: MessageEvent) => {
         try {
           console.log('Received catch-up messages');
           const messages = JSON.parse(event.data);
           if (Array.isArray(messages)) {
             messages.forEach(msg => {
+              // Track lastMessageId để reconnect không replay
+              if (msg.id) {
+                lastMessageIdRef.current.set(conversationId, msg.id.toString());
+              }
               const callbacks = subscribersRef.current.get(conversationId) || [];
               callbacks.forEach(cb => cb(msg));
             });
@@ -58,6 +73,10 @@ export const useSSE = () => {
         try {
           console.log('Received real-time message');
           const message = JSON.parse(event.data);
+          // Track lastMessageId
+          if (message.id) {
+            lastMessageIdRef.current.set(conversationId, message.id.toString());
+          }
           const callbacks = subscribersRef.current.get(conversationId) || [];
           callbacks.forEach(cb => cb(message));
         } catch (e) {
@@ -143,6 +162,31 @@ export const useSSE = () => {
     disconnect(conversationId);
   }, [disconnect]);
 
+  /**
+   * Format timestamp từ ISO string sang định dạng Vietnam time
+   * @param isoString ISO 8601 timestamp (e.g., "2025-12-10T15:30:45Z")
+   * @returns Formatted string in Vietnam timezone (Asia/Ho_Chi_Minh)
+   */
+  const formatMessageTime = useCallback((isoString: string | undefined): string => {
+    if (!isoString) return '';
+    
+    try {
+      const date = new Date(isoString);
+      return date.toLocaleString('vi-VN', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    } catch (e) {
+      console.error('Error formatting message time:', e);
+      return isoString;
+    }
+  }, []);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -160,5 +204,6 @@ export const useSSE = () => {
     subscribe,
     unsubscribe,
     isConnected,
+    formatMessageTime, // Export timezone formatter for components
   };
 };

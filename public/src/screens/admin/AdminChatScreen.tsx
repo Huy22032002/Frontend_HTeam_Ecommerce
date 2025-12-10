@@ -35,7 +35,7 @@ export default function AdminChatScreen() {
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const messagesContainerRef = React.useRef<HTMLDivElement>(null);
   const { getAdminConversations, getAdminMessages } = useChat();
-  const { subscribe } = useSSE();
+  const { subscribe, formatMessageTime } = useSSE();
   
   // Try multiple ways to get adminId
   const userState = useSelector((state: any) => state.user);
@@ -510,7 +510,7 @@ export default function AdminChatScreen() {
                         textAlign: msg.senderRole === 'ADMIN' ? 'right' : 'left'
                       }}
                     >
-                      {new Date(msg.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                      {formatMessageTime(msg.createdAt)}
                     </Typography>
                   </Paper>
                 </Box>

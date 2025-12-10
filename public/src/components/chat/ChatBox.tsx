@@ -31,7 +31,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
   const customerId = customer?.id;
 
   const { conversation, messages, loading, error, markAsRead, loadMessages, messagePage: hookMessagePage, totalMessagePages: hookTotalPages } = useCustomerChat(customerId || null);
-  const { subscribe } = useSSE();
+  const { subscribe, formatMessageTime } = useSSE();
 
   const [messageText, setMessageText] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -342,10 +342,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
                         color: 'text.secondary'
                       }}
                     >
-                      {new Date(msg.createdAt).toLocaleTimeString('vi-VN', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
+                      {formatMessageTime(msg.createdAt)}
                       {msg.senderRole === 'CUSTOMER' && msg.isRead && ' ✓'}
                     </Typography>
                   </Paper>
