@@ -53,13 +53,17 @@ const DashboardScreen = () => {
   const getStatusColor = (status: string) => {
     switch (status?.toUpperCase()) {
       case "COMPLETED":
+      case "DELIVERED":
         return "success";
       case "PROCESSING":
+      case "SHIPPING":
         return "info";
       case "CANCELLED":
         return "error";
       case "PENDING":
         return "warning";
+      case "APPROVED":
+        return "primary";
       default:
         return "default";
     }
@@ -71,6 +75,9 @@ const DashboardScreen = () => {
       PROCESSING: "⏳ Đang xử lý",
       CANCELLED: "❌ Đã huỷ",
       PENDING: "⏸️ Chờ xử lý",
+      APPROVED: "✔️ Đã xác nhận",
+      DELIVERED: "🚚 Đã giao",
+      SHIPPING: "📦 Đang giao",
     };
     return statusMap[status?.toUpperCase()] || status;
   };
