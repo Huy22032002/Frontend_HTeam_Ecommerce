@@ -2,7 +2,11 @@ import axios from "axios";
 import { getCustomerToken } from "../../utils/tokenUtils";
 
 const API_BASE = import.meta.env.VITE_BASE_URL;
-const token = getCustomerToken();
+
+function getAuthHeader() {
+  const token = getCustomerToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 export const NotificationApi = {
   getUnreadCustomerNotification: async (customerId: number) => {
@@ -11,7 +15,7 @@ export const NotificationApi = {
       const response = await axios.get(
         `${API_BASE}/api/customers/${customerId}/notifications/unread`,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: getAuthHeader(),
         }
       );
 
@@ -30,7 +34,7 @@ export const NotificationApi = {
       const response = await axios.get(
         `${API_BASE}/api/customers/${customerId}/notifications`,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: getAuthHeader(),
         }
       );
       if (response.data) return response.data;
@@ -47,7 +51,7 @@ export const NotificationApi = {
       const response = await axios.patch(
         `${API_BASE}/api/customers/${customerId}/notification/${id}/mark-as-read`,
         null,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: getAuthHeader() }
       );
       return !!response.data;
     } catch (error: any) {

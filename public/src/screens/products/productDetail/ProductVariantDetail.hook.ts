@@ -204,8 +204,8 @@ const useVariantDetail = () => {
     if (!data) return;
     setIsLoadingReview(true);
     try {
-      //upload hinh len cloud
-      if (data.files) {
+      //upload hinh len cloud - CHỈ upload nếu có file
+      if (data.files && data.files.length > 0) {
         const formData = new FormData();
         formData.append("folder", "reviews");
         data.files.forEach((file) => formData.append("file", file));

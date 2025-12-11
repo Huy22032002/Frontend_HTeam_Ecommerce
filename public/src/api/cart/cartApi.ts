@@ -5,7 +5,10 @@ import { getCustomerToken } from "../../utils/tokenUtils";
 import type { Cart } from "../../models/cart/Cart";
 import type { CartItem } from "../../models/cart/CartItem";
 
-const token = getCustomerToken();
+function getAuthHeader() {
+  const token = getCustomerToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 export const CartApi = {
   getOrCreateByCustomerId: async (customerId: number): Promise<Cart | null> => {
@@ -14,9 +17,7 @@ export const CartApi = {
         `${backendEndpoint}/api/customers/cart`,
         {
           params: { customerId: customerId },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: getAuthHeader(),
         }
       );
       return response.data;
@@ -34,9 +35,7 @@ export const CartApi = {
         `${backendEndpoint}/api/customers/cart/${cartCode}/items`,
         cartItem,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: getAuthHeader(),
         }
       );
       return response.data;
@@ -56,9 +55,7 @@ export const CartApi = {
         {}, // body để trống
         {
           params: { action: action },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: getAuthHeader(),
         }
       );
       return response.data;
@@ -75,9 +72,7 @@ export const CartApi = {
       const response = await axios.delete(
         `${backendEndpoint}/api/customers/cart/${cartCode}/items/${itemId}`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: getAuthHeader(),
         }
       );
       return response.data; // trả về cart mới

@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { getCustomerToken } from '../../utils/tokenUtils';
+import { getAdminToken } from '../../utils/tokenUtils';
 
 const API_BASE = (import.meta.env.VITE_BASE_URL || "https://www.hecommerce.shop") + '/api/admins/customers';
 
 function getAuthHeader() {
-  const token = getCustomerToken();
+  const token = getAdminToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
