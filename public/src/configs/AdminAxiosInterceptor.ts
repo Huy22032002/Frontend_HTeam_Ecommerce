@@ -1,32 +1,19 @@
 import axios from "axios";
 import { getAdminToken } from "../utils/tokenUtils";
 
-// API endpoints that don't require admin token check (like login)
-const SKIP_TOKEN_CHECK_ENDPOINTS = [
-  "/admins/login",
-  "/customers/",  // Skip check for customer endpoints
-];
-
-const shouldSkipTokenCheck = (url: string): boolean => {
-  return SKIP_TOKEN_CHECK_ENDPOINTS.some(endpoint => url?.includes(endpoint));
-};
-
 /**
- * Setup axios request interceptor để check admin token trước khi gọi API
- * Chỉ check admin token cho endpoints `/admins/*`
- * Skip check cho `/customers/*`, `/login`, v.v...
+ * Setup axios request interceptor để check admin token
+ * Chỉ enforce admin token cho admin endpoints `/admins/*`
+ * Skip tất cả: `/customers/*`, `/login`, `/otp`, `/signup` v.v...
+ * Chỉ redirect `/admin/login` nếu không có admin token khi vào `/admins/*`
  */
 export const setupAdminAxiosInterceptor = () => {
   axios.interceptors.request.use(
     (config) => {
-      // Skip token check cho customer endpoints hoặc login endpoints
-      if (shouldSkipTokenCheck(config.url || "")) {
-        console.log("Skipping admin token check for:", config.url);
-        return config;
-      }
+      const url = config.url || "";
       
-      // Chỉ check admin token cho admin endpoints
-      if (config.url?.includes("/admins/")) {
+      // Chỉ check admin token cho `/admins/*` endpoints (trừ login)
+      if (url.includes("/admins/") && !url.includes("/admins/login")) {
         const adminToken = getAdminToken();
         
         // Nếu không có admin token, redirect to login
@@ -37,6 +24,7 @@ export const setupAdminAxiosInterceptor = () => {
         }
       }
       
+      // Tất cả request khác (customer, public, login) được phép
       return config;
     },
     (error) => Promise.reject(error)

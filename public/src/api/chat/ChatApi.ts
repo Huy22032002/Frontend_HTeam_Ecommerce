@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { PagedResponse } from '../../models/PagedResponse';
+import { getCustomerToken } from '../../utils/tokenUtils';
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL+'/api' || 'https://www.hecommerce.shop' + '/api';
 
@@ -50,8 +51,14 @@ export interface SendMessageRequest {
 export const getOrCreateCustomerConversation = async (
   customerId: number
 ): Promise<ChatConversation> => {
+  const token = getCustomerToken();
   const response = await axios.get(
-    `${API_BASE_URL}/customers/${customerId}/chat/conversation`
+    `${API_BASE_URL}/customers/${customerId}/chat/conversation`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
   );
   return response.data;
 };
@@ -63,9 +70,15 @@ export const sendCustomerMessage = async (
   customerId: number,
   request: SendMessageRequest
 ): Promise<ChatMessage> => {
+  const token = getCustomerToken();
   const response = await axios.post(
     `${API_BASE_URL}/customers/${customerId}/chat/messages`,
-    request
+    request,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
   );
   return response.data;
 };
@@ -79,10 +92,14 @@ export const getCustomerMessages = async (
   page: number = 0,
   size: number = 20
 ): Promise<PagedResponse<ChatMessage>> => {
+  const token = getCustomerToken();
   const response = await axios.get(
     `${API_BASE_URL}/customers/${customerId}/chat/conversations/${conversationId}/messages`,
     {
-      params: { page, size }
+      params: { page, size },
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     }
   );
   return response.data;
