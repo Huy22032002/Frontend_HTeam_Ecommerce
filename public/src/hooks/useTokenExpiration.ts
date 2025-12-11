@@ -47,15 +47,17 @@ export const useTokenExpiration = () => {
       // Nếu token đã hết hạn
       if (timeUntilExpiration <= 0) {
         console.warn('⏰ Token đã hết hạn - redirecting to login');
-        if (userState?.user?.role?.includes('ADMIN') || userState?.user?.role?.includes('ROLE_ADMIN')) {
+        const isAdmin = userState?.user?.role?.includes('ADMIN') || userState?.user?.role?.includes('ROLE_ADMIN');
+        if (isAdmin) {
           localStorage.removeItem('adminId');
           localStorage.removeItem('admin_token');
+          navigate('/admin/login', { replace: true });
         } else {
           localStorage.removeItem('customer_id');
           localStorage.removeItem('customer_token');
+          navigate('/login', { replace: true });
         }
         localStorage.removeItem('userRole');
-        navigate('/admin/login', { replace: true });
         return;
       }
 
@@ -68,15 +70,17 @@ export const useTokenExpiration = () => {
       // Cộng thêm 1 giây để đảm bảo token đã expired
       timeoutIdRef.current = setTimeout(() => {
         console.warn('⏰ Token expired - timeout triggered, redirecting');
-        if (userState?.user?.role?.includes('ADMIN') || userState?.user?.role?.includes('ROLE_ADMIN')) {
+        const isAdmin = userState?.user?.role?.includes('ADMIN') || userState?.user?.role?.includes('ROLE_ADMIN');
+        if (isAdmin) {
           localStorage.removeItem('adminId');
           localStorage.removeItem('admin_token');
+          navigate('/admin/login', { replace: true });
         } else {
           localStorage.removeItem('customer_id');
           localStorage.removeItem('customer_token');
+          navigate('/login', { replace: true });
         }
         localStorage.removeItem('userRole');
-        navigate('/admin/login', { replace: true });
       }, timeUntilExpiration + 1000);
     } catch (error) {
       console.error('❌ Error decoding token:', error);
