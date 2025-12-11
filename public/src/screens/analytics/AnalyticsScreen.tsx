@@ -142,33 +142,6 @@ const AnalyticsScreen = () => {
     setOpenFilter(false);
   };
 
-  const handleExportExcel = async () => {
-    try {
-      setLoading(true);
-      const categoryKey = categories[tabValue].key;
-      const filter = filters[categoryKey as keyof typeof filters];
-      const response = await AnalyticsApi.exportToExcel(filter);
-
-      // Create blob and download
-      const blob = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${categoryKey}-analytics-${new Date().toISOString().split("T")[0]}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (err) {
-      console.error("Error exporting Excel:", err);
-      setError("Lỗi khi xuất file Excel");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const renderStatsOverview = () => {
     const categoryKey = categories[tabValue].key;
     const currentStats = stats[categoryKey as keyof typeof stats];
@@ -604,21 +577,6 @@ const AnalyticsScreen = () => {
             }}
           >
             Bộ lọc
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<DownloadIcon />}
-            onClick={handleExportExcel}
-            disabled={loading}
-            sx={{
-              background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-              boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
-              "&:hover": {
-                boxShadow: "0 6px 16px rgba(59, 130, 246, 0.4)",
-              },
-            }}
-          >
-            Tải xuống Excel
           </Button>
         </Stack>
       </Box>
