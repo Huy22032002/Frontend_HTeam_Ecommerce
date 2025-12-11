@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { PagedResponse } from '../../models/PagedResponse';
-import { getCustomerToken } from '../../utils/tokenUtils';
+import { getCustomerToken, getAdminToken } from '../../utils/tokenUtils';
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL+'/api' || 'https://www.hecommerce.shop' + '/api';
 
@@ -115,9 +115,15 @@ export const sendAdminMessage = async (
   conversationId: string,
   request: SendMessageRequest
 ): Promise<ChatMessage> => {
+  const token = getAdminToken();
   const response = await axios.post(
     `${API_BASE_URL}/admins/${adminId}/chat/conversations/${conversationId}/messages`,
-    request
+    request,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
   );
   return response.data;
 };
@@ -131,10 +137,14 @@ export const getAdminMessages = async (
   page: number = 0,
   size: number = 20
 ): Promise<PagedResponse<ChatMessage>> => {
+  const token = getAdminToken();
   const response = await axios.get(
     `${API_BASE_URL}/admins/${adminId}/chat/conversations/${conversationId}/messages`,
     {
-      params: { page, size }
+      params: { page, size },
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     }
   );
   return response.data;
@@ -148,10 +158,14 @@ export const getAdminConversations = async (
   page: number = 0,
   size: number = 20
 ): Promise<PagedResponse<ChatConversation>> => {
+  const token = getAdminToken();
   const response = await axios.get(
     `${API_BASE_URL}/admins/${adminId}/chat/conversations`,
     {
-      params: { page, size }
+      params: { page, size },
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     }
   );
   return response.data;
@@ -165,10 +179,14 @@ export const getUnreadConversations = async (
   page: number = 0,
   size: number = 20
 ): Promise<PagedResponse<ChatConversation>> => {
+  const token = getAdminToken();
   const response = await axios.get(
     `${API_BASE_URL}/admins/${adminId}/chat/unread-conversations`,
     {
-      params: { page, size }
+      params: { page, size },
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     }
   );
   return response.data;
@@ -182,11 +200,15 @@ export const assignConversationToAdmin = async (
   conversationId: string,
   adminName: string = 'Admin'
 ): Promise<ChatConversation> => {
+  const token = getAdminToken();
   const response = await axios.put(
     `${API_BASE_URL}/admins/${adminId}/chat/conversations/${conversationId}/assign`,
     {},
     {
-      params: { adminName }
+      params: { adminName },
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     }
   );
   return response.data;
@@ -199,8 +221,15 @@ export const closeConversation = async (
   adminId: number,
   conversationId: string
 ): Promise<ChatConversation> => {
+  const token = getAdminToken();
   const response = await axios.put(
-    `${API_BASE_URL}/admins/${adminId}/chat/conversations/${conversationId}/close`
+    `${API_BASE_URL}/admins/${adminId}/chat/conversations/${conversationId}/close`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
   );
   return response.data;
 };
@@ -212,8 +241,15 @@ export const reopenConversation = async (
   adminId: number,
   conversationId: string
 ): Promise<ChatConversation> => {
+  const token = getAdminToken();
   const response = await axios.put(
-    `${API_BASE_URL}/admins/${adminId}/chat/conversations/${conversationId}/reopen`
+    `${API_BASE_URL}/admins/${adminId}/chat/conversations/${conversationId}/reopen`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
   );
   return response.data;
 };
