@@ -21,7 +21,6 @@ import {
   DialogActions,
 } from "@mui/material";
 import {
-  Download as DownloadIcon,
   FilterList as FilterIcon,
 } from "@mui/icons-material";
 import { ResponsiveLineCanvas } from "@nivo/line";
