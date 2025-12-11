@@ -1,10 +1,10 @@
 const backendEndpoint = import.meta.env.VITE_BASE_URL;
 import axios from "axios";
-import { getAdminToken } from "../../utils/tokenUtils";
+import { getCustomerToken } from "../../utils/tokenUtils";
 import type { Voucher } from "../../models/vouchers/Voucher";
 
 function getAuthHeader() {
-  const token = getAdminToken();
+  const token = getCustomerToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
