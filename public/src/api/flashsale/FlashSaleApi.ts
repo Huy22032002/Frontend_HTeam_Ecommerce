@@ -1,11 +1,12 @@
 import axios from "axios";
+import { getAdminToken } from "../../utils/tokenUtils";
 import type { PagedResponse } from "../../models/PagedResponse";
 import type { FlashSaleItemDTO } from "../../models/flashSale/FlashSaleItemDTO";
 import type { CreateFlashSaleDTO } from "../../models/flashSale/CreateFlashSaleDTO";
 import type { FlashSaleDTO } from "../../models/flashSale/FlashSaleDTO";
 
 export const getAuthHeader = (): Record<string, string> => {
-  const token = localStorage.getItem("token") || "";
+  const token = getAdminToken() || "";
   if (!token) return { "Content-Type": "application/json" };
 
   return {

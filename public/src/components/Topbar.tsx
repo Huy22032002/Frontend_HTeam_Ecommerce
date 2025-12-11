@@ -36,7 +36,7 @@ const Topbar: React.FC = () => {
   const user = useSelector((state: RootState) => state.customerAuth.customer);
 
   const getCustomerById = async () => {
-    const id = localStorage.getItem("id");
+    const id = localStorage.getItem("customer_id");
     if (id != null) {
       const data = await CustomerApi.getById(id);
       //save to Redux toolkit

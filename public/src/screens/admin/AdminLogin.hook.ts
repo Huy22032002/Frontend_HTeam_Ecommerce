@@ -22,13 +22,16 @@ export const useAdminLogin = () => {
     setIsLoading(true);
 
     try {
-      const response = await UserApi.login(username, password);
-      const { token, id } = response.data || {};
+      const loginResponse = await UserApi.login(username, password);
+      console.log("🔍 AdminLogin: loginResponse:", loginResponse);
+      const { token, id } = loginResponse || {};
 
       if (token && id) {
-        // 1. Save token to localStorage FIRST
-        localStorage.setItem("token", token);
+        // Token đã được lưu bởi UserApi.login(), nhưng lưu lại để chắc chắn
+        localStorage.setItem("admin_token", token);
         localStorage.setItem("adminId", id.toString());
+        console.log("✅ Token saved - admin_token:", token.substring(0, 20) + "...");
+        console.log("✅ ID saved - adminId:", id);
 
         // 2. Dispatch user to Redux
         const userData = {
@@ -57,6 +60,10 @@ export const useAdminLogin = () => {
           })
           .catch((err) => console.warn("⚠️ Could not fetch user details:", err));
       } else {
+        console.warn("⚠️ Token hoặc ID không có trong loginResponse:", { token, id });
+        console.log("📋 localStorage keys:", Object.keys(localStorage).filter(k => k.includes('admin')));
+        console.log("📋 localStorage admin_token:", localStorage.getItem('admin_token')?.substring(0, 20) + "...");
+        console.log("📋 localStorage adminId:", localStorage.getItem('adminId'));
         setError(`Invalid response. Token: ${!!token}, ID: ${id}`);
       }
     } catch (err: any) {
@@ -69,7 +76,8 @@ export const useAdminLogin = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("admin_token");
+    localStorage.removeItem("adminId");
     dispatch(logoutAction());
     navigate("/admin/login");
   };

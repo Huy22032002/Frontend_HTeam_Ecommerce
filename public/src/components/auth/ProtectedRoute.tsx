@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
+import { getAdminToken, getCustomerToken } from '../../utils/tokenUtils';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -7,17 +8,20 @@ interface ProtectedRouteProps {
 
 /**
  * ProtectedRoute Component
- * Simple check: if token in localStorage, allow access
+ * Check: if admin token OR customer token exists, allow access
  * Otherwise redirect to login
  */
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const token = localStorage.getItem('token');
+  const adminToken = getAdminToken();
+  const customerToken = getCustomerToken();
+  const isAuthenticated = !!adminToken || !!customerToken;
 
-  if (!token) {
-    console.log("🔐 ProtectedRoute: No token - redirecting to login");
+  if (!isAuthenticated) {
+    console.log("🔐 ProtectedRoute: No token (admin or customer) - redirecting to login");
     return <Navigate to="/admin/login" replace />;
   }
 
-  console.log("✅ ProtectedRoute: Token exists - rendering content");
+  const tokenType = adminToken ? "[ADMIN]" : "[CUSTOMER]";
+  console.log(`✅ ProtectedRoute: ${tokenType} Token exists - rendering content`);
   return <>{children}</>;
 };

@@ -1,9 +1,10 @@
 const API_BASE = (import.meta.env.VITE_BASE_URL || "https://www.hecommerce.shop") + "/api";
 
 import axios from "axios";
+import { getToken } from "../../utils/tokenUtils";
 
 function getAuthHeader() {
-  const token = localStorage.getItem("token");
+  const token = getToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 

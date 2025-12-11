@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -39,14 +39,33 @@ import type { ProductVariants } from "../../models/products/ProductVariant";
 import type { OrderItemDisplay } from "../../models/orders/CreateOrderRequest";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { OrderApi } from "../../api/order/OrderApi";
-import {
-  VIETNAM_PROVINCES,
-  getDistrictsByProvince,
-} from "../../utils/vietnamAddresses";
+import { CustomerDeliveryApi } from "../../api/customer/CustomerDeliveryApi";
 
 const CreateOrderScreen: React.FC = () => {
   const navigate = useNavigate();
   const order = useCreateOrder();
+  
+  // Address form states - giống AddDeliveryForm
+  const [provinces, setProvinces] = useState<any[]>([]);
+  const [districts, setDistricts] = useState<any[]>([]);
+  const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<number | null>(null);
+
+  // Form data
+  const [addressForm, setAddressForm] = useState({
+    recipientName: "",
+    phone: "",
+    street: "",
+    province: "",
+    district: "",
+    ward: "",
+  });
+
+  // Load provinces on mount
+  useEffect(() => {
+    CustomerDeliveryApi.getProvince().then((res) => {
+      setProvinces(res.data);
+    });
+  }, []);
 
   // Modal states
   const [showCustomerModal, setShowCustomerModal] = useState(false);
@@ -62,62 +81,70 @@ const CreateOrderScreen: React.FC = () => {
   const { deliveryAddresses, loading: loadingSavedAddresses } =
     useCustomerDeliveryAddresses(order.state.selectedCustomer?.id);
 
-  // Address states
-  const [selectedProvince, setSelectedProvince] = useState<string>("");
-  const [selectedDistrict, setSelectedDistrict] = useState<string>("");
-  const [streetAddress, setStreetAddress] = useState("");
-  const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<
-    number | null
-  >(null);
+  // Handle change for address form
+  const handleAddressChange = (key: string, value: string) => {
+    setAddressForm((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
 
-  // Get districts for selected province
-  const availableDistricts = selectedProvince
-    ? getDistrictsByProvince(selectedProvince)
-    : [];
+  // Handle province change - giống AddDeliveryForm
+  const handleProvinceChange = (code: string) => {
+    const selected = provinces.find((p) => p.code === code);
+    const provinceDistricts = selected?.districts || [];
+    setDistricts(provinceDistricts);
+    setAddressForm((prev) => ({
+      ...prev,
+      province: selected?.name || "",
+      district: "",
+      ward: "",
+    }));
+  };
+
+  // Handle district change - giống AddDeliveryForm
+  const handleDistrictChange = (code: string) => {
+    const selected = districts.find((d) => d.code === code);
+    setAddressForm((prev) => ({
+      ...prev,
+      district: selected?.name || "",
+      ward: "",
+    }));
+  };
 
   // Handle selecting a saved delivery address
   const handleSelectSavedAddress = (address: (typeof deliveryAddresses)[0]) => {
-    setSelectedSavedAddressId(address.id);
-
-    // Set form data from saved address
-    order.setReceiverPhoneNumber(address.phone);
-
-    // Parse fullAddress
-    const parts = address.fullAddress.split(",").map((p) => p.trim());
-
-    if (parts.length >= 2) {
-      const provinceName = parts[parts.length - 1];
-      const districtName = parts.length >= 3 ? parts[parts.length - 2] : "";
-      const street = parts
-        .slice(0, parts.length - 2)
-        .join(", ")
-        .trim();
-
-      // Find matching province
-      const matchingProvince = VIETNAM_PROVINCES.find(
-        (p) => p.name.toUpperCase() === provinceName.toUpperCase()
-      );
-
-      if (matchingProvince) {
-        setSelectedProvince(matchingProvince.id);
-
-        // Find matching district
-        if (districtName) {
-          const districts = getDistrictsByProvince(matchingProvince.id);
-          const matchingDistrict = districts.find(
-            (d) => d.name.toUpperCase() === districtName.toUpperCase()
-          );
-
-          if (matchingDistrict) {
-            setSelectedDistrict(matchingDistrict.id);
-          } else {
-            setSelectedDistrict("");
-          }
-        }
-      }
-
-      setStreetAddress(street);
+    // Toggle: nhấn lại để bỏ chọn
+    if (selectedSavedAddressId === address.id) {
+      setSelectedSavedAddressId(null);
+      setAddressForm({
+        recipientName: "",
+        phone: "",
+        street: "",
+        province: "",
+        district: "",
+        ward: "",
+      });
+      return;
     }
+
+    setSelectedSavedAddressId(address.id);
+    
+    // Parse fullAddress thành components: "street, district, province"
+    const parts = address.fullAddress.split(",").map((p) => p.trim());
+    const street = parts[0] || "";
+    const districtName = parts[1] || "";
+    const provinceName = parts[2] || "";
+
+    // Load dữ liệu trực tiếp vào form
+    setAddressForm({
+      recipientName: address.recipientName,
+      phone: address.phone,
+      street,
+      province: provinceName,
+      district: districtName,
+      ward: "",
+    });
   };
 
   // Handle chọn khách hàng
@@ -162,13 +189,37 @@ const CreateOrderScreen: React.FC = () => {
 
   // Handle chọn promotion
   const handleSelectPromotion = (promotion: any) => {
-    if (selectedItemForPromotion) {
-      const discountAmount = promotion.discountValue || 0;
+    if (!selectedItemForPromotion) {
+      setShowPromotionModal(false);
+      return;
+    }
+
+    if (!promotion) {
+      // Remove promotion
+      order.updateItemPromotion(
+        selectedItemForPromotion.productVariantOptionId,
+        undefined,
+        undefined,
+        undefined
+      );
+    } else {
+      // Calculate discount amount based on promotion type
+      let discountAmount = 0;
+      const itemTotal = selectedItemForPromotion.price * selectedItemForPromotion.quantity;
+
+      if (promotion.discountPercentage) {
+        // Calculate percentage discount
+        discountAmount = (itemTotal * promotion.discountPercentage) / 100;
+      } else if (promotion.discountAmount) {
+        // Use fixed discount amount
+        discountAmount = promotion.discountAmount;
+      }
+
       order.updateItemPromotion(
         selectedItemForPromotion.productVariantOptionId,
         promotion.id,
         discountAmount,
-        promotion.name
+        promotion.code // Use code instead of name for consistency
       );
     }
     setShowPromotionModal(false);
@@ -186,28 +237,58 @@ const CreateOrderScreen: React.FC = () => {
       return;
     }
 
-    // Build full address from province, district, and street
-    const provinceName =
-      VIETNAM_PROVINCES.find((p) => p.id === selectedProvince)?.name || "";
-    const districtName =
-      availableDistricts.find((d) => d.id === selectedDistrict)?.name || "";
+    // Validate address form
+    if (!addressForm.street || !addressForm.district || !addressForm.province) {
+      order.setError("❌ Vui lòng nhập đầy đủ địa chỉ giao hàng (đường, quận, tỉnh)");
+      return;
+    }
 
-    const fullAddress = [streetAddress, districtName, provinceName]
+    if (!addressForm.recipientName || !addressForm.recipientName.trim()) {
+      order.setError("❌ Vui lòng nhập tên người nhận hàng");
+      return;
+    }
+
+    if (!addressForm.phone || !addressForm.phone.trim()) {
+      order.setError("❌ Vui lòng nhập số điện thoại người nhận hàng");
+      return;
+    }
+
+    // Build full address from addressForm
+    const fullAddress = [addressForm.street, addressForm.district, addressForm.province]
       .filter(Boolean)
       .join(", ");
 
-    if (!fullAddress.trim()) {
-      order.setError("❌ Vui lòng nhập đầy đủ địa chỉ giao hàng");
-      return;
+    // Build order request with complete address info
+    let userId: number | null = null;
+    try {
+      const userStr = localStorage.getItem("adminId");
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        userId = user?.id || null;
+      }
+    } catch (error) {
+      console.error("Error getting userId:", error);
     }
 
-    // Update shipping address before building request
-    order.setShippingAddress(fullAddress);
-
-    const orderRequest = order.buildOrderRequest();
-    if (!orderRequest) {
-      return;
-    }
+    const orderRequest = {
+      customerId: order.state.selectedCustomer?.id,
+      userId: userId || undefined,
+      items: order.state.selectedItems.map((item) => ({
+        variantId: item.variantId,
+        productVariantOptionId: item.productVariantOptionId,
+        sku: item.sku,
+        quantity: item.quantity,
+        price: item.price,
+        promotionId: item.promotionId,
+        discountAmount: item.discountAmount,
+      })),
+      paymentMethod: order.state.paymentMethod,
+      notes: order.state.notes,
+      shippingAddress: fullAddress,
+      receiverName: addressForm.recipientName,
+      receiverPhoneNumber: addressForm.phone,
+      totalAmount: order.state.totalAmount,
+    };
 
     setSubmitLoading(true);
     try {
@@ -680,11 +761,8 @@ const CreateOrderScreen: React.FC = () => {
                     </InputLabel>
                     <Select
                       label="Tỉnh/Thành Phố"
-                      value={selectedProvince}
-                      onChange={(e) => {
-                        setSelectedProvince(e.target.value as string);
-                        setSelectedDistrict(""); // Reset district when province changes
-                      }}
+                      value={provinces.find((p) => p.name === addressForm.province)?.code || ""}
+                      onChange={(e) => handleProvinceChange(e.target.value)}
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           "&:hover fieldset": {
@@ -696,8 +774,8 @@ const CreateOrderScreen: React.FC = () => {
                       <MenuItem value="">
                         <em>-- Chọn Tỉnh/Thành Phố --</em>
                       </MenuItem>
-                      {VIETNAM_PROVINCES.map((province) => (
-                        <MenuItem key={province.id} value={province.id}>
+                      {provinces.map((province) => (
+                        <MenuItem key={province.code} value={province.code}>
                           {province.name}
                         </MenuItem>
                       ))}
@@ -708,15 +786,15 @@ const CreateOrderScreen: React.FC = () => {
                   <FormControl
                     fullWidth
                     size="small"
-                    disabled={!selectedProvince}
+                    disabled={!districts.length}
                     sx={{ flex: 1 }}
                   >
                     <InputLabel>Quận/Huyện</InputLabel>
                     <Select
                       label="Quận/Huyện"
-                      value={selectedDistrict}
+                      value={districts.find((d) => d.name === addressForm.district)?.code || ""}
                       onChange={(e) =>
-                        setSelectedDistrict(e.target.value as string)
+                        handleDistrictChange(e.target.value)
                       }
                       sx={{
                         "& .MuiOutlinedInput-root": {
@@ -729,8 +807,8 @@ const CreateOrderScreen: React.FC = () => {
                       <MenuItem value="">
                         <em>-- Chọn Quận/Huyện --</em>
                       </MenuItem>
-                      {availableDistricts.map((district) => (
-                        <MenuItem key={district.id} value={district.id}>
+                      {districts.map((district: any) => (
+                        <MenuItem key={district.code} value={district.code}>
                           {district.name}
                         </MenuItem>
                       ))}
@@ -738,14 +816,33 @@ const CreateOrderScreen: React.FC = () => {
                   </FormControl>
                 </Box>
 
+                {/* Recipient Name */}
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Tên người nhận"
+                  value={addressForm.recipientName}
+                  onChange={(e) => handleAddressChange("recipientName", e.target.value)}
+                  placeholder="VD: Nguyễn Văn A"
+                  disabled={selectedSavedAddressId !== null}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "&:hover fieldset": {
+                        borderColor: "#1976d2",
+                      },
+                    },
+                  }}
+                />
+
                 {/* Street Address */}
                 <TextField
                   fullWidth
                   size="small"
                   label="Số nhà, đường phố"
-                  value={streetAddress}
-                  onChange={(e) => setStreetAddress(e.target.value)}
+                  value={addressForm.street}
+                  onChange={(e) => handleAddressChange("street", e.target.value)}
                   placeholder="VD: 123 Đường ABC"
+                  disabled={selectedSavedAddressId !== null}
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       "&:hover fieldset": {
@@ -760,10 +857,11 @@ const CreateOrderScreen: React.FC = () => {
                   fullWidth
                   size="small"
                   label="Số điện thoại người nhận"
-                  value={order.state.receiverPhoneNumber}
-                  onChange={(e) => order.setReceiverPhoneNumber(e.target.value)}
+                  value={addressForm.phone}
+                  onChange={(e) => handleAddressChange("phone", e.target.value)}
                   placeholder="VD: 0987654321"
                   type="tel"
+                  disabled={selectedSavedAddressId !== null}
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       "&:hover fieldset": {
@@ -774,7 +872,7 @@ const CreateOrderScreen: React.FC = () => {
                 />
 
                 {/* Display full address preview */}
-                {selectedProvince && selectedDistrict && (
+                {addressForm.street && addressForm.province && addressForm.district && (
                   <Paper
                     sx={{
                       p: 2,
@@ -794,17 +892,7 @@ const CreateOrderScreen: React.FC = () => {
                       variant="body2"
                       sx={{ mt: 0.5, color: "#1565c0", fontWeight: "500" }}
                     >
-                      {streetAddress ? `${streetAddress}, ` : ""}
-                      {
-                        VIETNAM_PROVINCES.find((p) => p.id === selectedProvince)
-                          ?.name
-                      }
-                      ,
-                      {
-                        availableDistricts.find(
-                          (d) => d.id === selectedDistrict
-                        )?.name
-                      }
+                      {addressForm.street}, {addressForm.district}, {addressForm.province}
                     </Typography>
                   </Paper>
                 )}
@@ -1083,28 +1171,38 @@ const CreateOrderScreen: React.FC = () => {
                   >
                     Không Áp Dụng Khuyến Mãi
                   </Button>
-                  {availablePromotions.map((promo) => (
-                    <Paper
-                      key={promo.id}
-                      sx={{
-                        p: 2,
-                        cursor: "pointer",
-                        border: "1px solid #ddd",
-                        "&:hover": { bgcolor: "#f5f5f5" },
-                      }}
-                      onClick={() => handleSelectPromotion(promo)}
-                    >
-                      <Typography sx={{ fontWeight: "bold" }}>
-                        {promo.name}
-                      </Typography>
-                      <Typography variant="body2">
-                        Giảm: {formatCurrency(promo.discountValue || 0)}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: "#666" }}>
-                        {promo.description}
-                      </Typography>
-                    </Paper>
-                  ))}
+                  {availablePromotions.map((promo) => {
+                    // Calculate discount display
+                    let discountDisplay = "0₫";
+                    if (promo.discountPercentage) {
+                      discountDisplay = `${promo.discountPercentage}%`;
+                    } else if (promo.discountAmount) {
+                      discountDisplay = formatCurrency(promo.discountAmount);
+                    }
+
+                    return (
+                      <Paper
+                        key={promo.id}
+                        sx={{
+                          p: 2,
+                          cursor: "pointer",
+                          border: "1px solid #ddd",
+                          "&:hover": { bgcolor: "#f5f5f5" },
+                        }}
+                        onClick={() => handleSelectPromotion(promo)}
+                      >
+                        <Typography sx={{ fontWeight: "bold" }}>
+                          {promo.code}
+                        </Typography>
+                        <Typography variant="body2" sx={{ mt: 0.5 }}>
+                          {promo.description}
+                        </Typography>
+                        <Typography variant="body2" sx={{ mt: 1, color: "#d32f2f", fontWeight: "600" }}>
+                          Giảm: {discountDisplay}
+                        </Typography>
+                      </Paper>
+                    );
+                  })}
                 </Box>
               ) : (
                 <Typography

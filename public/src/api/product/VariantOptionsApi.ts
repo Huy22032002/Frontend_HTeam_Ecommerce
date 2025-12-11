@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getAdminToken } from "../../utils/tokenUtils";
 
 const API_BASE = import.meta.env.VITE_BASE_URL;
 
@@ -42,7 +43,7 @@ export const VariantsOptionsApi = {
         data,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${getAdminToken()}`,
           },
         }
       );
@@ -63,7 +64,7 @@ export const VariantsOptionsApi = {
         `${API_BASE}/api/admin/products/variants/options/${optionId}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${getAdminToken()}`,
           },
         }
       );

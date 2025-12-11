@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getToken } from "../../utils/tokenUtils";
 
 const API_BASE = import.meta.env.VITE_BASE_URL;
 
@@ -23,7 +24,7 @@ export const VariantsApi = {
   },
   getById: async (variantId: number) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const config: any = {};
       if (token) {
         config.headers = {
@@ -44,7 +45,7 @@ export const VariantsApi = {
   },
   getRecommendations: async (limit: number = 10) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const config: any = {
         params: { limit },
       };
@@ -141,7 +142,7 @@ export const VariantsApi = {
         data,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${getToken()}`,
           },
         }
       );
@@ -162,7 +163,7 @@ export const VariantsApi = {
         `${API_BASE}/api/admin/products/variants/${variantId}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${getToken()}`,
           },
         }
       );

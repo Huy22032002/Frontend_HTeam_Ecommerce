@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { getCustomerToken } from '../utils/tokenUtils';
 
 const API_URL = import.meta.env.VITE_BASE_URL + '/api' || 'https://www.hecommerce.shop/api';
 
@@ -44,7 +45,7 @@ export const useNotificationSSE = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getCustomerToken();
       const lastNotificationId = lastNotificationIdRef.current;
       
       let queryParams = '';

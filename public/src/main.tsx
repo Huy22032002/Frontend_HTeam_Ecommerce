@@ -3,10 +3,10 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import AdminApp from './AdminApp.tsx'
-import { setupAxiosInterceptors } from './configs/AxiosInterceptor'
+import { setupAdminAxiosInterceptor } from './configs/AdminAxiosInterceptor.ts'
 
-// Setup axios interceptors trước khi render
-setupAxiosInterceptors()
+// Setup axios interceptors để xử lý token cho admin app
+setupAdminAxiosInterceptor()
 
 const root = createRoot(document.getElementById('root')!)
 

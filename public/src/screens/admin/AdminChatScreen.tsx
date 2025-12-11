@@ -6,6 +6,7 @@ import { useChat } from '../../hooks/useChat';
 import { useSSE } from '../../hooks/useSSE';
 import * as ChatApi from '../../api/chat/ChatApi';
 import { useSelector } from 'react-redux';
+import { getAdminToken } from '../../utils/tokenUtils';
 
 interface Conversation {
   id: string;
@@ -316,7 +317,7 @@ export default function AdminChatScreen() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAdminToken()}`
         },
         body: JSON.stringify({
           conversationId: selectedConversationId,

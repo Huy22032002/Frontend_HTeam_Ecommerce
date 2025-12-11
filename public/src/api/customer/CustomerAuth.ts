@@ -24,8 +24,9 @@ export const loginFacebook = async (
     const loginResponse: LoginResponse = r.data;
 
     if (loginResponse) {
-      localStorage.setItem("token", loginResponse.token);
-      localStorage.setItem("id", loginResponse.id.toString());
+      localStorage.setItem("customer_token", loginResponse.token);
+      localStorage.setItem("customer_id", loginResponse.id.toString());
+      console.log("✅ FB Login: Saved customer_token and customer_id");
     }
     return loginResponse;
   } catch (err: unknown) {
@@ -54,8 +55,9 @@ export const login = async (authRequest: AuthRequest) => {
     );
     const loginResponse: LoginResponse = r.data;
     if (loginResponse) {
-      localStorage.setItem("token", loginResponse.token);
-      localStorage.setItem("id", loginResponse.id.toString());
+      localStorage.setItem("customer_token", loginResponse.token);
+      localStorage.setItem("customer_id", loginResponse.id.toString());
+      console.log("✅ Customer Login: Saved customer_token and customer_id");
     }
 
     return loginResponse;
@@ -87,8 +89,9 @@ export const loginGoogle = async (jwtGoogleToken: string) => {
 
     const loginResponse: LoginResponse = r.data;
     if (loginResponse) {
-      localStorage.setItem("token", loginResponse.token);
-      localStorage.setItem("id", loginResponse.id.toString());
+      localStorage.setItem("customer_token", loginResponse.token);
+      localStorage.setItem("customer_id", loginResponse.id.toString());
+      console.log("✅ Google Login: Saved customer_token and customer_id");
     }
 
     return loginResponse;
@@ -123,8 +126,9 @@ export const signUpByPhone = async (phone: string, password: string) => {
     );
     const loginResponse: LoginResponse = r.data;
     if (loginResponse) {
-      localStorage.setItem("token", loginResponse.token);
-      localStorage.setItem("id", loginResponse.id.toString());
+      localStorage.setItem("customer_token", loginResponse.token);
+      localStorage.setItem("customer_id", loginResponse.id.toString());
+      console.log("✅ SignUp by Phone: Saved customer_token and customer_id");
     }
 
     return loginResponse;

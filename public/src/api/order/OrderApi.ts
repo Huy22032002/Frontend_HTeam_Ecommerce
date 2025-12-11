@@ -1,11 +1,12 @@
 import axios from "axios";
 import type { Order } from "../../models/dashboard/Order";
+import { getAdminToken,getCustomerToken } from "../../utils/tokenUtils";
 
 const API_BASE = (import.meta.env.VITE_BASE_URL || "https://www.hecommerce.shop") + "/api/admins/orders";
 const backend_api = import.meta.env.VITE_BASE_URL;
 
 function getAuthHeader() {
-  const token = localStorage.getItem("token");
+  const token = getAdminToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
@@ -45,7 +46,7 @@ export const OrderApi = {
   // Lấy chi tiết đơn hàng theo id cho khách hàng
   getByIdOfCustomer: (id: string) =>
     axios.get(`${backend_api}/api/customers/orders/${id}`, {
-      headers: getAuthHeader(),
+      headers: { Authorization: `Bearer ${getCustomerToken()}` },
     }),
 
   // Tạo đơn hàng mới
@@ -62,33 +63,42 @@ export const OrderApi = {
 
   // Khách hàng tạo dơn hàng
   createByCustomer: (order: Partial<Order>) =>
-    axios.post(`${import.meta.env.VITE_BASE_URL}/api/customers/orders`, order, {
-      headers: getAuthHeader(),
+    axios.post(`${backend_api}/api/customers/orders`, order, {
+      headers: { Authorization: `Bearer ${getCustomerToken()}` },
     }),
 
   // Lấy lịch sử đơn hàng của customer theo id
   getByCustomerId: (customerId: string, page: number = 0, size: number = 20) =>
     axios.get(
-      `${
-        import.meta.env.VITE_BASE_URL
-      }/api/customers/${customerId}/orders?page=${page}&size=${size}`,
-      { headers: getAuthHeader() }
+      `${backend_api}/api/customers/${customerId}/orders?page=${page}&size=${size}`,
+      { headers: { Authorization: `Bearer ${getCustomerToken()}` } }
     ),
 
   // Huỷ đơn hàng của customer
   cancelByCustomer: (orderId: string | number) =>
     axios.delete(
-      `${import.meta.env.VITE_BASE_URL}/api/customers/orders/${orderId}`,
-      { headers: getAuthHeader() }
+      `${backend_api}/api/customers/orders/${orderId}`,
+      { headers: { Authorization: `Bearer ${getCustomerToken()}` } }
     ),
 
-  // Cập nhật trạng thái đơn hàng
-  updateOrderStatus: (id: string | number, status: string) =>
-    axios.put(
-      `${API_BASE}/${id}/status`,
-      { status },
-      { headers: getAuthHeader() }
-    ),
+  // Cập nhật trạng thái đơn hàng (tự động chọn endpoint admin hoặc customer)
+  updateOrderStatus: (id: string | number, status: string, isCustomer: boolean = false) => {
+    if (isCustomer) {
+      // Customer endpoint
+      return axios.put(
+        `${backend_api}/api/customers/orders/${id}/status`,
+        { status },
+        { headers: { Authorization: `Bearer ${getCustomerToken()}` } }
+      );
+    } else {
+      // Admin endpoint
+      return axios.put(
+        `${API_BASE}/${id}/status`,
+        { status },
+        { headers: getAuthHeader() }
+      );
+    }
+  },
 
   // Xuất danh sách đơn hàng ra Excel theo filter
   exportToExcel: (filters: OrderFilters) => {

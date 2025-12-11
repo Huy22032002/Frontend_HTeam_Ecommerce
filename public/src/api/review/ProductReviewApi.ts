@@ -1,5 +1,6 @@
 const backendEndpoint = import.meta.env.VITE_BASE_URL;
 import axios from "axios";
+import { getCustomerToken, getAdminToken } from "../../utils/tokenUtils";
 import type {
   CreateReviewDto,
   ReadableProductReview,
@@ -7,7 +8,7 @@ import type {
 import type { PagedResponse } from "../../models/PagedResponse";
 
 function getAuthHeader() {
-  const token = localStorage.getItem("token");
+  const token = getCustomerToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
@@ -51,7 +52,6 @@ export const ReviewApi = {
       `${backendEndpoint}/api/public/product/${optionId}/reviews`,
       {
         params: { page, size },
-        headers: getAuthHeader(),
       }
     );
     console.log("list review of products: ", response.data);
@@ -84,7 +84,7 @@ export const ReviewApi = {
       `${backendEndpoint}/api/admins/products/reviews`,
       {
         params: { page, size },
-        headers: getAuthHeader(),
+        headers: { Authorization: `Bearer ${getAdminToken()}` },
       }
     );
     return response.data;

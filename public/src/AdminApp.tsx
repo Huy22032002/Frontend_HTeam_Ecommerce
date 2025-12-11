@@ -1,6 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Provider } from "react-redux";
+import { Provider, useDispatch} from "react-redux";
 import store from "./store/store";
+import { useEffect, useState } from "react";
+import { login as loginAction } from "./store/userSlice";
+import { UserApi } from "./api/user/UserApi";
+import { getAdminToken, getAdminId } from "./utils/tokenUtils";
 
 import { ColorModeContext, useMode } from "./theme/theme";
 import { CssBaseline, ThemeProvider } from "@mui/material";
@@ -41,6 +45,44 @@ import CreateFlashSaleScreen from "./screens/admin/flashsale/CreateFlashSaleScre
 import AdminChatScreen from "./screens/admin/AdminChatScreen";
 
 function AdminAppContent() {
+  const dispatch = useDispatch();
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    // Restore admin state từ localStorage khi app load
+    const adminToken = getAdminToken();
+    const adminId = getAdminId();
+
+    if (adminToken && adminId) {
+      const adminIdNumber = parseInt(adminId, 10);
+      if (!isNaN(adminIdNumber)) {
+        console.log("📖 Restoring admin user data from server...");
+        UserApi.getById(adminIdNumber)
+          .then((response) => {
+            const userData = response.data;
+            console.log("✅ Admin user data restored:", userData);
+            dispatch(loginAction(userData));
+            setIsInitialized(true);
+          })
+          .catch((err) => {
+            console.error("❌ Failed to restore admin session:", err);
+            setIsInitialized(true);
+          });
+      } else {
+        setIsInitialized(true);
+      }
+    } else {
+      // No token - allow ProtectedRoute to redirect to login
+      setIsInitialized(true);
+    }
+  }, [dispatch]);
+
+  // Wait for initialization to complete before rendering routes
+  // This ensures Redux state is populated before ProtectedRoute checks it
+  if (!isInitialized) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <Routes>
       {/* Login route */}

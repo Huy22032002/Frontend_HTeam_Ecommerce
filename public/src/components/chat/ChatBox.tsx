@@ -20,6 +20,7 @@ import { useCustomerChat } from '../../hooks/useChat';
 import { useSSE } from '../../hooks/useSSE';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
+import { getCustomerToken } from '../../utils/tokenUtils';
 
 interface ChatBoxProps {
   isOpen?: boolean;
@@ -169,7 +170,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getCustomerToken()}`
         },
         body: JSON.stringify({
           conversationId: conversation.id,

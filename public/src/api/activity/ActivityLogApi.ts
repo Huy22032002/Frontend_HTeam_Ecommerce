@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { PagedResponse } from '../../models/PagedResponse';
+import { getAdminToken} from '../../utils/tokenUtils';
 
 const API_BASE_URL = (import.meta.env.VITE_BASE_URL || "https://www.hecommerce.shop") + '/api'; //chat
 
@@ -50,7 +51,9 @@ export const ActivityLogApi = {
     if (endDate) params.append('endDate', endDate);
 
     const response = await axios.get(
-      `${API_BASE_URL}/activity-logs?${params.toString()}`
+      `${API_BASE_URL}/activity-logs?${params.toString()}`,
+      //thêm header token
+      {headers: { Authorization: `Bearer ${getAdminToken()}` }}
     );
     return response.data;
   },
@@ -83,7 +86,8 @@ export const ActivityLogApi = {
     const response = await axios.get(
       `${API_BASE_URL}/activity-logs/by-action/${actionType}`,
       {
-        params: { page, size }
+        params: { page, size },
+        headers: { Authorization: `Bearer ${getAdminToken()}` }
       }
     );
     return response.data;
@@ -100,7 +104,8 @@ export const ActivityLogApi = {
     const response = await axios.get(
       `${API_BASE_URL}/activity-logs/by-user/${userId}`,
       {
-        params: { page, size }
+        params: { page, size },
+        headers: { Authorization: `Bearer ${getAdminToken()}` }
       }
     );
     return response.data;
@@ -111,7 +116,10 @@ export const ActivityLogApi = {
    */
   getActivityLogsByEntityId: async (entityId: string): Promise<ActivityLog[]> => {
     const response = await axios.get(
-      `${API_BASE_URL}/activity-logs/by-entity/${entityId}`
+      `${API_BASE_URL}/activity-logs/by-entity/${entityId}`,
+      {
+        headers: { Authorization: `Bearer ${getAdminToken()}` }
+      }
     );
     return response.data;
   },
@@ -120,7 +128,7 @@ export const ActivityLogApi = {
    * Create activity log
    */
   createActivityLog: async (log: Partial<ActivityLog>): Promise<ActivityLog> => {
-    const response = await axios.post(`${API_BASE_URL}/activity-logs`, log);
+    const response = await axios.post(`${API_BASE_URL}/activity-logs`, log, {headers: { Authorization: `Bearer ${getAdminToken()}` }});
     return response.data;
   },
 
@@ -135,6 +143,7 @@ export const ActivityLogApi = {
     if (filters.endDate) params.append('endDate', filters.endDate);
 
     return axios.get(`${API_BASE_URL}/activity-logs/export/excel?${params.toString()}`, {
+      headers: { Authorization: `Bearer ${getAdminToken()}` },
       responseType: 'blob',
     });
   }

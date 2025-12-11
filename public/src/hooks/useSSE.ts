@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { getAdminToken, getCustomerToken } from '../utils/tokenUtils';
 
 const API_URL = import.meta.env.VITE_BASE_URL+'/api' || 'https://www.hecommerce.shop/api';
 
@@ -26,7 +27,7 @@ export const useSSE = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      const token = userRole === 'admin' ? getAdminToken() : getCustomerToken();
       const lastMessageId = lastMessageIdRef.current.get(conversationId);
       
       // Build URL with token and lastMessageId params

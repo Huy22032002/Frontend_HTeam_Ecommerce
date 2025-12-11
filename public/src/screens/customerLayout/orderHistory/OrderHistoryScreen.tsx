@@ -135,10 +135,51 @@ const OrderHistoryScreen = () => {
   const handleReceiveOrder = async () => {
     if (!selectedOrder) return;
 
+    // Check trạng thái - chỉ cho phép xác nhận khi SHIPPING
+    if (selectedOrder.status !== "SHIPPING") {
+      setCancelRestrictionMessage(
+        'Chỉ có thể xác nhận nhận hàng khi đơn hàng đang "Đang giao". Đơn hàng hiện tại không thể xác nhận.'
+      );
+      setOpenCancelRestrictionDialog(true);
+      return;
+    }
+
     try {
       setCancelLoading(true);
-      // Use the same API to update status to DELIVERED
-      await OrderApi.updateOrderStatus(selectedOrder.id, "DELIVERED");
+      // Use customer endpoint to update status to DELIVERED
+      const customerToken = localStorage.getItem("customer_token");
+      if (!customerToken) {
+        throw new Error("Vui lòng đăng nhập để thực hiện hành động này");
+      }
+
+      const apiUrl = (import.meta.env.VITE_BASE_URL || "https://www.hecommerce.shop") + "/api";
+      const response = await fetch(
+        `${apiUrl}/customers/orders/${selectedOrder.id}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${customerToken}`,
+          },
+          body: JSON.stringify({ status: "DELIVERED" }),
+        }
+      );
+
+      if (!response.ok) {
+        const contentType = response.headers.get("content-type");
+        let errorMessage = "Lỗi khi xác nhận nhận hàng";
+        if (contentType && contentType.includes("application/json")) {
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorMessage;
+          } catch (e) {
+            errorMessage = `Lỗi ${response.status}: ${response.statusText}`;
+          }
+        } else {
+          errorMessage = `Lỗi ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
 
       setSnackbar({
         open: true,
@@ -148,11 +189,13 @@ const OrderHistoryScreen = () => {
 
       // Close dialog and refresh
       setOpenDialog(false);
-      window.location.reload();
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     } catch (error: any) {
       console.error("Lỗi khi xác nhận nhận hàng:", error);
       const errorMessage =
-        error?.response?.data?.message || "Lỗi khi xác nhận nhận hàng";
+        error?.message || error?.response?.data?.message || "Lỗi khi xác nhận nhận hàng";
       setSnackbar({
         open: true,
         message: `❌ ${errorMessage}`,

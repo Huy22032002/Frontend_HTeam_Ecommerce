@@ -1,18 +1,19 @@
 const backendEndpoint = import.meta.env.VITE_BASE_URL;
 
 import axios from "axios";
+import { getCustomerToken } from "../../utils/tokenUtils";
 import type { ReadableCustomer } from "../../models/customer/ReadableCustomer";
 import type { UpdateCustomer } from "../../models/customer/UpdateCustomer";
 
 function getAuthHeader() {
-  const token = localStorage.getItem("token");
+  const token = getCustomerToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 export const CustomerApi = {
   getById: async (customerId: string): Promise<ReadableCustomer | null> => {
     try {
-      console.log("Token:", localStorage.getItem("token"));
+      console.log("Token:", getCustomerToken());
       const response = await axios.get<ReadableCustomer>(
         `${backendEndpoint}/api/customers/${customerId}`,
         {

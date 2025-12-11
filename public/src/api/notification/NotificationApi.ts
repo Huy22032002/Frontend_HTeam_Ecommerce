@@ -1,7 +1,8 @@
 import axios from "axios";
+import { getCustomerToken } from "../../utils/tokenUtils";
 
 const API_BASE = import.meta.env.VITE_BASE_URL;
-const token = localStorage.getItem("token");
+const token = getCustomerToken();
 
 export const NotificationApi = {
   getUnreadCustomerNotification: async (customerId: number) => {

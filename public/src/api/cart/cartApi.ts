@@ -1,10 +1,11 @@
 const backendEndpoint = import.meta.env.VITE_BASE_URL;
 
 import axios from "axios";
+import { getCustomerToken } from "../../utils/tokenUtils";
 import type { Cart } from "../../models/cart/Cart";
 import type { CartItem } from "../../models/cart/CartItem";
 
-const token = localStorage.getItem("token");
+const token = getCustomerToken();
 
 export const CartApi = {
   getOrCreateByCustomerId: async (customerId: number): Promise<Cart | null> => {

@@ -13,6 +13,7 @@ export interface CreateOrderState {
   paymentMethod: "CASH" | "MOMO";
   notes: string;
   shippingAddress: string;
+  receiverName: string;
   receiverPhoneNumber: string;
   totalAmount: number;
   loading: boolean;
@@ -26,6 +27,7 @@ export const useCreateOrder = () => {
     paymentMethod: "CASH",
     notes: "",
     shippingAddress: "",
+    receiverName: "",
     receiverPhoneNumber: "",
     totalAmount: 0,
     loading: false,
@@ -193,6 +195,14 @@ export const useCreateOrder = () => {
     }));
   };
 
+  // Cập nhật tên người nhận hàng
+  const setReceiverName = (name: string) => {
+    setState((prev) => ({
+      ...prev,
+      receiverName: name,
+    }));
+  };
+
   // Cập nhật số điện thoại người nhận
   const setReceiverPhoneNumber = (phoneNumber: string) => {
     setState((prev) => ({
@@ -230,7 +240,7 @@ export const useCreateOrder = () => {
     // Lấy userId từ localStorage
     let userId: number | null = null;
     try {
-      const userStr = localStorage.getItem("user");
+      const userStr = localStorage.getItem("adminId");
       if (userStr) {
         const user = JSON.parse(userStr);
         userId = user?.id || null;
@@ -255,8 +265,9 @@ export const useCreateOrder = () => {
       items,
       paymentMethod: state.paymentMethod,
       notes: state.notes,
-      shippingAddress: state.shippingAddress,
-      receiverPhoneNumber: state.receiverPhoneNumber,
+      shippingAddress: state.shippingAddress || undefined, // Don't send empty string
+      receiverName: state.receiverName || undefined, // Don't send empty string
+      receiverPhoneNumber: state.receiverPhoneNumber || undefined, // Don't send empty string
       totalAmount: state.totalAmount,
     };
   };
@@ -269,6 +280,7 @@ export const useCreateOrder = () => {
       paymentMethod: "CASH",
       notes: "",
       shippingAddress: "",
+      receiverName: "",
       receiverPhoneNumber: "",
       totalAmount: 0,
       loading: false,
@@ -286,6 +298,7 @@ export const useCreateOrder = () => {
     setPaymentMethod,
     setNotes,
     setShippingAddress,
+    setReceiverName,
     setReceiverPhoneNumber,
     fetchPromotionsForSku,
     buildOrderRequest,

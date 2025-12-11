@@ -1,11 +1,12 @@
 import axios from "axios";
 import type { UserSummary } from "../../models/dashboard/UserSummary";
+import { getAdminToken } from "../../utils/tokenUtils";
 
 const API_BASE = (import.meta.env.VITE_BASE_URL || "https://www.hecommerce.shop") + "/api";
 const ADMIN_API = API_BASE + "/admins";
 
 function getAuthHeader() {
-  const token = localStorage.getItem("token");
+  const token = getAdminToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
@@ -38,7 +39,20 @@ export const UserApi = {
 
   // Đăng nhập người dùng
   login: (username: string, password: string) =>
-    axios.post(`${ADMIN_API}/login`, { username, password }, { timeout: 10000 }),
+    axios.post(`${ADMIN_API}/login`, { username, password }, { timeout: 10000 }).then(response => {
+      console.log("🔐 UserApi.login() response.data:", response.data);
+      if (response.data?.token) {
+        localStorage.setItem('admin_token', response.data.token);
+        console.log("✅ UserApi: Saved admin_token to localStorage");
+        if (response.data?.id) {
+          localStorage.setItem('adminId', response.data.id);
+          console.log("✅ UserApi: Saved adminId to localStorage:", response.data.id);
+        }
+      } else {
+        console.warn("⚠️ UserApi: No token in response.data:", response.data);
+      }
+      return response.data;
+    }),
 
   // Đăng ký người dùng mới
   register: (user: Partial<UserSummary>) =>
@@ -46,7 +60,9 @@ export const UserApi = {
 
   // Đăng xuất người dùng
   logout: () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('adminId');
+    return axios.post(`${ADMIN_API}/logout`, {}, { headers: getAuthHeader() });
   },
 
   // Quên mật khẩu
