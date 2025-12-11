@@ -1,8 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import type { RootState } from '../store/store';
-import { getAdminToken,getCustomerToken } from '../utils/tokenUtils';
+import { getAdminToken, getCustomerToken } from '../utils/tokenUtils';
 
 /**
  * Hook để kiểm tra và xử lý token hết hạn
@@ -10,11 +8,12 @@ import { getAdminToken,getCustomerToken } from '../utils/tokenUtils';
  */
 export const useTokenExpiration = () => {
   const navigate = useNavigate();
-  const userState = useSelector((state: RootState) => state.userAuth);
   const timeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const token = userState?.user?.role?.includes('ADMIN') || userState?.user?.role?.includes('ROLE_ADMIN') ? getAdminToken() : getCustomerToken();
+    // Determine if user is admin based on stored tokens or role
+    const isAdmin = getAdminToken() !== null;
+    const token = isAdmin ? getAdminToken() : getCustomerToken();
     
     // Không có token? Không làm gì (ProtectedRoute sẽ xử lý redirect)
     if (!token) {
@@ -47,7 +46,6 @@ export const useTokenExpiration = () => {
       // Nếu token đã hết hạn
       if (timeUntilExpiration <= 0) {
         console.warn('⏰ Token đã hết hạn - redirecting to login');
-        const isAdmin = userState?.user?.role?.includes('ADMIN') || userState?.user?.role?.includes('ROLE_ADMIN');
         if (isAdmin) {
           localStorage.removeItem('adminId');
           localStorage.removeItem('admin_token');
@@ -70,7 +68,6 @@ export const useTokenExpiration = () => {
       // Cộng thêm 1 giây để đảm bảo token đã expired
       timeoutIdRef.current = setTimeout(() => {
         console.warn('⏰ Token expired - timeout triggered, redirecting');
-        const isAdmin = userState?.user?.role?.includes('ADMIN') || userState?.user?.role?.includes('ROLE_ADMIN');
         if (isAdmin) {
           localStorage.removeItem('adminId');
           localStorage.removeItem('admin_token');
@@ -92,7 +89,7 @@ export const useTokenExpiration = () => {
         clearTimeout(timeoutIdRef.current);
       }
     };
-  }, [navigate, userState?.user?.id]); // Only re-run when user ID changes
+  }, [navigate]);
 };
 
 export default useTokenExpiration;
