@@ -32,6 +32,7 @@ export default function CheckoutScreen() {
   const navigate = useNavigate();
 
   const {
+    sepayInfo,
     qrCode,
     orderId,
     //state address
@@ -360,11 +361,84 @@ export default function CheckoutScreen() {
                 onChange={handlePaymentMethodChange}
               >
                 <FormControlLabel
-                  value="TRANSFER"
+                  value="DIRECTBANK"
                   control={<Radio />}
                   label="🏦 Chuyển khoản ngân hàng"
                   disabled={isLoading}
                 />
+                {sepayInfo && (
+                  <Card
+                    sx={{
+                      mt: 3,
+                      p: 3,
+                      borderRadius: 2,
+                      border: "2px solid #1976d2",
+                      background: "#e7f3ff",
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      fontWeight={700}
+                      color="primary"
+                      mb={2}
+                    >
+                      Thông tin thanh toán SePay
+                    </Typography>
+
+                    <Stack spacing={2}>
+                      <TextField
+                        label="Ngân hàng"
+                        value={sepayInfo.bankName}
+                        InputProps={{ readOnly: true }}
+                        fullWidth
+                      />
+
+                      <TextField
+                        label="Số tài khoản"
+                        value={sepayInfo.bankNumber}
+                        InputProps={{ readOnly: true }}
+                        fullWidth
+                      />
+
+                      <TextField
+                        label="Chủ tài khoản"
+                        value={sepayInfo.accountName}
+                        InputProps={{ readOnly: true }}
+                        fullWidth
+                      />
+
+                      <TextField
+                        label="Nội dung chuyển khoản"
+                        value={sepayInfo.transferContent}
+                        InputProps={{ readOnly: true }}
+                        fullWidth
+                      />
+
+                      <TextField
+                        label="Số tiền"
+                        value={sepayInfo.amount.toLocaleString("vi-VN") + " đ"}
+                        InputProps={{ readOnly: true }}
+                        fullWidth
+                      />
+
+                      <Alert severity="info">
+                        Vui lòng chuyển khoản đúng <b>NỘI DUNG</b> để hệ thống
+                        tự động xác nhận.
+                      </Alert>
+                    </Stack>
+
+                    <Box textAlign="center" mt={3}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        size="large"
+                        onClick={() => window.location.reload()}
+                      >
+                        Xác nhận sau khi chuyển khoản xong
+                      </Button>
+                    </Box>
+                  </Card>
+                )}
                 <FormControlLabel
                   value="CARD"
                   control={<Radio />}
