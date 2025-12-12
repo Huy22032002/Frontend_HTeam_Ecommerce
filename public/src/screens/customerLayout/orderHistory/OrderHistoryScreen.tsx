@@ -33,6 +33,23 @@ import { OrderApi } from "../../../api/order/OrderApi";
 import type { OrderReadableDTO } from "../../../models/orders/Order";
 import useOrderHistoryy from "./OrderHistory.hook";
 
+// Function để format date từ UTC string, giữ nguyên ngày (không convert sang local timezone)
+const formatDateWithoutTimezoneShift = (dateString: string): string => {
+  try {
+    // Parse ISO string: "2025-12-10T18:24:31.104142Z"
+    const date = new Date(dateString);
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  } catch {
+    return 'N/A';
+  }
+};
+
 const OrderHistoryScreen = () => {
   const navigate = useNavigate();
   const theme = useTheme();
@@ -330,16 +347,7 @@ const OrderHistoryScreen = () => {
                           {order.orderCode}
                         </TableCell>
                         <TableCell>
-                          {new Date(order.createdAt).toLocaleDateString(
-                            "vi-VN",
-                            {
-                              year: "numeric",
-                              month: "2-digit",
-                              day: "2-digit",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            }
-                          )}
+                          {formatDateWithoutTimezoneShift(order.createdAt)}
                         </TableCell>
                         <TableCell align="right" sx={{ fontWeight: 600 }}>
                           {formatCurrency(order.total)}
@@ -427,9 +435,7 @@ const OrderHistoryScreen = () => {
                           Ngày tạo:
                         </Typography>
                         <Typography variant="body2" fontWeight={600}>
-                          {new Date(selectedOrder.createdAt).toLocaleDateString(
-                            "vi-VN"
-                          )}
+                          {formatDateWithoutTimezoneShift(selectedOrder.createdAt)}
                         </Typography>
                       </Box>
                       <Box display="flex" justifyContent="space-between">
