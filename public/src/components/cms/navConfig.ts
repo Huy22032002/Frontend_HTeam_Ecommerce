@@ -102,6 +102,12 @@ export const cmsNav: CmsNavItem[] = [
     icon: "⚡",
     path: "/admin/flash-sale",
   },
+  {
+    key: "banner",
+    label: "Banner",
+    icon: "🖼️",
+    path: "/admin/banners",
+  },
   // { key: 'website', label: 'Website', icon: '🌐', children: [
   //     { key: 'pages', label: 'Trang', path: '/admin/pages' },
   //   ] },
