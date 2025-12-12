@@ -33,6 +33,7 @@ import CustomerReviewScreen from "./screens/customerLayout/review/CustomerReview
 import VoucherScreen from "./screens/customerLayout/voucher/VoucherScreen";
 import FlashSaleScreen from "./screens/flashsale/FlashSaleScreen";
 import ChatbotWidget from "./components/chatbot/ChatBotWidget";
+import ChatWidget from "./components/chat/ChatWidget";
 
 function AppContent() {
   const location = useLocation();
@@ -83,6 +84,7 @@ function AppContent() {
         {!hideLayout && <Footer />}
 
         {!hideLayout && <ChatbotWidget />}
+        {!hideLayout && <ChatWidget />}
       </main>
     </div>
   );

@@ -10,7 +10,6 @@ import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import SearchIcon from "@mui/icons-material/Search";
-import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 
 import { useNavigate } from "react-router-dom";
 
@@ -26,7 +25,6 @@ import { setCart } from "../store/cartSlice";
 import NotificationPopup from "./notìication/NotificationPopup";
 import Badge from "@mui/material/Badge";
 import useNotifications from "../hooks/useNotification";
-import ChatBox from "./chat/ChatBox";
 
 const Topbar: React.FC = () => {
   //redux
@@ -82,7 +80,6 @@ const Topbar: React.FC = () => {
   const navigate = useNavigate();
 
   const [openCartPopup, setOpenCartPopup] = useState(false);
-  const [openChatBox, setOpenChatBox] = useState(false);
 
   const [searchInput, setSearchInput] = useState("");
 
@@ -239,24 +236,6 @@ const Topbar: React.FC = () => {
           </Button>
         )}
 
-        {/* Chat Button */}
-        <IconButton
-          onClick={() => setOpenChatBox((prev) => !prev)}
-          sx={{
-            bgcolor: colors.primary[400],
-            color: colors.primary[100],
-            borderRadius: "50%",
-            width: 45,
-            height: 45,
-            "&:hover": {
-              bgcolor: colors.blueAccent[700],
-            },
-          }}
-          title="Mở chat với admin"
-        >
-          <ChatBubbleOutlineIcon />
-        </IconButton>
-
         {/* cart  */}
         <Button
           variant="contained"
@@ -310,9 +289,6 @@ const Topbar: React.FC = () => {
           cartItems={cart?.items || []}
           onClose={() => setOpenCartPopup(false)}
         />
-
-        {/* Chat Box */}
-        <ChatBox isOpen={openChatBox} onClose={() => setOpenChatBox(false)} />
       </Box>
     </Box>
   );

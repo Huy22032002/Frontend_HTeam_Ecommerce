@@ -202,15 +202,13 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
     return (
       <Paper
         sx={{
-          position: 'fixed',
-          bottom: 20,
-          right: 20,
-          width: 350,
-          maxHeight: 500,
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
           boxShadow: 3,
           display: 'flex',
-          flexDirection: 'column',
-          zIndex: 1000
+          flexDirection: 'column'
         }}
       >
         <Box sx={{ p: 2, textAlign: 'center', color: 'error.main' }}>
@@ -223,15 +221,13 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
   return (
     <Paper
       sx={{
-        position: 'fixed',
-        bottom: 20,
-        right: 20,
-        width: 380,
-        height: 580,
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
         boxShadow: 3,
         display: 'flex',
         flexDirection: 'column',
-        zIndex: 1000,
         backgroundColor: '#fff',
         borderRadius: 2
       }}

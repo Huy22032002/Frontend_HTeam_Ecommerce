@@ -61,7 +61,7 @@ const HomeScreen = () => {
     getAllCategories();
     getAllSuggestProducts();
     // Lấy recommendations cho cả guest và logged-in users
-    getRecommendations(12);
+    getRecommendations(10); // Số lượng recommendations là 10 sản phẩm
   }, []);
 
   return (
