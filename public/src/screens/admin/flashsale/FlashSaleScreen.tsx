@@ -67,7 +67,9 @@ const FlashSaleScreen = () => {
         <Typography variant="h4" fontWeight={600}>
           Quản lý Flash Sale
         </Typography>
-        <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể tạo chiến dịch" : ""}>
+        <Tooltip
+          title={!isSuperAdmin ? "Chỉ SuperAdmin có thể tạo chiến dịch" : ""}
+        >
           <span>
             <Button
               onClick={() => {
@@ -128,21 +130,6 @@ const FlashSaleScreen = () => {
                       "& > *": { borderBottom: "unset" },
                     }}
                   >
-                    <TableCell width={40}>
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          setOpenRow(openRow === p.id ? null : p.id)
-                        }
-                      >
-                        {openRow === p.id ? (
-                          <KeyboardArrowUpIcon />
-                        ) : (
-                          <KeyboardArrowDownIcon />
-                        )}
-                      </IconButton>
-                    </TableCell>
-
                     <TableCell sx={{ fontWeight: 600, color: "#333" }}>
                       {p.id}
                     </TableCell>
@@ -169,14 +156,29 @@ const FlashSaleScreen = () => {
                     </TableCell>
 
                     <TableCell align="center">
-                      <Tooltip title="Chi tiết">
-                        <IconButton size="small" color="info">
-                          <VisibilityIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title={!isSuperAdmin ? "Chỉ SuperAdmin có thể sửa" : "Sửa"}>
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          setOpenRow(openRow === p.id ? null : p.id)
+                        }
+                      >
+                        {openRow === p.id ? (
+                          <KeyboardArrowUpIcon />
+                        ) : (
+                          <KeyboardArrowDownIcon />
+                        )}
+                      </IconButton>
+                      <Tooltip
+                        title={
+                          !isSuperAdmin ? "Chỉ SuperAdmin có thể sửa" : "Sửa"
+                        }
+                      >
                         <span>
-                          <IconButton size="small" color="primary" disabled={!isSuperAdmin}>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            disabled={!isSuperAdmin}
+                          >
                             <EditIcon />
                           </IconButton>
                         </span>
