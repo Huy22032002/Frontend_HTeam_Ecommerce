@@ -440,12 +440,6 @@ export default function CheckoutScreen() {
                   </Card>
                 )}
                 <FormControlLabel
-                  value="CARD"
-                  control={<Radio />}
-                  label="💳 Thẻ tín dụng / Ghi nợ"
-                  disabled={isLoading}
-                />
-                <FormControlLabel
                   value="CASH"
                   control={<Radio />}
                   label="💵 Thanh toán khi nhận hàng (COD)"
