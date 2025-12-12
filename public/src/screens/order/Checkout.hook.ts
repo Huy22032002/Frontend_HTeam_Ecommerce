@@ -243,9 +243,6 @@ const useCheckout = () => {
         //   transferContent: String(order.id),
         //   amount: order.total,
         // });
-        setSepayQRCode(
-          `https://qr.sepay.vn/img?acc=101499100004394021&bank=Kienlongbank&amount=${order.total}&des=${order.id}`
-        );
 
         return; //không redirect
       }
@@ -358,6 +355,19 @@ const useCheckout = () => {
     getAllAddress();
     getAvailableVouchers();
   }, []);
+
+  useEffect(() => {
+    if (!orderId) return;
+
+    // Fetch lại order nếu cần (tối ưu tùy bạn)
+    OrderApi.getByIdOfCustomer(orderId).then((response) => {
+      const order = response.data;
+
+      setSepayQRCode(
+        `https://qr.sepay.vn/img?acc=101499100004394021&bank=Kienlongbank&amount=${order.total}&des=${order.id}`
+      );
+    });
+  }, [orderId]);
 
   // Listen for payment success notification từ SSE
   useEffect(() => {
