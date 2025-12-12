@@ -14,7 +14,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
+import EditIcon from "@mui/icons-material/Edit"; //remove VisibleIcon Mui to npm run build
 import useFlashSale from "./FlashSale.hook";
 import { useAdminPermissions } from "../../../hooks/useAdminPermissions";
 import { useNavigate } from "react-router-dom";
