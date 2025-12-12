@@ -38,9 +38,15 @@ export const VariantsOptionsApi = {
   },
   updateOption: async (optionId: number, data: any) => {
     try {
+      // Normalize payload: backend expects availability.productStatus
+      const normalized = { ...data };
+      if (typeof data?.productStatus === 'boolean') {
+        normalized.availability = { ...(data.availability || {}), productStatus: data.productStatus };
+        delete normalized.productStatus;
+      }
       const response = await axios.put(
         `${API_BASE}/api/admins/products/variants/options/${optionId}`,
-        data,
+        normalized,
         {
           headers: {
             Authorization: `Bearer ${getAdminToken()}`,

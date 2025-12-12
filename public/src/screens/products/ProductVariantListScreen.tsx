@@ -687,6 +687,9 @@ const ProductVariantListScreen = () => {
     }
   };
 
+  // Control when to fetch: only after applying filters or searching
+  const [shouldFetch, setShouldFetch] = useState<boolean>(false);
+
   // Fetch variants
   const fetchVariants = async () => {
     setIsLoading(true);
@@ -736,10 +739,13 @@ const ProductVariantListScreen = () => {
   };
 
   useEffect(() => {
-    fetchVariants();
-  }, [page, pageSize, searchTerm, filters]);
+    if (shouldFetch) {
+      fetchVariants();
+    }
+  }, [shouldFetch, page, pageSize, searchTerm, filters]);
 
   const handleSearch = () => {
+    setShouldFetch(true);
     setPage(0);
   };
 
@@ -750,12 +756,14 @@ const ProductVariantListScreen = () => {
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
+      setShouldFetch(true);
       setPage(0);
     }
   };
 
   const handleApplyFilters = (newFilters: typeof filters) => {
     setFilters(newFilters);
+    setShouldFetch(true);
     setPage(0);
   };
 
