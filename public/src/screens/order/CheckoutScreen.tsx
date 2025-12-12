@@ -361,7 +361,7 @@ export default function CheckoutScreen() {
                 onChange={handlePaymentMethodChange}
               >
                 <FormControlLabel
-                  value="TRANSFER"
+                  value="DIRECTBANK"
                   control={<Radio />}
                   label="🏦 Chuyển khoản ngân hàng"
                   disabled={isLoading}
