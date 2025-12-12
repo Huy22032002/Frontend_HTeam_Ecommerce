@@ -690,6 +690,11 @@ const ProductVariantListScreen = () => {
   // Control when to fetch: only after applying filters or searching
   const [shouldFetch, setShouldFetch] = useState<boolean>(false);
 
+  // Trigger initial fetch on first mount
+  useEffect(() => {
+    setShouldFetch(true);
+  }, []);
+
   // Fetch variants
   const fetchVariants = async () => {
     setIsLoading(true);
