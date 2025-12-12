@@ -126,13 +126,14 @@ export const PromotionFormDialog = ({
       newErrors.validTo = "Ngày kết thúc không được để trống";
     }
 
-    // Validate dates
-    if (formData.validFrom) {
+    // Validate dates - only check start date when creating new promotion
+    // When updating (promotion exists with id), skip start date validation
+    if (!promotion?.id && formData.validFrom) {
       const startDate = new Date(formData.validFrom);
       const now = new Date();
 
       if (startDate <= now) {
-        newErrors.validFrom = "Ngày bắt đầu phải sau thời gian hiện tại";
+        newErrors.validFrom = "Ngày bắt đầu phải sau thời gian hiện tại. Vui lòng chọn ngày trong tương lai";
       }
     }
 

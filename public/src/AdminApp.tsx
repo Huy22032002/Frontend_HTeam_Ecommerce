@@ -42,6 +42,7 @@ import PaymentListScreen from "./screens/transactions/PaymentListScreen";
 import CreateOrderScreen from "./screens/admin/CreateOrderScreen";
 import FlashSaleScreen from "./screens/admin/flashsale/FlashSaleScreen";
 import CreateFlashSaleScreen from "./screens/admin/flashsale/CreateFlashSaleScreen";
+import BannerManagement from "./screens/admin/cms/BannerManagement";
 import AdminChatScreen from "./screens/admin/AdminChatScreen";
 
 function AdminAppContent() {
@@ -141,6 +142,7 @@ function AdminAppContent() {
                 path="flash-sale/create"
                 element={<CreateFlashSaleScreen />}
               />
+              <Route path="banners" element={<BannerManagement />} />
               <Route path="chat" element={<AdminChatScreen />} />
 
               {/* Redirect root /admin to dashboard */}
