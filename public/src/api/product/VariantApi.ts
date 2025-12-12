@@ -138,7 +138,7 @@ export const VariantsApi = {
   updateVariant: async (variantId: number, data: any) => {
     try {
       const response = await axios.put(
-        `${API_BASE}/api/admin/products/variants/${variantId}`,
+        `${API_BASE}/api/admins/products/variants/${variantId}`,
         data,
         {
           headers: {
@@ -160,7 +160,7 @@ export const VariantsApi = {
   deleteVariant: async (variantId: number) => {
     try {
       const response = await axios.delete(
-        `${API_BASE}/api/admin/products/variants/${variantId}`,
+        `${API_BASE}/api/admins/products/variants/${variantId}`,
         {
           headers: {
             Authorization: `Bearer ${getToken()}`,

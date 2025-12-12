@@ -39,7 +39,7 @@ export const VariantsOptionsApi = {
   updateOption: async (optionId: number, data: any) => {
     try {
       const response = await axios.put(
-        `${API_BASE}/api/admin/products/variants/options/${optionId}`,
+        `${API_BASE}/api/admins/products/variants/options/${optionId}`,
         data,
         {
           headers: {
@@ -61,7 +61,7 @@ export const VariantsOptionsApi = {
   deleteOption: async (optionId: number) => {
     try {
       const response = await axios.delete(
-        `${API_BASE}/api/admin/products/variants/options/${optionId}`,
+        `${API_BASE}/api/admins/products/variants/options/${optionId}`,
         {
           headers: {
             Authorization: `Bearer ${getAdminToken()}`,

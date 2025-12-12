@@ -23,6 +23,7 @@ import { useNavigate } from "react-router-dom";
 import { InvoiceApi } from "../../api/invoice/InvoiceApi";
 import { ActivityLogApi } from "../../api/activity/ActivityLogApi";
 import { downloadExcelFile } from "../../utils/exportToExcel";
+import { formatDateWithoutTimezoneShift } from "../../utils/formatDateUtils";
 
 const InvoiceListScreen = () => {
   const { invoices, loading, error, filters } = useInvoices({
@@ -229,7 +230,7 @@ const InvoiceListScreen = () => {
                 <TableCell>{inv.invoiceCode}</TableCell>
                 <TableCell>{inv.customerName}</TableCell>
                 <TableCell>
-                  {new Date(inv.createdAt).toLocaleDateString("vi-VN")}
+                  {formatDateWithoutTimezoneShift(inv.createdAt)}
                 </TableCell>
                 <TableCell align="right">
                   {inv.total.toLocaleString()}₫

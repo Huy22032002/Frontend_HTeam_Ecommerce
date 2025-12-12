@@ -35,6 +35,7 @@ import { OrderApi } from "../../api/order/OrderApi";
 import { InvoiceApi } from "../../api/invoice/InvoiceApi";
 import type { OrderReadableDTO } from "../../models/orders/Order";
 import { formatCurrency } from "../../utils/formatCurrency";
+import { formatDateWithoutTimezoneShift } from "../../utils/formatDateUtils";
 import { printOrderDetail } from "../../utils/printUtils";
 import OrderPrintTemplate from "../../components/print/OrderPrintTemplate";
 
@@ -549,7 +550,7 @@ const OrderDetailScreen: React.FC = () => {
                 <Typography
                   sx={{ fontWeight: 500, fontSize: "14px", color: "#666" }}
                 >
-                  📅 {new Date(order.createdAt).toLocaleDateString("vi-VN")}
+                  📅 {formatDateWithoutTimezoneShift(order.createdAt)}
                 </Typography>
               </Box>
               <Box>

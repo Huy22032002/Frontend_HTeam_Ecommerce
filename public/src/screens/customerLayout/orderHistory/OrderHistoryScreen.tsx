@@ -29,6 +29,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import type { RootState } from "../../../store/store";
 import { useOrderHistory } from "../../../hooks/useOrderHistory";
 import { formatCurrency } from "../../../utils/formatCurrency";
+import { formatDateWithoutTimezoneShift } from "../../../utils/formatDateUtils";
 import { OrderApi } from "../../../api/order/OrderApi";
 import type { OrderReadableDTO } from "../../../models/orders/Order";
 import useOrderHistoryy from "./OrderHistory.hook";
@@ -330,16 +331,7 @@ const OrderHistoryScreen = () => {
                           {order.orderCode}
                         </TableCell>
                         <TableCell>
-                          {new Date(order.createdAt).toLocaleDateString(
-                            "vi-VN",
-                            {
-                              year: "numeric",
-                              month: "2-digit",
-                              day: "2-digit",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            }
-                          )}
+                          {formatDateWithoutTimezoneShift(order.createdAt)}
                         </TableCell>
                         <TableCell align="right" sx={{ fontWeight: 600 }}>
                           {formatCurrency(order.total)}
@@ -427,9 +419,7 @@ const OrderHistoryScreen = () => {
                           Ngày tạo:
                         </Typography>
                         <Typography variant="body2" fontWeight={600}>
-                          {new Date(selectedOrder.createdAt).toLocaleDateString(
-                            "vi-VN"
-                          )}
+                          {formatDateWithoutTimezoneShift(selectedOrder.createdAt)}
                         </Typography>
                       </Box>
                       <Box display="flex" justifyContent="space-between">
