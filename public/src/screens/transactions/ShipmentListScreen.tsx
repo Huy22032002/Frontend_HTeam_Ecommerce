@@ -23,6 +23,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { OrderApi } from '../../api/order/OrderApi';
 import type { OrderReadableDTO } from '../../models/orders/Order';
+import { formatDateWithoutTimezoneShift } from '../../utils/formatDateUtils';
 
 interface Filters {
   status?: string;
@@ -247,7 +248,7 @@ const ShipmentListScreen = () => {
                     <TableCell sx={{ maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {order.shippingAddress}
                     </TableCell>
-                    <TableCell>{order.createdAt ? new Date(order.createdAt).toLocaleDateString('vi-VN') : '-'}</TableCell>
+                    <TableCell>{order.createdAt ? formatDateWithoutTimezoneShift(order.createdAt) : '-'}</TableCell>
                   </TableRow>
                 ))
               )}

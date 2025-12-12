@@ -21,6 +21,7 @@ import {
 import { useTheme } from "@mui/material/styles";
 import { usePayments } from "../../hooks/usePayments";
 import { formatCurrency } from "../../utils/formatCurrency";
+import { formatDateWithoutTimezoneShift } from "../../utils/formatDateUtils";
 
 const PaymentListScreen = () => {
   const theme = useTheme();
@@ -324,7 +325,7 @@ const PaymentListScreen = () => {
                           <TableCell>{p.orderCode}</TableCell>
                           <TableCell>{p.customerName}</TableCell>
                           <TableCell>
-                            {new Date(p.createdAt).toLocaleDateString("vi-VN")}
+                            {formatDateWithoutTimezoneShift(p.createdAt)}
                           </TableCell>
                           <TableCell>{p.paymentMethod}</TableCell>
                           <TableCell align="right" sx={{ fontWeight: 600 }}>

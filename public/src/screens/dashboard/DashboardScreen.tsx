@@ -25,6 +25,7 @@ import PendingActionsIcon from "@mui/icons-material/PendingActions";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../store/store";
 import { useNavigate } from "react-router-dom";
+import { formatDateWithoutTimezoneShift } from "../../utils/formatDateUtils";
 
 const DashboardScreen = () => {
   const {
@@ -92,7 +93,7 @@ const DashboardScreen = () => {
 
   const formatDate = (dateString: string) => {
     try {
-      return new Date(dateString).toLocaleDateString("vi-VN");
+      return formatDateWithoutTimezoneShift(dateString);
     } catch {
       return "-";
     }

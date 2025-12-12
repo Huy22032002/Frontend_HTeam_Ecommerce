@@ -29,26 +29,10 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import type { RootState } from "../../../store/store";
 import { useOrderHistory } from "../../../hooks/useOrderHistory";
 import { formatCurrency } from "../../../utils/formatCurrency";
+import { formatDateWithoutTimezoneShift } from "../../../utils/formatDateUtils";
 import { OrderApi } from "../../../api/order/OrderApi";
 import type { OrderReadableDTO } from "../../../models/orders/Order";
 import useOrderHistoryy from "./OrderHistory.hook";
-
-// Function để format date từ UTC string, giữ nguyên ngày (không convert sang local timezone)
-const formatDateWithoutTimezoneShift = (dateString: string): string => {
-  try {
-    // Parse ISO string: "2025-12-10T18:24:31.104142Z"
-    const date = new Date(dateString);
-    const year = date.getUTCFullYear();
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(date.getUTCDate()).padStart(2, '0');
-    const hours = String(date.getUTCHours()).padStart(2, '0');
-    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-    
-    return `${day}/${month}/${year} ${hours}:${minutes}`;
-  } catch {
-    return 'N/A';
-  }
-};
 
 const OrderHistoryScreen = () => {
   const navigate = useNavigate();

@@ -29,6 +29,7 @@ import { useOrders } from "../../hooks/useOrders";
 import { OrderApi } from "../../api/order/OrderApi";
 import { ActivityLogApi } from "../../api/activity/ActivityLogApi";
 import { downloadExcelFile } from "../../utils/exportToExcel";
+import { formatDateWithoutTimezoneShift } from "../../utils/formatDateUtils";
 
 const OrderListScreen = () => {
   const navigate = useNavigate();
@@ -412,7 +413,7 @@ const OrderListScreen = () => {
                     />
                   </TableCell>
                   <TableCell>
-                    {new Date(o.createdAt).toLocaleDateString()}
+                    {formatDateWithoutTimezoneShift(o.createdAt)}
                   </TableCell>
                 </TableRow>
               ))}
