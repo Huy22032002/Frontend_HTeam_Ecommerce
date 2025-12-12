@@ -86,7 +86,7 @@ const FlashSaleDetailCard: React.FC<FlashSaleCardProps> = ({ item }) => {
         </Stack>
         <Box sx={{ mt: 1 }}>
           <RemainingLabel>
-            Chỉ còn {item.limitQuantity - (item.soldQuantity ?? 0)}
+            Chỉ còn {item.limitQuantity - item.soldQuantity}
           </RemainingLabel>
         </Box>
         <Button
