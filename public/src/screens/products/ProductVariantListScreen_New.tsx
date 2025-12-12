@@ -342,7 +342,7 @@ const ProductVariantListScreen = () => {
       let response;
 
       if (searchTerm.trim()) {
-        response = await VariantsApi.searchWithFilters({
+        response = await VariantsApi.searchWithFiltersAdmin({
           name: searchTerm,
           page,
           size: pageSize,

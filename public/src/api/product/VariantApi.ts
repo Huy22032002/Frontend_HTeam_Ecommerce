@@ -135,6 +135,57 @@ export const VariantsApi = {
       return { content: [], totalPages: 0, totalElements: 0, totalItems: 0, currentPage: 0 };
     }
   },
+  searchWithFiltersAdmin: async (filters: {
+    name?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    available?: boolean;
+    hasSalePrice?: boolean;
+    manufacturers?: string[];
+    categories?: string[];
+    sortBy?: string;
+    sortOrder?: string;
+    page?: number;
+    size?: number;
+  }) => {
+    try {
+      const response = await axios.post(
+        `${API_BASE}/api/admins/search/filters`,
+        {
+          name: filters.name || "",
+          minPrice: filters.minPrice,
+          maxPrice: filters.maxPrice,
+          available: filters.available,
+          hasSalePrice: filters.hasSalePrice || false,
+          manufacturers: filters.manufacturers || [],
+          categories: filters.categories || [],
+          sortBy: filters.sortBy || "newest",
+          sortOrder: filters.sortOrder || "desc",
+          page: filters.page || 0,
+          size: filters.size || 20,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+          },
+        }
+      );
+      if (response.data) {
+        console.log("admin filtered search results:", response.data);
+        const result = {
+          ...response.data,
+          totalElements: response.data.totalItems || response.data.totalElements || 0,
+          currentPage: (response.data.currentPage || 1) - 1,
+        };
+        console.log("[searchWithFiltersAdmin] Mapped result:", { total: result.totalElements, pages: result.totalPages });
+        return result;
+      }
+      return { content: [], totalPages: 0, totalElements: 0, totalItems: 0, currentPage: 0 };
+    } catch (error) {
+      console.error("Failed to search products with filters (admin):", error);
+      return { content: [], totalPages: 0, totalElements: 0, totalItems: 0, currentPage: 0 };
+    }
+  },
   updateVariant: async (variantId: number, data: any) => {
     try {
       const response = await axios.put(

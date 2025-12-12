@@ -703,8 +703,8 @@ const ProductVariantListScreen = () => {
     try {
       let response = null;
 
-      // Use searchWithFilters to include both search term and filters
-      response = await VariantsApi.searchWithFilters({
+      // Use admin endpoint to show all options (including inactive)
+      response = await VariantsApi.searchWithFiltersAdmin({
         name: searchTerm,
         minPrice: filters.minPrice,
         maxPrice: filters.maxPrice,
