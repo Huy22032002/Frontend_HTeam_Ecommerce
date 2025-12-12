@@ -112,7 +112,7 @@ const FlashSaleUI: React.FC<FlashSaleUIProps> = ({ items }) => {
                   fontWeight: "bold",
                 }}
               >
-                Đã bán {item.limitQuantity - (item.soldQuantity ?? 0)}
+                Chỉ còn {item.limitQuantity - (item.soldQuantity ?? 0)}
               </Typography>
             </Box>
           </Card>
