@@ -34,6 +34,7 @@ import VoucherScreen from "./screens/customerLayout/voucher/VoucherScreen";
 import FlashSaleScreen from "./screens/flashsale/FlashSaleScreen";
 import ChatbotWidget from "./components/chatbot/ChatBotWidget";
 import ChatWidget from "./components/chat/ChatWidget";
+import GlobalNotification from "./components/GlobalNotification";
 
 function AppContent() {
   const location = useLocation();
@@ -85,6 +86,7 @@ function AppContent() {
 
         {!hideLayout && <ChatbotWidget />}
         {!hideLayout && <ChatWidget />}
+        <GlobalNotification />
       </main>
     </div>
   );

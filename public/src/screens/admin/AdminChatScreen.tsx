@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Paper, Typography, List, ListItemButton, Divider, TextField, Button, CircularProgress } from '@mui/material';
+import { Box, Paper, Typography, List, ListItemButton, Divider, TextField, Button, CircularProgress, Avatar, Chip, InputAdornment, IconButton } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import SearchIcon from '@mui/icons-material/Search';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { useChat } from '../../hooks/useChat';
 import { useSSE } from '../../hooks/useSSE';
 import * as ChatApi from '../../api/chat/ChatApi';
@@ -33,6 +35,8 @@ export default function AdminChatScreen() {
   const [hasNewMessages, setHasNewMessages] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [readConversationIds, setReadConversationIds] = useState<Set<string>>(new Set());
+  const [filterMode, setFilterMode] = useState<'all' | 'unread'>('all');
+  const [searchText, setSearchText] = useState('');
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const messagesContainerRef = React.useRef<HTMLDivElement>(null);
   const { getAdminConversations, getAdminMessages } = useChat();
@@ -173,6 +177,22 @@ export default function AdminChatScreen() {
   const messageIds = new Set(messages.map(m => m.id));
   const uniqueSSEMessages = sseMessages.filter(m => !messageIds.has(m.id));
   const allMessages = [...messages, ...uniqueSSEMessages];
+  const totalConversations = conversations.length;
+  const totalUnread = conversations.reduce((acc, conv) => acc + (conv.unreadCount || 0), 0);
+  const activeConversation = conversations.find((c) => c.id === selectedConversationId) || null;
+  const filteredConversations = conversations
+    .filter((conv) => {
+      const matchesFilter = filterMode === 'all' || (conv.unreadCount && conv.unreadCount > 0);
+      const q = searchText.trim().toLowerCase();
+      if (!q) return matchesFilter;
+      return (
+        matchesFilter &&
+        ([conv.customerName, conv.customerEmail, conv.customerPhone, conv.lastMessage]
+          .filter(Boolean)
+          .some((field) => (field || '').toLowerCase().includes(q)))
+      );
+    })
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
   // Scroll to bottom when conversation is selected or messages loaded
   useEffect(() => {
@@ -338,263 +358,258 @@ export default function AdminChatScreen() {
   };
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f5f5f5', flexDirection: 'column' }}>
-      {/* Error Alert */}
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', bgcolor: '#f6f8fb' }}>
       {error && (
-        <Box sx={{ p: 2, bgcolor: '#ffebee', borderBottom: '1px solid #ffcdd2' }}>
+        <Box sx={{ p: 2, bgcolor: '#ffefef', borderBottom: '1px solid #ffd6d6' }}>
           <Typography variant="body2" sx={{ color: '#c62828' }}>
             ⚠️ {error}
           </Typography>
         </Box>
       )}
 
-      {/* Not logged in */}
       {!adminId && (
         <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Typography variant="h6" sx={{ color: '#999' }}>
-            Please login as admin to view conversations
+            Vui lòng đăng nhập admin để xem cuộc hội thoại
           </Typography>
         </Box>
       )}
 
-      {/* Chat Interface */}
       {adminId && (
-        <Box sx={{ display: 'flex', flex: 1, gap: 0 }}>
-          {/* Conversations List */}
-          <Paper
-            sx={{
-              width: '35%',
-              borderRadius: 0,
-              boxShadow: 'none',
-              border: '1px solid #e0e0e0',
-              display: 'flex',
-              flexDirection: 'column',
-              bgcolor: '#fafafa',
-            }}
-          >
-        <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0', bgcolor: 'white' }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a' }}>
-            💬 Cuộc hội thoại ({conversations.length})
-          </Typography>
-        </Box>
-
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-            <CircularProgress size={24} />
+        <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' }, gap: 1.5 }}>
+            <Paper sx={{ p: 2, borderRadius: 2, boxShadow: '0 6px 18px rgba(0,0,0,0.05)', border: '1px solid #e8eef5' }}>
+              <Typography variant="subtitle2" sx={{ color: '#607d8b', mb: 0.5 }}>Tổng cuộc hội thoại</Typography>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: '#0d47a1' }}>{totalConversations}</Typography>
+            </Paper>
+            <Paper sx={{ p: 2, borderRadius: 2, boxShadow: '0 6px 18px rgba(0,0,0,0.05)', border: '1px solid #e8eef5' }}>
+              <Typography variant="subtitle2" sx={{ color: '#607d8b', mb: 0.5 }}>Tin chưa đọc</Typography>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: '#c62828' }}>{totalUnread}</Typography>
+            </Paper>
+            <Paper sx={{ p: 2, borderRadius: 2, boxShadow: '0 6px 18px rgba(0,0,0,0.05)', border: '1px solid #e8eef5' }}>
+              <Typography variant="subtitle2" sx={{ color: '#607d8b', mb: 0.5 }}>Đang xem</Typography>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: '#2e7d32' }}>{activeConversation ? 1 : 0}</Typography>
+            </Paper>
           </Box>
-        ) : (
-          <List sx={{ flex: 1, overflow: 'auto', p: 0 }}>
-            {conversations.map((conv) => (
-              <React.Fragment key={conv.id}>
-                <ListItemButton
-                  selected={selectedConversationId === conv.id}
-                  onClick={() => setSelectedConversationId(conv.id)}
-                  sx={{
-                    backgroundColor: selectedConversationId === conv.id ? '#e3f2fd' : '#fafafa',
-                    '&:hover': { backgroundColor: selectedConversationId === conv.id ? '#e3f2fd' : '#f5f5f5' },
-                    borderBottom: '1px solid #f0f0f0',
-                    transition: 'all 0.2s ease',
-                    py: 1.5,
-                  }}
-                >
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1a1a1a', mb: 0.5 }}>
-                      {conv.customerId} - {conv.customerName || 'Khách hàng'}
-                    </Typography>
-                    <Typography 
-                      variant="caption" 
-                      sx={{ 
-                        color: '#666', 
-                        display: 'block', 
-                        mb: 0.5,
-                        fontSize: '0.75rem'
-                      }}
-                    >
-                      {conv.customerPhone ? `📱 ${conv.customerPhone}` : conv.customerEmail ? `📧 ${conv.customerEmail}` : 'N/A'}
-                    </Typography>
-                    <Typography 
-                      variant="caption" 
-                      sx={{ 
-                        color: '#999', 
-                        display: 'block', 
-                        mb: 0.5,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {conv.lastMessage || '(Chưa có tin nhắn)'}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: '#999', fontSize: '0.7rem' }}>
-                      {new Date(conv.updatedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                    </Typography>
+
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '360px 1fr' }, gap: 2, flex: 1, minHeight: 0 }}>
+            <Paper sx={{ display: 'flex', flexDirection: 'column', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 24px rgba(0,0,0,0.06)', border: '1px solid #e5ecf2' }}>
+              <Box sx={{ p: 2, borderBottom: '1px solid #e0e6ed', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="Tìm theo tên, email, SĐT, nội dung..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ color: 'text.secondary' }} />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                  <IconButton onClick={loadConversations} disabled={loading} sx={{ bgcolor: '#f5f8fc', border: '1px solid #e0e6ed' }}>
+                    <RefreshIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Chip
+                    label={`Tất cả (${totalConversations})`}
+                    color={filterMode === 'all' ? 'primary' : 'default'}
+                    variant={filterMode === 'all' ? 'filled' : 'outlined'}
+                    onClick={() => setFilterMode('all')}
+                  />
+                  <Chip
+                    label={`Chưa đọc (${totalUnread})`}
+                    color={filterMode === 'unread' ? 'primary' : 'default'}
+                    variant={filterMode === 'unread' ? 'filled' : 'outlined'}
+                    onClick={() => setFilterMode('unread')}
+                  />
+                </Box>
+              </Box>
+
+              {loading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1, py: 6 }}>
+                  <CircularProgress size={26} />
+                </Box>
+              ) : filteredConversations.length === 0 ? (
+                <Box sx={{ py: 6, textAlign: 'center', color: 'text.secondary' }}>
+                  <Typography variant="body2">Không có cuộc hội thoại</Typography>
+                </Box>
+              ) : (
+                <List sx={{ flex: 1, overflow: 'auto', p: 0 }}>
+                  {filteredConversations.map((conv, idx) => (
+                    <React.Fragment key={conv.id}>
+                      <ListItemButton
+                        selected={selectedConversationId === conv.id}
+                        onClick={() => setSelectedConversationId(conv.id)}
+                        sx={{
+                          alignItems: 'flex-start',
+                          py: 1.5,
+                          gap: 1,
+                          backgroundColor: selectedConversationId === conv.id ? '#eef5ff' : 'transparent',
+                          '&:hover': { backgroundColor: '#f5f8fc' },
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        <Avatar sx={{ width: 40, height: 40, bgcolor: '#1976d2' }}>
+                          {conv.customerName ? conv.customerName.charAt(0).toUpperCase() : 'K'}
+                        </Avatar>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {conv.customerName || 'Khách hàng'}
+                            </Typography>
+                            {conv.unreadCount && conv.unreadCount > 0 && (
+                              <Chip label={`${conv.unreadCount} mới`} size="small" color="error" />
+                            )}
+                          </Box>
+                          <Typography variant="caption" sx={{ display: 'block', color: '#607d8b', mb: 0.25 }}>
+                            ID: {conv.customerId} • {conv.customerPhone || conv.customerEmail || 'N/A'}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#546e7a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {conv.lastMessage || '(Chưa có tin nhắn)'}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: '#90a4ae' }}>
+                            Cập nhật: {new Date(conv.updatedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                          </Typography>
+                        </Box>
+                      </ListItemButton>
+                      {idx < filteredConversations.length - 1 && <Divider />}
+                    </React.Fragment>
+                  ))}
+                </List>
+              )}
+            </Paper>
+
+            <Paper sx={{ display: 'flex', flexDirection: 'column', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 24px rgba(0,0,0,0.06)', border: '1px solid #e5ecf2' }}>
+              {selectedConversationId && activeConversation ? (
+                <>
+                  <Box sx={{ p: 2, borderBottom: '1px solid #e0e6ed', display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Avatar sx={{ bgcolor: '#1e88e5', width: 44, height: 44 }}>
+                      {activeConversation.customerName ? activeConversation.customerName.charAt(0).toUpperCase() : 'K'}
+                    </Avatar>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {activeConversation.customerName || 'Khách hàng'}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: '#607d8b' }}>
+                        {activeConversation.customerPhone || activeConversation.customerEmail || 'Không có liên hệ' }
+                      </Typography>
+                    </Box>
+                    {activeConversation.unreadCount && activeConversation.unreadCount > 0 && (
+                      <Chip label={`${activeConversation.unreadCount} chưa đọc`} color="error" size="small" />
+                    )}
                   </Box>
-                  {conv.unreadCount && conv.unreadCount > 0 && (
-                    <Box
-                      sx={{
-                        bgcolor: '#ff5252',
-                        color: 'white',
-                        borderRadius: '50%',
-                        minWidth: 20,
-                        height: 20,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '0.75rem',
-                      }}
-                    >
-                      {conv.unreadCount && conv.unreadCount > 0 ? conv.unreadCount : ''}
+
+                  <Box sx={{ flex: 1, overflow: 'auto', p: 2.5, display: 'flex', flexDirection: 'column', gap: 1 }} ref={messagesContainerRef} onScroll={handleMessagesScroll}>
+                    {messagePage < totalMessagePages - 1 && (
+                      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1.5 }}>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => loadMessages(messagePage + 1)}
+                          disabled={loadingMoreMessages}
+                          sx={{ textTransform: 'none' }}
+                        >
+                          {loadingMoreMessages ? '⏳ Đang tải...' : '📜 Xem thêm tin nhắn cũ'}
+                        </Button>
+                      </Box>
+                    )}
+
+                    {allMessages.map((msg) => (
+                      <Box
+                        key={msg.id}
+                        sx={{
+                          display: 'flex',
+                          justifyContent: msg.senderRole === 'ADMIN' ? 'flex-end' : 'flex-start',
+                          animation: 'fadeIn 0.25s ease-in',
+                          '@keyframes fadeIn': {
+                            from: { opacity: 0, transform: 'translateY(8px)' },
+                            to: { opacity: 1, transform: 'translateY(0)' },
+                          },
+                        }}
+                      >
+                        <Paper
+                          sx={{
+                            maxWidth: '70%',
+                            p: '10px 14px',
+                            bgcolor: msg.senderRole === 'ADMIN' ? '#1976d2' : '#f1f5f9',
+                            color: msg.senderRole === 'ADMIN' ? '#fff' : '#0f172a',
+                            borderRadius: '12px',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+                          }}
+                        >
+                          <Typography variant="body2" sx={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap', lineHeight: 1.45 }}>
+                            {msg.content}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{ display: 'block', mt: 0.5, opacity: 0.75, textAlign: msg.senderRole === 'ADMIN' ? 'right' : 'left' }}
+                          >
+                            {formatMessageTime(msg.createdAt)}
+                          </Typography>
+                        </Paper>
+                      </Box>
+                    ))}
+
+                    <div ref={messagesEndRef} />
+                  </Box>
+
+                  {hasNewMessages && !isAtBottom && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 1, background: 'linear-gradient(to bottom, rgba(33, 150, 243, 0.05), transparent)', borderTop: '1px solid #e0e6ed' }}>
+                      <Button variant="contained" color="primary" onClick={scrollToBottom} sx={{ borderRadius: '22px', textTransform: 'none', fontWeight: 700 }}>
+                        Có tin nhắn mới ⬇️
+                      </Button>
                     </Box>
                   )}
-                </ListItemButton>
-                <Divider />
-              </React.Fragment>
-            ))}
-          </List>
-        )}
-      </Paper>
 
-      {/* Chat Area */}
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', bgcolor: '#fff', borderLeft: '1px solid #e0e0e0' }}>
-        {selectedConversationId ? (
-          <>
-            {/* Messages */}
-            <Box sx={{ flex: 1, maxHeight: 'calc(100vh - 290px)', overflow: 'auto', p: 2.5, bgcolor: '#fff', display: 'flex', flexDirection: 'column', gap: 1 }} ref={messagesContainerRef} onScroll={handleMessagesScroll}>
-              {/* Load More Button */}
-              {messagePage < totalMessagePages - 1 && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => loadMessages(messagePage + 1)}
-                    disabled={loadingMoreMessages}
-                    sx={{ textTransform: 'none' }}
-                  >
-                    {loadingMoreMessages ? '⏳ Đang tải...' : '📜 Xem thêm tin nhắn cũ'}
-                  </Button>
+                  <Box sx={{ p: 2, borderTop: '1px solid #e0e6ed', display: 'flex', gap: 1, bgcolor: '#f8fafc' }}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      placeholder="Nhập tin nhắn..."
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage();
+                        }
+                      }}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '20px',
+                          backgroundColor: 'white',
+                        },
+                      }}
+                    />
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      endIcon={<SendIcon />}
+                      onClick={handleSendMessage}
+                      disabled={!newMessage.trim()}
+                      sx={{ borderRadius: '20px', textTransform: 'none', fontWeight: 700 }}
+                    >
+                      Gửi
+                    </Button>
+                  </Box>
+                </>
+              ) : (
+                <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 1.5, color: '#90a4ae' }}>
+                  <ChatBubbleOutlineIcon sx={{ fontSize: 62, opacity: 0.5 }} />
+                  <Typography variant="h6" sx={{ color: '#607d8b', fontWeight: 600 }}>
+                    Chọn cuộc hội thoại để bắt đầu
+                  </Typography>
+                  <Typography variant="body2">Danh sách hiển thị ở cột bên trái</Typography>
                 </Box>
               )}
-              {allMessages.map((msg) => (
-                <Box
-                  key={msg.id}
-                  sx={{
-                    display: 'flex',
-                    justifyContent: msg.senderRole === 'ADMIN' ? 'flex-end' : 'flex-start',
-                    mb: 0.5,
-                    animation: 'fadeIn 0.3s ease-in',
-                    '@keyframes fadeIn': {
-                      from: { opacity: 0, transform: 'translateY(10px)' },
-                      to: { opacity: 1, transform: 'translateY(0)' },
-                    },
-                  }}
-                >
-                  <Paper
-                    sx={{
-                      maxWidth: '65%',
-                      p: '10px 14px',
-                      bgcolor: msg.senderRole === 'ADMIN' ? '#2196f3' : '#f0f0f0',
-                      color: msg.senderRole === 'ADMIN' ? 'white' : '#000',
-                      borderRadius: '12px',
-                      boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                    }}
-                  >
-                    <Typography variant="body2" sx={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap', lineHeight: 1.4 }}>
-                      {msg.content}
-                    </Typography>
-                    <Typography 
-                      variant="caption" 
-                      sx={{ 
-                        display: 'block', 
-                        mt: 0.5, 
-                        opacity: 0.7,
-                        fontSize: '0.75rem',
-                        textAlign: msg.senderRole === 'ADMIN' ? 'right' : 'left'
-                      }}
-                    >
-                      {formatMessageTime(msg.createdAt)}
-                    </Typography>
-                  </Paper>
-                </Box>
-              ))}
-              
-              <div ref={messagesEndRef} />
-            </Box>
-
-            {/* New Messages Button - Fixed above input */}
-            {hasNewMessages && !isAtBottom && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 1.5, backgroundColor: '#fff', borderTop: '2px solid #e0e0e0', background: 'linear-gradient(to bottom, rgba(33, 150, 243, 0.05), transparent)' }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  endIcon={<span style={{marginLeft: '4px'}}>⬇️</span>}
-                  onClick={scrollToBottom}
-                  sx={{ 
-                    textTransform: 'none', 
-                    borderRadius: '22px', 
-                    fontSize: '0.95rem',
-                    fontWeight: 600,
-                    px: 3,
-                    py: 1,
-                    boxShadow: '0 2px 8px rgba(33, 150, 243, 0.3)',
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 4px 12px rgba(33, 150, 243, 0.4)'
-                    }
-                  }}
-                >
-                  💬 Có tin nhắn mới
-                </Button>
-              </Box>
-            )}
-
-            {/* Input Area */}
-            <Box sx={{ p: 2, borderTop: '1px solid #e0e0e0', display: 'flex', gap: 1, bgcolor: '#fafafa' }}>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Nhập tin nhắn..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '20px',
-                    backgroundColor: 'white',
-                    '&:hover fieldset': { borderColor: '#2196f3' },
-                  }
-                }}
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                endIcon={<SendIcon />}
-                onClick={handleSendMessage}
-                disabled={!newMessage.trim()}
-                sx={{ borderRadius: '20px', textTransform: 'none', fontWeight: 600 }}
-              >
-                Gửi
-              </Button>
-            </Box>
-          </>
-        ) : (
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, flexDirection: 'column', gap: 2 }}>
-            <ChatBubbleOutlineIcon sx={{ fontSize: 60, color: '#ccc', opacity: 0.5 }} />
-            <Typography variant="h6" sx={{ color: '#999', fontWeight: 500 }}>
-              Chọn cuộc hội thoại để bắt đầu
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#bbb' }}>
-              Danh sách cuộc hội thoại hiển thị ở bên trái
-            </Typography>
+            </Paper>
           </Box>
-        )}
-      </Box>
-      </Box>
+        </Box>
       )}
     </Box>
   );

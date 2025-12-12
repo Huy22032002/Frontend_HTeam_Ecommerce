@@ -10,7 +10,8 @@ import {
   InputAdornment,
   IconButton,
   Tooltip,
-  List
+  List,
+  Snackbar
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
@@ -45,6 +46,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const connectionAttemptedRef = useRef(false);
+  const isInitialLoadRef = useRef(true);
 
   // Update local state when hook values change
   useEffect(() => {
@@ -97,32 +99,32 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
   const uniqueSSEMessages = sseMessages.filter(m => !messageIds.has(m.id));
   const allMessages = [...messages, ...uniqueSSEMessages];
 
-  // Scroll to bottom on initial load or when messages change
+  // Don't auto-scroll to bottom; let user manually scroll
+  // This preserves scroll position for reviewing history
+  // BUT scroll to bottom when messages first load or conversation changes
   useEffect(() => {
-    setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
-      setIsAtBottom(true);
-    }, 0);
-  }, [allMessages]);
+    if (allMessages.length > 0 && !loading) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+      }, 0);
+      // Mark initial load as done
+      isInitialLoadRef.current = false;
+    }
+  }, [conversation?.id, loading]);
 
-  // Detect new messages - auto-scroll if at bottom, show button if scrolled up
+  // Show new message button when new messages arrive, don't auto-scroll
   useEffect(() => {
     if (uniqueSSEMessages.length > 0 && messagesContainerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
       const atBottom = scrollHeight - scrollTop - clientHeight < 30;
       setIsAtBottom(atBottom);
-      
-      if (atBottom) {
-        // Auto-scroll to bottom
-        setHasNewMessages(false);
-        setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-        }, 0);
-      } else {
-        // Show button if not at bottom - with delay to let auto-scroll complete
-        setTimeout(() => {
-          setHasNewMessages(true);
-        }, 500);
+      // Always show button when new messages arrive
+      setHasNewMessages(true);
+      // Dispatch global notification event only if not initial load
+      if (!isInitialLoadRef.current) {
+        window.dispatchEvent(new CustomEvent('show-chat-notification', {
+          detail: { message: '💬 Tin nhắn mới từ nhân viên hỗ trợ' }
+        }));
       }
     }
   }, [uniqueSSEMessages]);
@@ -225,11 +227,13 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
         inset: 0,
         width: '100%',
         height: '100%',
-        boxShadow: 3,
+        boxShadow: '0 16px 32px rgba(0,0,0,0.08)',
+        border: '1px solid #e5ecf2',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: '#fff',
-        borderRadius: 2
+        backgroundColor: '#f7f9fc',
+        borderRadius: 1,
+        overflow: 'hidden'
       }}
     >
       {/* Header */}
@@ -239,9 +243,8 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
           alignItems: 'center',
           justifyContent: 'space-between',
           p: 2,
-          backgroundColor: 'primary.main',
-          color: 'white',
-          borderRadius: '4px 4px 0 0'
+          background: 'linear-gradient(135deg, #1565c0, #1e88e5)',
+          color: 'white'
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -269,7 +272,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
           flex: 1,
           overflowY: 'auto',
           p: 2,
-          backgroundColor: '#f5f5f5',
+          backgroundColor: '#f4f7fb',
           position: 'relative',
           minHeight: 0
         }}
@@ -312,19 +315,21 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
                   sx={{
                     display: 'flex',
                     flexDirection: msg.senderRole === 'CUSTOMER' ? 'row-reverse' : 'row',
-                    mb: 2,
+                    mb: 1.5,
                     alignItems: 'flex-start',
-                    px: 2
+                    px: 1
                   }}
                 >
                   <Paper
                     sx={{
-                      p: 1.5,
-                      backgroundColor: msg.senderRole === 'CUSTOMER' ? 'primary.light' : '#fff',
-                      borderRadius: 2,
-                      maxWidth: '70%',
+                      p: 1.25,
+                      backgroundColor: msg.senderRole === 'CUSTOMER' ? '#1976d2' : '#ffffff',
+                      color: msg.senderRole === 'CUSTOMER' ? '#fff' : 'inherit',
+                      borderRadius: 1.5,
+                      maxWidth: '72%',
                       wordBreak: 'break-word',
-                      border: msg.senderRole === 'ADMIN' ? '1px solid #e0e0e0' : 'none'
+                      border: msg.senderRole === 'ADMIN' ? '1px solid #e6ebf0' : 'none',
+                      boxShadow: msg.senderRole === 'CUSTOMER' ? '0 4px 12px rgba(21,101,192,0.25)' : '0 2px 8px rgba(0,0,0,0.04)'
                     }}
                   >
                     <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
@@ -336,7 +341,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
                         display: 'block',
                         mt: 0.5,
                         textAlign: msg.senderRole === 'CUSTOMER' ? 'right' : 'left',
-                        color: 'text.secondary'
+                        color: msg.senderRole === 'CUSTOMER' ? 'rgba(255,255,255,0.8)' : 'text.secondary'
                       }}
                     >
                       {formatMessageTime(msg.createdAt)}
@@ -354,30 +359,8 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
 
       {/* New Messages Button - Fixed above input */}
       {hasNewMessages && !isAtBottom && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 1.5, backgroundColor: '#fff', borderTop: '2px solid #e0e0e0', background: 'linear-gradient(to bottom, rgba(33, 150, 243, 0.05), transparent)' }}>
-          <Button
-            variant="contained"
-            color="primary"
-            size="small"
-            onClick={scrollToBottom}
-            sx={{ 
-              textTransform: 'none', 
-              borderRadius: '20px', 
-              fontSize: '0.85rem',
-              fontWeight: 600,
-              px: 2.5,
-              py: 0.8,
-              boxShadow: '0 2px 8px rgba(33, 150, 243, 0.3)',
-              transition: 'all 0.2s ease',
-              '&:hover': {
-                transform: 'translateY(-2px)',
-                boxShadow: '0 4px 12px rgba(33, 150, 243, 0.4)'
-              }
-            }}
-            endIcon={<span style={{marginLeft: '4px'}}>⬇️</span>}
-          >
-            💬 Tin nhắn mới
-          </Button>
+        <Box sx={{ display: 'none' }}>
+          {/* Button removed - using notification instead */}
         </Box>
       )}
 

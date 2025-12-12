@@ -18,14 +18,17 @@ const ChatMessage = ({ sender, text }: Props) => {
     >
       <Paper
         sx={{
-          p: 1.5,
-          maxWidth: "75%",
-          backgroundColor: isUser ? "#1976d2" : "#e0e0e0",
-          color: isUser ? "#fff" : "#000",
-          borderRadius: 2,
+          p: 1.25,
+          maxWidth: "78%",
+          backgroundColor: isUser ? "#1976d2" : "#f1f5f9",
+          color: isUser ? "#fff" : "#0f172a",
+          borderRadius: 1.5,
+          boxShadow: isUser
+            ? "0 6px 14px rgba(25,118,210,0.25)"
+            : "0 3px 10px rgba(0,0,0,0.05)",
         }}
       >
-        <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+        <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
           {text}
         </Typography>
       </Paper>

@@ -6,12 +6,17 @@ export interface Notification {
   message: string;
   type:
     | "CART_EXPIRED"
-    | "NEW_VOUCHER"
     | "ORDER_SUCCESS"
+    | "ORDER_CONFIRMED"
+    | "ORDER_CANCELLED"
+    | "ORDER_SHIPPED"
+    | "STAFF_CREATED_ORDER"
+    | "PAYMENT_SUCCESS"
+    | "PAYMENT_FAILED"
     | "PRODUCT_OUT_OF_STOCK"
     | "SYSTEM_ALERT"
     | "NEW_USER_REGISTERED"
-    | "PAYMENT_FAILED";
+    | "NEW_VOUCHER";
   read: boolean;
   audit: {
     createdAt: string;

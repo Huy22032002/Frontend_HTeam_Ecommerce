@@ -360,26 +360,26 @@ const useCheckout = () => {
     getAvailableVouchers();
   }, []);
 
-  // Polling: Kiểm tra trạng thái đơn hàng mỗi 3s
+  // Listen for payment success notification từ SSE
   useEffect(() => {
     if (!orderId) return;
 
-    const interval = setInterval(async () => {
-      try {
-        const response = await OrderApi.getByIdOfCustomer(orderId);
-        const order = response.data;
-        console.log("Order status:", order.status);
-        if (order.status === "APPROVED") {
-          clearInterval(interval);
-          alert("Thanh toán thành công!");
-          navigate(`/customer/orders-history`);
-        }
-      } catch (err) {
-        console.error("Lỗi khi kiểm tra trạng thái đơn hàng:", err);
+    const handlePaymentSuccess = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const message = customEvent.detail?.message || '';
+      
+      // Nếu message chứa từ "thanh toán" hoặc "thành công", redirect
+      if (message.toLowerCase().includes('thanh toán') || message.toLowerCase().includes('thành công')) {
+        console.log('✅ Thanh toán thành công qua SSE, redirect...');
+        navigate(`/customer/orders-history`);
       }
-    }, 3000);
+    };
 
-    return () => clearInterval(interval);
+    window.addEventListener('show-chat-notification', handlePaymentSuccess);
+
+    return () => {
+      window.removeEventListener('show-chat-notification', handlePaymentSuccess);
+    };
   }, [orderId, navigate]);
 
   return {

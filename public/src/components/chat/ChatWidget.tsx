@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Box, Fab } from "@mui/material";
+import { Box, Fab, Tooltip } from "@mui/material";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import CloseIcon from "@mui/icons-material/Close";
 import ChatBox from "./ChatBox";
@@ -17,24 +17,26 @@ const ChatWidget = () => {
   return (
     <>
       {/* Nút mở chat với admin */}
-      <Fab
-        color="secondary"
-        onClick={() => {
-          const next = !open;
-          setOpen(next);
-          if (next) {
-            window.dispatchEvent(new Event("close-bot-chat"));
-          }
-        }}
-        sx={{
-          position: "fixed",
-          bottom: 92, // Stack below chatbot button
-          right: 24,
-          zIndex: 1999, // Thấp hơn chatbot một chút
-        }}
-      >
-        {open ? <CloseIcon /> : <ChatBubbleOutlineIcon />}
-      </Fab>
+      <Tooltip title={open ? "Đóng chat hỗ trợ" : "Mở chat với nhân viên"} placement="left">
+        <Fab
+          color="secondary"
+          onClick={() => {
+            const next = !open;
+            setOpen(next);
+            if (next) {
+              window.dispatchEvent(new Event("close-bot-chat"));
+            }
+          }}
+          sx={{
+            position: "fixed",
+            bottom: 92, // Stack below chatbot button
+            right: 24,
+            zIndex: 1999, // Thấp hơn chatbot một chút
+          }}
+        >
+          {open ? <CloseIcon /> : <ChatBubbleOutlineIcon />}
+        </Fab>
+      </Tooltip>
 
       {/* Khung chat với admin */}
       {open && (
@@ -43,11 +45,12 @@ const ChatWidget = () => {
             position: "fixed",
             bottom: 24,
             right: 96, // Left of widget stack, aligned to bottom
-            width: 350,
-            height: 500,
-            boxShadow: 4,
-            borderRadius: 2,
-            background: "#fff",
+            width: 420,
+            height: 550,
+            boxShadow: "0 18px 36px rgba(0,0,0,0.12)",
+            borderRadius: 4,
+            background: "#f7f9fc",
+            border: "1px solid #e5ecf2",
             overflow: "hidden",
             zIndex: 1999,
           }}

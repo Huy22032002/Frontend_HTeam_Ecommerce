@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, IconButton, TextField } from "@mui/material";
+import { Box, IconButton, TextField, Tooltip } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 
 interface Props {
@@ -20,8 +20,10 @@ const ChatInput = ({ onSend }: Props) => {
     <Box
       sx={{
         display: "flex",
-        p: 1,
-        borderTop: "1px solid #ddd",
+        alignItems: "center",
+        gap: 1,
+        p: 1.25,
+        borderTop: "1px solid #e5ecf2",
         background: "#fff",
       }}
     >
@@ -32,11 +34,21 @@ const ChatInput = ({ onSend }: Props) => {
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && handleSend()}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '20px',
+            backgroundColor: '#f8fafc'
+          }
+        }}
       />
 
-      <IconButton color="primary" onClick={handleSend}>
-        <SendIcon />
-      </IconButton>
+      <Tooltip title="Gửi">
+        <span>
+          <IconButton color="primary" onClick={handleSend} disabled={!text.trim()} sx={{ bgcolor: '#e3f2fd' }}>
+            <SendIcon />
+          </IconButton>
+        </span>
+      </Tooltip>
     </Box>
   );
 };

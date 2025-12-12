@@ -90,6 +90,16 @@ export const useNotificationSSE = () => {
           if (notification.id) {
             lastNotificationIdRef.current = notification.id.toString();
           }
+          
+          // Dispatch custom event cho order & payment notifications
+          if (notification.type && ['ORDER_CONFIRMED', 'ORDER_SHIPPED', 'ORDER_SUCCESS', 'ORDER_CANCELLED', 'STAFF_CREATED_ORDER', 'PAYMENT_SUCCESS', 'PAYMENT_FAILED'].includes(notification.type)) {
+            window.dispatchEvent(new CustomEvent('show-chat-notification', {
+              detail: {
+                message: notification.message || 'Có thông báo từ hệ thống'
+              }
+            }));
+          }
+          
           subscribersRef.current.forEach(cb => cb(notification));
         } catch (e) {
           console.error('Lỗi parse notification:', e);
