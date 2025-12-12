@@ -38,11 +38,29 @@ export const VariantsOptionsApi = {
   },
   updateOption: async (optionId: number, data: any) => {
     try {
-      // Normalize payload: backend expects availability.productStatus
+      // Normalize payload: backend expects availability fields
       const normalized = { ...data };
+      const availabilityPatch: any = { ...(data?.availability || {}) };
+
       if (typeof data?.productStatus === 'boolean') {
-        normalized.availability = { ...(data.availability || {}), productStatus: data.productStatus };
+        availabilityPatch.productStatus = data.productStatus;
         delete normalized.productStatus;
+      }
+      if (typeof data?.regularPrice === 'number') {
+        availabilityPatch.regularPrice = data.regularPrice;
+        delete normalized.regularPrice;
+      }
+      if (typeof data?.salePrice === 'number') {
+        availabilityPatch.salePrice = data.salePrice;
+        delete normalized.salePrice;
+      }
+      if (typeof data?.quantity === 'number') {
+        availabilityPatch.quantity = data.quantity;
+        delete normalized.quantity;
+      }
+
+      if (Object.keys(availabilityPatch).length > 0) {
+        normalized.availability = availabilityPatch;
       }
       const response = await axios.put(
         `${API_BASE}/api/admins/products/variants/options/${optionId}`,
