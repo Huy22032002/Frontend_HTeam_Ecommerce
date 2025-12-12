@@ -86,18 +86,21 @@ const OrderListScreen = () => {
 
   const handleTextFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setPage(0); 
+    setPage(0);
     setFilters((prev) => ({ ...prev, [name]: value, page: 0 }));
   };
 
-  const handleStatusTabChange = (_event: React.SyntheticEvent, newValue: string) => {
+  const handleStatusTabChange = (
+    _event: React.SyntheticEvent,
+    newValue: string
+  ) => {
     setSelectedStatusTab(newValue);
     setPage(0);
     setFilters((prev) => ({ ...prev, status: newValue, page: 0 }));
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPage(0); 
+    setPage(0);
     setFilters((prev) => ({ ...prev, search: e.target.value, page: 0 }));
   };
 
@@ -119,31 +122,30 @@ const OrderListScreen = () => {
     try {
       setExporting(true);
       const response = await OrderApi.exportToExcel(filters);
-      
+
       // Get filename from Content-Disposition header or use default
       const contentDisposition = response.headers["content-disposition"];
       let filename = "Don_hang.xlsx";
       if (contentDisposition) {
         try {
-          filename = contentDisposition
-            .split("filename=")[1]
-            .split('"')[1] || filename;
+          filename =
+            contentDisposition.split("filename=")[1].split('"')[1] || filename;
         } catch (e) {
           // Use default filename if parsing fails
         }
       }
-      
+
       downloadExcelFile(response.data, filename);
 
       // Log export action
       await ActivityLogApi.createActivityLog({
-        userType: 'ADMIN',
+        userType: "ADMIN",
         userId: 0,
-        userName: 'Admin',
-        actionType: 'EXPORT_REPORT',
-        description: 'Xuất báo cáo đơn hàng',
-        entityType: 'ORDER',
-        status: 'SUCCESS',
+        userName: "Admin",
+        actionType: "EXPORT_REPORT",
+        description: "Xuất báo cáo đơn hàng",
+        entityType: "ORDER",
+        status: "SUCCESS",
         details: JSON.stringify({
           filters: filters,
           filename: filename,
@@ -155,15 +157,15 @@ const OrderListScreen = () => {
 
       // Log error
       await ActivityLogApi.createActivityLog({
-        userType: 'ADMIN',
+        userType: "ADMIN",
         userId: 0,
-        userName: 'Admin',
-        actionType: 'EXPORT_REPORT',
-        description: 'Lỗi xuất báo cáo đơn hàng',
-        entityType: 'ORDER',
-        status: 'FAILED',
+        userName: "Admin",
+        actionType: "EXPORT_REPORT",
+        description: "Lỗi xuất báo cáo đơn hàng",
+        entityType: "ORDER",
+        status: "FAILED",
         details: (error as Error).message,
-      }).catch(e => console.error('Failed to log error:', e));
+      }).catch((e) => console.error("Failed to log error:", e));
 
       alert("Lỗi khi xuất file Excel");
     } finally {
@@ -263,8 +265,8 @@ const OrderListScreen = () => {
 
       {/* Status Tabs */}
       <Paper sx={{ mb: 2, borderBottom: 1, borderColor: "divider" }}>
-        <Tabs 
-          value={selectedStatusTab} 
+        <Tabs
+          value={selectedStatusTab}
           onChange={handleStatusTabChange}
           variant="scrollable"
           scrollButtons="auto"
@@ -279,11 +281,7 @@ const OrderListScreen = () => {
           }}
         >
           {statusOptions.map((option) => (
-            <Tab
-              key={option.value}
-              label={option.label}
-              value={option.value}
-            />
+            <Tab key={option.value} label={option.label} value={option.value} />
           ))}
         </Tabs>
       </Paper>

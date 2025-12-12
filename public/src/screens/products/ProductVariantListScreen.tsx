@@ -1159,7 +1159,7 @@ const ProductVariantListScreen = () => {
                                     : "#1976d2",
                               }}
                             >
-                              {variant.code || "-"}
+                              {variant.id || "-"}
                             </TableCell>
                             <TableCell>{variant.name || "-"}</TableCell>
                             <TableCell align="center">
