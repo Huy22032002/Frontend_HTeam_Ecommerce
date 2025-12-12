@@ -9,6 +9,8 @@ interface FlashSaleUIProps {
 }
 
 const FlashSaleUI: React.FC<FlashSaleUIProps> = ({ items }) => {
+  console.log("items", items);
+
   return (
     <Box sx={{ mt: 3, bgcolor: "white", p: 2, borderRadius: 2 }}>
       <Box display={"flex"} flexDirection={"row"} alignItems={"center"}>
@@ -110,10 +112,7 @@ const FlashSaleUI: React.FC<FlashSaleUIProps> = ({ items }) => {
                   fontWeight: "bold",
                 }}
               >
-                Chỉ còn{" "}
-                {item.limitQuantity - item?.soldQuantity
-                  ? item.soldQuantity
-                  : null}
+                Đã bán {item.limitQuantity - (item.soldQuantity ?? 0)}
               </Typography>
             </Box>
           </Card>

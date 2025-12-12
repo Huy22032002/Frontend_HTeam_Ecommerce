@@ -123,7 +123,9 @@ const useCheckout = () => {
     paymentMethod: "CASH" as "CASH" | "DIRECTBANK" | "CARD" | "MOMO",
   });
 
-  const [sepayInfo, setSepayInfo] = useState<any>(null);
+  // const [sepayInfo, setSepayInfo] = useState<any>(null);
+  const [sepayOrderId, setSepayOrderId] = useState(null);
+  const [sepayAmount, setSepayAmount] = useState(null);
 
   //tên + sdt + địa chỉ + note
   const handleInputChange = (
@@ -232,21 +234,19 @@ const useCheckout = () => {
       if (formData.paymentMethod === "DIRECTBANK") {
         const order = response.data;
 
+        setSepayOrderId(order.id);
+        setSepayAmount(order.total);
+
         setOrderId(order.id);
 
         // Sepay Dev
-        setSepayInfo({
-          bankNumber: "060273757352",
-          bankName: "Sacombank",
-          accountName: "NGUYEN DUC HUY",
-          transferContent: String(order.id),
-          amount: order.total,
-        });
-
-        console.log("Thông tin Sepay:", {
-          transferContent: order.id,
-          amount: order.total,
-        });
+        // setSepayInfo({
+        //   bankNumber: "060273757352",
+        //   bankName: "Sacombank",
+        //   accountName: "NGUYEN DUC HUY",
+        //   transferContent: String(order.id),
+        //   amount: order.total,
+        // });
 
         return; //không redirect
       }
@@ -366,24 +366,33 @@ const useCheckout = () => {
 
     const handlePaymentSuccess = (event: Event) => {
       const customEvent = event as CustomEvent;
-      const message = customEvent.detail?.message || '';
-      
+      const message = customEvent.detail?.message || "";
+
       // Nếu message chứa từ "thanh toán" hoặc "thành công", redirect
-      if (message.toLowerCase().includes('thanh toán') || message.toLowerCase().includes('thành công')) {
-        console.log('✅ Thanh toán thành công qua SSE, redirect...');
+      if (
+        message.toLowerCase().includes("thanh toán") ||
+        message.toLowerCase().includes("thành công")
+      ) {
+        alert("Thanh toán thành công!");
+        console.log("✅ Thanh toán thành công qua SSE, redirect...");
         navigate(`/customer/orders-history`);
       }
     };
 
-    window.addEventListener('show-chat-notification', handlePaymentSuccess);
+    window.addEventListener("show-chat-notification", handlePaymentSuccess);
 
     return () => {
-      window.removeEventListener('show-chat-notification', handlePaymentSuccess);
+      window.removeEventListener(
+        "show-chat-notification",
+        handlePaymentSuccess
+      );
     };
   }, [orderId, navigate]);
 
   return {
-    sepayInfo,
+    sepayOrderId,
+    sepayAmount,
+    // sepayInfo,
     //qrcode
     qrCode,
     orderId,
