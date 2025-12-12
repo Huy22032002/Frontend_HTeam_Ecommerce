@@ -120,8 +120,10 @@ const useCheckout = () => {
     receiverPhoneNumber: "",
     shippingAddress: "",
     notes: "",
-    paymentMethod: "CASH" as "CASH" | "TRANSFER" | "CARD" | "MOMO",
+    paymentMethod: "CASH" as "CASH" | "DIRECTBANK" | "CARD" | "MOMO",
   });
+
+  const [sepayInfo, setSepayInfo] = useState<any>(null);
 
   //tên + sdt + địa chỉ + note
   const handleInputChange = (
@@ -226,6 +228,29 @@ const useCheckout = () => {
 
       const response = await OrderApi.createByCustomer(orderRequest as any);
 
+      //sepay
+      if (formData.paymentMethod === "DIRECTBANK") {
+        const order = response.data;
+
+        setOrderId(order.id);
+
+        // Sepay Dev
+        setSepayInfo({
+          bankNumber: "060273757352",
+          bankName: "Sacombank",
+          accountName: "NGUYEN DUC HUY",
+          transferContent: String(order.id),
+          amount: order.total,
+        });
+
+        console.log("Thông tin Sepay:", {
+          transferContent: order.id,
+          amount: order.total,
+        });
+
+        return; //không redirect
+      }
+
       //qr code
       if (formData.paymentMethod === "MOMO") {
         console.log(formData.paymentMethod);
@@ -248,7 +273,9 @@ const useCheckout = () => {
           if (qrCodeResponse) {
             setQrCode(qrCodeResponse);
             setOrderId(data.orderId);
-            setSuccessMessage("✅ Tạo QR code thành công! Vui lòng quét để thanh toán.");
+            setSuccessMessage(
+              "✅ Tạo QR code thành công! Vui lòng quét để thanh toán."
+            );
             console.log("qr code: ", qrCodeResponse);
             return;
           }
@@ -356,6 +383,7 @@ const useCheckout = () => {
   }, [orderId, navigate]);
 
   return {
+    sepayInfo,
     //qrcode
     qrCode,
     orderId,
