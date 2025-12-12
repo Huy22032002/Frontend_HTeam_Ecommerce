@@ -124,7 +124,8 @@ const useCheckout = () => {
   });
 
   // const [sepayInfo, setSepayInfo] = useState<any>(null);
-  const [sepayQRCode, setSepayQRCode] = useState("");
+  const [sepayOrderId, setSepayOrderId] = useState(null);
+  const [sepayAmount, setSepayAmount] = useState(null);
 
   //tên + sdt + địa chỉ + note
   const handleInputChange = (
@@ -232,6 +233,9 @@ const useCheckout = () => {
       //sepay
       if (formData.paymentMethod === "DIRECTBANK") {
         const order = response.data;
+
+        setSepayOrderId(order.id);
+        setSepayAmount(order.total);
 
         setOrderId(order.id);
 
@@ -356,19 +360,6 @@ const useCheckout = () => {
     getAvailableVouchers();
   }, []);
 
-  useEffect(() => {
-    if (!orderId) return;
-
-    // Fetch lại order nếu cần (tối ưu tùy bạn)
-    OrderApi.getByIdOfCustomer(orderId).then((response) => {
-      const order = response.data;
-
-      setSepayQRCode(
-        `https://qr.sepay.vn/img?acc=101499100004394021&bank=Kienlongbank&amount=${order.total}&des=${order.id}`
-      );
-    });
-  }, [orderId]);
-
   // Listen for payment success notification từ SSE
   useEffect(() => {
     if (!orderId) return;
@@ -382,6 +373,7 @@ const useCheckout = () => {
         message.toLowerCase().includes("thanh toán") ||
         message.toLowerCase().includes("thành công")
       ) {
+        alert("Thanh toán thành công!");
         console.log("✅ Thanh toán thành công qua SSE, redirect...");
         navigate(`/customer/orders-history`);
       }
@@ -398,7 +390,8 @@ const useCheckout = () => {
   }, [orderId, navigate]);
 
   return {
-    sepayQRCode,
+    sepayOrderId,
+    sepayAmount,
     // sepayInfo,
     //qrcode
     qrCode,
