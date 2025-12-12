@@ -123,7 +123,8 @@ const useCheckout = () => {
     paymentMethod: "CASH" as "CASH" | "DIRECTBANK" | "CARD" | "MOMO",
   });
 
-  const [sepayInfo, setSepayInfo] = useState<any>(null);
+  // const [sepayInfo, setSepayInfo] = useState<any>(null);
+  const [sepayQRCode, setSepayQRCode] = useState("");
 
   //tên + sdt + địa chỉ + note
   const handleInputChange = (
@@ -235,18 +236,16 @@ const useCheckout = () => {
         setOrderId(order.id);
 
         // Sepay Dev
-        setSepayInfo({
-          bankNumber: "060273757352",
-          bankName: "Sacombank",
-          accountName: "NGUYEN DUC HUY",
-          transferContent: String(order.id),
-          amount: order.total,
-        });
-
-        console.log("Thông tin Sepay:", {
-          transferContent: order.id,
-          amount: order.total,
-        });
+        // setSepayInfo({
+        //   bankNumber: "060273757352",
+        //   bankName: "Sacombank",
+        //   accountName: "NGUYEN DUC HUY",
+        //   transferContent: String(order.id),
+        //   amount: order.total,
+        // });
+        setSepayQRCode(
+          `https://qr.sepay.vn/img?acc=101499100004394021&bank=Kienlongbank&amount=${order.total}&des=${order.id}`
+        );
 
         return; //không redirect
       }
@@ -366,24 +365,31 @@ const useCheckout = () => {
 
     const handlePaymentSuccess = (event: Event) => {
       const customEvent = event as CustomEvent;
-      const message = customEvent.detail?.message || '';
-      
+      const message = customEvent.detail?.message || "";
+
       // Nếu message chứa từ "thanh toán" hoặc "thành công", redirect
-      if (message.toLowerCase().includes('thanh toán') || message.toLowerCase().includes('thành công')) {
-        console.log('✅ Thanh toán thành công qua SSE, redirect...');
+      if (
+        message.toLowerCase().includes("thanh toán") ||
+        message.toLowerCase().includes("thành công")
+      ) {
+        console.log("✅ Thanh toán thành công qua SSE, redirect...");
         navigate(`/customer/orders-history`);
       }
     };
 
-    window.addEventListener('show-chat-notification', handlePaymentSuccess);
+    window.addEventListener("show-chat-notification", handlePaymentSuccess);
 
     return () => {
-      window.removeEventListener('show-chat-notification', handlePaymentSuccess);
+      window.removeEventListener(
+        "show-chat-notification",
+        handlePaymentSuccess
+      );
     };
   }, [orderId, navigate]);
 
   return {
-    sepayInfo,
+    sepayQRCode,
+    // sepayInfo,
     //qrcode
     qrCode,
     orderId,
