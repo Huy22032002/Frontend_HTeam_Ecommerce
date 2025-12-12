@@ -15,7 +15,6 @@ import {
   Typography,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import useFlashSale from "./FlashSale.hook";
 import { useAdminPermissions } from "../../../hooks/useAdminPermissions";
 import { useNavigate } from "react-router-dom";
