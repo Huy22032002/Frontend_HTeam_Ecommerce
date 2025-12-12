@@ -4,8 +4,12 @@ import {
   Route,
   useLocation,
 } from "react-router-dom";
-import { Provider } from "react-redux";
+import { Provider, useSelector } from "react-redux";
 import store from "./store/store";
+import { selectCustomerId } from "./store/customerSlice";
+import { useEffect } from "react";
+import { useNotificationSSE } from "./hooks/useNotificationSSE";
+import { useAutoConnectChat } from "./hooks/useAutoConnectChat";
 
 import { ColorModeContext, useMode } from "./theme/theme";
 import { CssBaseline, ThemeProvider } from "@mui/material";
@@ -38,6 +42,28 @@ import GlobalNotification from "./components/GlobalNotification";
 
 function AppContent() {
   const location = useLocation();
+  const customerId = useSelector(selectCustomerId);
+  const { connect, isConnected } = useNotificationSSE();
+  
+  // Auto-connect chat stream (không cần bấm vào ChatBox)
+  useAutoConnectChat(customerId || null);
+
+  // Subscribe to SSE notifications immediately after customer login
+  useEffect(() => {
+    if (customerId) {
+      console.log(`🔔 Khởi tạo notification SSE cho customer ${customerId}`);
+      connect(customerId);
+    }
+  }, [customerId, connect]);
+
+  // Check SSE connection on every page load and reconnect if needed
+  useEffect(() => {
+    if (customerId && !isConnected) {
+      console.log(`⚠️ SSE không kết nối, thực hiện kết nối lại cho customer ${customerId}`);
+      connect(customerId);
+    }
+  }, [location, customerId, isConnected, connect]);
+
   const hideLayout =
     location.pathname === "/login" ||
     location.pathname === "/signup" ||

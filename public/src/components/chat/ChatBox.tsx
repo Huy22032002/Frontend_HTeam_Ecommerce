@@ -11,7 +11,6 @@ import {
   IconButton,
   Tooltip,
   List,
-  Snackbar
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
@@ -26,9 +25,7 @@ import { getCustomerToken } from '../../utils/tokenUtils';
 interface ChatBoxProps {
   isOpen?: boolean;
   onClose?: () => void;
-}
-
-const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
+}const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
   const customer = useSelector((state: RootState) => state.customerAuth.customer);
   const customerId = customer?.id;
 
@@ -58,7 +55,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
   useEffect(() => {
     if (!connectionAttemptedRef.current) {
       connectionAttemptedRef.current = true;
-      console.log('🔌 ChatBox: Attempting SSE connection...');
+      console.log('🔌 ChatBox: Using auto-connected SSE stream...');
     }
     
     // Don't disconnect on unmount - keep the connection alive for other components
@@ -67,15 +64,35 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
     // };
   }, []);
 
-  // Subscribe to SSE stream when conversation is ready
+  // Listen to auto-connected chat messages via custom event
   useEffect(() => {
-    if (conversation?.id && customerId) {
-      console.log('📢 ChatBox: Subscribing to conversation:', conversation.id);
+    const handleNewChatMessage = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { message, conversationId } = customEvent.detail;
+      
+      if (conversationId === conversation?.id) {
+        console.log('💬 ChatBox: Received auto-connected chat message:', message);
+        setSSEMessages((prev: any[]) => [...prev, message]);
+        // Mark admin messages as read
+        if (message.senderRole === 'ADMIN' && message.id) {
+          markAsRead(message.id);
+        }
+      }
+    };
+
+    window.addEventListener('new-chat-message', handleNewChatMessage);
+    return () => window.removeEventListener('new-chat-message', handleNewChatMessage);
+  }, [conversation?.id, markAsRead]);
+
+  // Keep old subscription for backward compatibility (in case auto-connect fails)
+  useEffect(() => {
+    if (conversation?.id && customerId && !isInitialLoadRef.current) {
+      console.log('📢 ChatBox: Fallback - Subscribing directly to conversation:', conversation.id);
       
       const unsubscribeFn = subscribe(
         conversation.id,
         (message: any) => {
-          console.log('📨 Received message from SSE:', message);
+          console.log('📨 Received message from SSE (fallback):', message);
           // Add received message to state
           setSSEMessages((prev: any[]) => [...prev, message]);
           // Mark admin messages as read
@@ -130,11 +147,11 @@ const ChatBox: React.FC<ChatBoxProps> = ({ isOpen = true, onClose }) => {
   }, [uniqueSSEMessages]);
 
   // Scroll to bottom function
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    setHasNewMessages(false);
-    setIsAtBottom(true);
-  };
+  // const scrollToBottom = () => {
+  //   messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  //   setHasNewMessages(false);
+  //   setIsAtBottom(true);
+  // };
 
   // Detect if user is at bottom of messages
   const handleMessagesScroll = () => {

@@ -1,19 +1,15 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   Box,
   Accordion,
   AccordionSummary,
   AccordionDetails,
   Typography,
-  Chip,
   Avatar,
   Stack,
-  Divider,
-  IconButton,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
-import CloseIcon from "@mui/icons-material/Close";
 
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
@@ -57,7 +53,7 @@ const ChatContainer = () => {
 
   const [faqOpen, setFaqOpen] = useState(true);
 
-  const quickSuggestions = useMemo(() => faqList.slice(0, 4), []);
+  // const quickSuggestions = useMemo(() => faqList.slice(0, 4), []);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%", background: "#f7f9fc" }}>
@@ -105,7 +101,6 @@ const ChatContainer = () => {
                     { sender: "user", text: item.question },
                     { sender: "bot", text: item.answer },
                   ]);
-                  setShowQuickSuggestions(false);
                   setFaqOpen(false);
                 }}
               >

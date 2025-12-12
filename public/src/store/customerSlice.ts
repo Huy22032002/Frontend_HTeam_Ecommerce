@@ -25,4 +25,9 @@ const customerAuthSlice = createSlice({
 });
 
 export const { login, logout } = customerAuthSlice.actions;
+
+// Selectors
+export const selectCustomer = (state: { customerAuth: AuthState }) => state.customerAuth.customer;
+export const selectCustomerId = (state: { customerAuth: AuthState }) => state.customerAuth.customer?.id;
+
 export default customerAuthSlice.reducer;
