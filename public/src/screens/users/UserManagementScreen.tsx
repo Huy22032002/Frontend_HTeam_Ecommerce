@@ -135,16 +135,16 @@ const UserManagementScreen = () => {
   };
 
   // Handle block user click
-  const handleBlockClick = (
-    userId: number,
-    userName: string,
-    currentBlockedStatus: boolean
-  ) => {
-    setSelectedBlockUserId(userId);
-    setSelectedBlockUserName(userName);
-    setSelectedBlockUserCurrentStatus(currentBlockedStatus);
-    setBlockDialogOpen(true);
-  };
+  // const handleBlockClick = (
+  //   userId: number,
+  //   userName: string,
+  //   currentBlockedStatus: boolean
+  // ) => {
+  //   setSelectedBlockUserId(userId);
+  //   setSelectedBlockUserName(userName);
+  //   setSelectedBlockUserCurrentStatus(currentBlockedStatus);
+  //   setBlockDialogOpen(true);
+  // };
 
   // Handle confirm block/unblock
   const handleConfirmBlock = async () => {
