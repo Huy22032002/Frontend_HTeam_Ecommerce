@@ -20,8 +20,10 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-import { FilterList as FilterIcon } from "@mui/icons-material";
-import { ResponsiveLineCanvas } from "@nivo/line";
+import {
+  FilterList as FilterIcon,
+} from "@mui/icons-material";
+// import { ResponsiveLineCanvas } from "@nivo/line";
 import { ResponsiveBarCanvas } from "@nivo/bar";
 import { ResponsivePieCanvas } from "@nivo/pie";
 import {
