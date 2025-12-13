@@ -269,7 +269,7 @@ const AnalyticsScreen = () => {
     return (
       <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
         {/* Time Series Chart */}
-        {currentStats?.timeSeries && currentStats.timeSeries.length > 0 && (
+        {/* {currentStats?.timeSeries && currentStats.timeSeries.length > 0 && (
           <Card
             sx={{
               boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
@@ -349,7 +349,7 @@ const AnalyticsScreen = () => {
               </Box>
             </CardContent>
           </Card>
-        )}
+        )} */}
 
         {/* Breakdown Chart */}
         {translatedBreakdown && translatedBreakdown.length > 0 && (
