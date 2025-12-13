@@ -26,7 +26,10 @@ import {
 // import { ResponsiveLineCanvas } from "@nivo/line";
 import { ResponsiveBarCanvas } from "@nivo/bar";
 import { ResponsivePieCanvas } from "@nivo/pie";
-import { AnalyticsApi, type AnalyticsFilterDTO } from "../../api/dashboard/AnalyticsApi";
+import {
+  AnalyticsApi,
+  type AnalyticsFilterDTO,
+} from "../../api/dashboard/AnalyticsApi";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -79,36 +82,41 @@ const AnalyticsScreen = () => {
     { key: "revenue", label: "💰 Doanh thu", icon: "💰" },
   ];
 
-  const loadAnalytics = useCallback(async (categoryKey: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const filter = filters[categoryKey as keyof typeof filters];
-      const response = await AnalyticsApi.getDetailedAnalytics(filter);
-      
-      // Transform backend data to Nivo format
-      const data = response.data;
-      if (data.timeSeries && Array.isArray(data.timeSeries)) {
-        data.timeSeries = [{ id: categoryKey, data: data.timeSeries }];
+  const loadAnalytics = useCallback(
+    async (categoryKey: string) => {
+      try {
+        setLoading(true);
+        setError(null);
+        const filter = filters[categoryKey as keyof typeof filters];
+        const response = await AnalyticsApi.getDetailedAnalytics(filter);
+
+        // Transform backend data to Nivo format
+        const data = response.data;
+        if (data.timeSeries && Array.isArray(data.timeSeries)) {
+          data.timeSeries = [{ id: categoryKey, data: data.timeSeries }];
+        }
+        if (data.breakdown && Array.isArray(data.breakdown)) {
+          data.breakdown = data.breakdown; // Already in correct format for pie/bar
+        }
+        if (data.topItems && Array.isArray(data.topItems)) {
+          data.topItems = data.topItems; // Already in correct format
+        }
+
+        setStats((prev: any) => ({
+          ...prev,
+          [categoryKey]: data,
+        }));
+      } catch (err: any) {
+        setError(
+          err?.response?.data?.message || "Lỗi khi tải dữ liệu thống kê"
+        );
+        console.error("Error loading analytics:", err);
+      } finally {
+        setLoading(false);
       }
-      if (data.breakdown && Array.isArray(data.breakdown)) {
-        data.breakdown = data.breakdown; // Already in correct format for pie/bar
-      }
-      if (data.topItems && Array.isArray(data.topItems)) {
-        data.topItems = data.topItems; // Already in correct format
-      }
-      
-      setStats((prev: any) => ({
-        ...prev,
-        [categoryKey]: data,
-      }));
-    } catch (err: any) {
-      setError(err?.response?.data?.message || "Lỗi khi tải dữ liệu thống kê");
-      console.error("Error loading analytics:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [filters]);
+    },
+    [filters]
+  );
 
   // Load analytics on component mount
   useEffect(() => {
@@ -181,7 +189,18 @@ const AnalyticsScreen = () => {
     ];
 
     return (
-      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }, gap: 2, mb: 4 }}>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "repeat(2, 1fr)",
+            lg: "repeat(4, 1fr)",
+          },
+          gap: 2,
+          mb: 4,
+        }}
+      >
         {statCards.map((stat, idx) => (
           <Card
             key={idx}
@@ -228,16 +247,16 @@ const AnalyticsScreen = () => {
 
   // Mapping để dịch trạng thái tiếng Anh sang Việt
   const orderStatusMap: Record<string, string> = {
-    "PENDING": "Chờ xác nhận",
-    "PROCESSING": "Đang xử lý",
-    "COMPLETED": "Hoàn thành",
-    "CANCELLED": "Huỷ",
-    "DELIVERED": "Đã giao",
-    "SHIPPING": "Đang giao",
-    "UNKNOWN": "Chưa xác định",
-    "APPROVED": "Đã duyệt",
-    "Active": "Đang hoạt động",
-    "Blocked": "Bị chặn",
+    PENDING: "Chờ xác nhận",
+    PROCESSING: "Đang xử lý",
+    COMPLETED: "Hoàn thành",
+    CANCELLED: "Huỷ",
+    DELIVERED: "Đã giao",
+    SHIPPING: "Đang giao",
+    UNKNOWN: "Chưa xác định",
+    APPROVED: "Đã duyệt",
+    Active: "Đang hoạt động",
+    Blocked: "Bị chặn",
   };
 
   const translateLabel = (text: string | number, category?: string): string => {
@@ -253,18 +272,23 @@ const AnalyticsScreen = () => {
       return `${prefix}-${textStr}`;
     }
     // Try exact match first, then uppercase match
-    return orderStatusMap[textStr] || orderStatusMap[textStr?.toUpperCase()] || textStr;
+    return (
+      orderStatusMap[textStr] ||
+      orderStatusMap[textStr?.toUpperCase()] ||
+      textStr
+    );
   };
 
   const renderBreakdown = () => {
     const categoryKey = categories[tabValue].key;
     const currentStats = stats[categoryKey as keyof typeof stats];
-    
+
     // Transform breakdown data to translate labels
-    const translatedBreakdown = currentStats?.breakdown?.map((item: any) => ({
-      ...item,
-      displayName: translateLabel(item.name, categoryKey),
-    })) || [];
+    const translatedBreakdown =
+      currentStats?.breakdown?.map((item: any) => ({
+        ...item,
+        displayName: translateLabel(item.name, categoryKey),
+      })) || [];
 
     return (
       <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
@@ -286,8 +310,8 @@ const AnalyticsScreen = () => {
                   fontSize: "1.125rem",
                   color: "#1f2937",
                 }}
-              >
-                📈 Xu hướng theo thời gian
+              > */}
+        {/* 📈 Xu hướng theo thời gian
               </Typography>
               <Box sx={{ height: 350, width: "100%", position: "relative" }}>
                 <ResponsiveLineCanvas
@@ -521,7 +545,8 @@ const AnalyticsScreen = () => {
                 color: "#1e40af",
               }}
             >
-              Không có dữ liệu biểu đồ để hiển thị. Vui lòng thử thay đổi bộ lọc.
+              Không có dữ liệu biểu đồ để hiển thị. Vui lòng thử thay đổi bộ
+              lọc.
             </Alert>
           )}
       </Box>
@@ -529,7 +554,13 @@ const AnalyticsScreen = () => {
   };
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3, lg: 4 }, backgroundColor: "#f9fafb", minHeight: "100vh" }}>
+    <Box
+      sx={{
+        p: { xs: 2, sm: 3, lg: 4 },
+        backgroundColor: "#f9fafb",
+        minHeight: "100vh",
+      }}
+    >
       {/* Header */}
       <Box
         mb={4}
@@ -561,7 +592,11 @@ const AnalyticsScreen = () => {
             Phân tích dữ liệu kinh doanh theo danh mục
           </Typography>
         </Box>
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} sx={{ width: { xs: "100%", sm: "auto" } }}>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={1.5}
+          sx={{ width: { xs: "100%", sm: "auto" } }}
+        >
           <Button
             variant="outlined"
             startIcon={<FilterIcon />}
@@ -647,21 +682,29 @@ const AnalyticsScreen = () => {
       ))}
 
       {/* Filter Dialog */}
-      <Dialog open={openFilter} onClose={() => setOpenFilter(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontSize: "1.125rem", fontWeight: 700, color: "#1f2937" }}>
+      <Dialog
+        open={openFilter}
+        onClose={() => setOpenFilter(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle
+          sx={{ fontSize: "1.125rem", fontWeight: 700, color: "#1f2937" }}
+        >
           🔍 Lọc dữ liệu thống kê
         </DialogTitle>
-        <DialogContent sx={{ pt: 2.5, display: "flex", flexDirection: "column", gap: 2.5 }}>
+        <DialogContent
+          sx={{ pt: 2.5, display: "flex", flexDirection: "column", gap: 2.5 }}
+        >
           <TextField
             label="Từ ngày"
             type="date"
             InputLabelProps={{ shrink: true }}
             value={
-              filters[categories[tabValue].key as keyof typeof filters].startDate || ""
+              filters[categories[tabValue].key as keyof typeof filters]
+                .startDate || ""
             }
-            onChange={(e) =>
-              handleFilterChange("startDate", e.target.value)
-            }
+            onChange={(e) => handleFilterChange("startDate", e.target.value)}
             fullWidth
             variant="outlined"
             size="small"
@@ -671,11 +714,10 @@ const AnalyticsScreen = () => {
             type="date"
             InputLabelProps={{ shrink: true }}
             value={
-              filters[categories[tabValue].key as keyof typeof filters].endDate || ""
+              filters[categories[tabValue].key as keyof typeof filters]
+                .endDate || ""
             }
-            onChange={(e) =>
-              handleFilterChange("endDate", e.target.value)
-            }
+            onChange={(e) => handleFilterChange("endDate", e.target.value)}
             fullWidth
             variant="outlined"
             size="small"
@@ -686,9 +728,7 @@ const AnalyticsScreen = () => {
             <FormControl fullWidth size="small">
               <InputLabel>Trạng thái đơn hàng</InputLabel>
               <Select
-                value={
-                  filters.orders.orderStatus || ""
-                }
+                value={filters.orders.orderStatus || ""}
                 label="Trạng thái đơn hàng"
                 onChange={(e) =>
                   handleFilterChange("orderStatus", e.target.value)
@@ -704,13 +744,15 @@ const AnalyticsScreen = () => {
           )}
 
           {/* Min/Max amount filter */}
-          {(categories[tabValue].key === "orders" || categories[tabValue].key === "revenue") && (
+          {(categories[tabValue].key === "orders" ||
+            categories[tabValue].key === "revenue") && (
             <>
               <TextField
                 label="Số tiền tối thiểu"
                 type="number"
                 value={
-                  filters[categories[tabValue].key as keyof typeof filters].minAmount || ""
+                  filters[categories[tabValue].key as keyof typeof filters]
+                    .minAmount || ""
                 }
                 onChange={(e) =>
                   handleFilterChange("minAmount", parseFloat(e.target.value))
@@ -723,7 +765,8 @@ const AnalyticsScreen = () => {
                 label="Số tiền tối đa"
                 type="number"
                 value={
-                  filters[categories[tabValue].key as keyof typeof filters].maxAmount || ""
+                  filters[categories[tabValue].key as keyof typeof filters]
+                    .maxAmount || ""
                 }
                 onChange={(e) =>
                   handleFilterChange("maxAmount", parseFloat(e.target.value))

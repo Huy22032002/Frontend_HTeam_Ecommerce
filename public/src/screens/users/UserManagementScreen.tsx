@@ -22,21 +22,21 @@ import {
   useTheme,
   Button,
   Avatar,
-} from '@mui/material';
-import { useUsers } from '../../hooks/useUsers';
-import { useEffect, useState } from 'react';
-import SearchIcon from '@mui/icons-material/Search';
-import ToggleOnIcon from '@mui/icons-material/ToggleOn';
-import ToggleOffIcon from '@mui/icons-material/ToggleOff';
-import { UserApi } from '../../api/user/UserApi';
-import { tokens } from '../../theme/theme';
+} from "@mui/material";
+import { useUsers } from "../../hooks/useUsers";
+import { useEffect, useState } from "react";
+import SearchIcon from "@mui/icons-material/Search";
+import ToggleOnIcon from "@mui/icons-material/ToggleOn";
+import ToggleOffIcon from "@mui/icons-material/ToggleOff";
+import { UserApi } from "../../api/user/UserApi";
+import { tokens } from "../../theme/theme";
 
 const UserManagementScreen = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const { users: apiUsers, loading, error } = useUsers(page, size);
   const [users, setUsers] = useState(apiUsers);
 
@@ -48,33 +48,38 @@ const UserManagementScreen = () => {
   // Dialog state for toggle confirmation
   const [toggleDialogOpen, setToggleDialogOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-  const [selectedUserName, setSelectedUserName] = useState('');
-  const [selectedUserCurrentStatus, setSelectedUserCurrentStatus] = useState(false);
+  const [selectedUserName, setSelectedUserName] = useState("");
+  const [selectedUserCurrentStatus, setSelectedUserCurrentStatus] =
+    useState(false);
 
   // Dialog state for block confirmation
   const [blockDialogOpen, setBlockDialogOpen] = useState(false);
-  const [selectedBlockUserId, setSelectedBlockUserId] = useState<number | null>(null);
-  const [selectedBlockUserName, setSelectedBlockUserName] = useState('');
-  const [selectedBlockUserCurrentStatus, setSelectedBlockUserCurrentStatus] = useState(false);
+  const [selectedBlockUserId, setSelectedBlockUserId] = useState<number | null>(
+    null
+  );
+  const [selectedBlockUserName, setSelectedBlockUserName] = useState("");
+  const [selectedBlockUserCurrentStatus, setSelectedBlockUserCurrentStatus] =
+    useState(false);
 
   // Dialog state for create user
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newUserForm, setNewUserForm] = useState({
-    userName: '',
-    name: '',
-    emailAddress: '',
-    password: '',
-    repeatPassword: '',
+    userName: "",
+    name: "",
+    emailAddress: "",
+    password: "",
+    repeatPassword: "",
     active: true,
   });
   const [createLoading, setCreateLoading] = useState(false);
-  const [createError, setCreateError] = useState('');
+  const [createError, setCreateError] = useState("");
 
   // Handle search
-  const filteredUsers = users.filter((user) =>
-    user.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.username?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = users.filter(
+    (user) =>
+      user.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.username?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Handle pagination
@@ -82,13 +87,19 @@ const UserManagementScreen = () => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setSize(parseInt(event.target.value, 10));
     setPage(0);
   };
 
   // Handle toggle active/inactive
-  const handleToggleClick = (userId: number, userName: string, currentStatus: boolean) => {
+  const handleToggleClick = (
+    userId: number,
+    userName: string,
+    currentStatus: boolean
+  ) => {
     setSelectedUserId(userId);
     setSelectedUserName(userName);
     setSelectedUserCurrentStatus(currentStatus);
@@ -101,26 +112,34 @@ const UserManagementScreen = () => {
     try {
       const response = await UserApi.toggleUserActive(selectedUserId);
       setToggleDialogOpen(false);
-      
+
       // Update local state instead of reloading
       const updatedUser = response.data;
-      setUsers(prevUsers =>
-        prevUsers.map(u =>
+      setUsers((prevUsers) =>
+        prevUsers.map((u) =>
           Number(u.id) === selectedUserId
             ? { ...u, active: updatedUser.active }
             : u
         )
       );
-      
-      console.log(`✅ User ${selectedUserName} status updated to: ${updatedUser.active ? 'Active' : 'Inactive'}`);
+
+      console.log(
+        `✅ User ${selectedUserName} status updated to: ${
+          updatedUser.active ? "Active" : "Inactive"
+        }`
+      );
     } catch (error) {
-      console.error('Error toggling user status:', error);
-      alert('Không thể cập nhật trạng thái người dùng');
+      console.error("Error toggling user status:", error);
+      alert("Không thể cập nhật trạng thái người dùng");
     }
   };
 
   // Handle block user click
-  const handleBlockClick = (userId: number, userName: string, currentBlockedStatus: boolean) => {
+  const handleBlockClick = (
+    userId: number,
+    userName: string,
+    currentBlockedStatus: boolean
+  ) => {
     setSelectedBlockUserId(userId);
     setSelectedBlockUserName(userName);
     setSelectedBlockUserCurrentStatus(currentBlockedStatus);
@@ -134,64 +153,93 @@ const UserManagementScreen = () => {
     try {
       const response = await UserApi.toggleUserBlocked(selectedBlockUserId);
       setBlockDialogOpen(false);
-      
+
       // Update local state instead of reloading
       const updatedUser = response.data;
-      setUsers(prevUsers =>
-        prevUsers.map(u =>
+      setUsers((prevUsers) =>
+        prevUsers.map((u) =>
           Number(u.id) === selectedBlockUserId
             ? { ...u, blocked: updatedUser.blocked }
             : u
         )
       );
-      
-      console.log(`✅ User ${selectedBlockUserName} blocked status updated to: ${updatedUser.blocked ? 'Blocked' : 'Unblocked'}`);
-      alert(updatedUser.blocked ? `✅ Đã chặn người dùng ${selectedBlockUserName}` : `✅ Đã bỏ chặn người dùng ${selectedBlockUserName}`);
+
+      console.log(
+        `✅ User ${selectedBlockUserName} blocked status updated to: ${
+          updatedUser.blocked ? "Blocked" : "Unblocked"
+        }`
+      );
+      alert(
+        updatedUser.blocked
+          ? `✅ Đã chặn người dùng ${selectedBlockUserName}`
+          : `✅ Đã bỏ chặn người dùng ${selectedBlockUserName}`
+      );
     } catch (error) {
-      console.error('Error toggling user blocked status:', error);
-      alert('Không thể cập nhật trạng thái chặn người dùng');
+      console.error("Error toggling user blocked status:", error);
+      alert("Không thể cập nhật trạng thái chặn người dùng");
     }
   };
 
   const getStatusChip = (isActive: boolean) => {
     if (isActive) {
-      return <Chip label="✓ Hoạt động" color="success" size="small" variant="filled" />;
+      return (
+        <Chip
+          label="✓ Hoạt động"
+          color="success"
+          size="small"
+          variant="filled"
+        />
+      );
     }
-    return <Chip label="✗ Vô hiệu" color="error" size="small" variant="outlined" />;
+    return (
+      <Chip label="✗ Vô hiệu" color="error" size="small" variant="outlined" />
+    );
   };
 
   const getBlockedStatusChip = (isBlocked: boolean) => {
     if (isBlocked) {
-      return <Chip label="🚫 Bị chặn" color="error" size="small" variant="filled" />;
+      return (
+        <Chip label="🚫 Bị chặn" color="error" size="small" variant="filled" />
+      );
     }
-    return <Chip label="✓ Bình thường" color="success" size="small" variant="outlined" />;
+    return (
+      <Chip
+        label="✓ Bình thường"
+        color="success"
+        size="small"
+        variant="outlined"
+      />
+    );
   };
 
   // Check if user has SUPERADMIN role
   const hasSuperAdminRole = (user: any) => {
     if (!user.role) return false;
     // user.role is an array of role objects with name property
-    return Array.isArray(user.role) && user.role.some((r: any) => r.name === 'SUPERADMIN');
+    return (
+      Array.isArray(user.role) &&
+      user.role.some((r: any) => r.name === "SUPERADMIN")
+    );
   };
 
   // Get role names for display
   const getRoleNames = (roles: any) => {
-    if (!Array.isArray(roles)) return '-';
-    return roles.map((r: any) => r.name).join(', ') || '-';
+    if (!Array.isArray(roles)) return "-";
+    return roles.map((r: any) => r.name).join(", ") || "-";
   };
 
   // Format date from ISO timestamp (from backend Instant)
   const formatCreatedDate = (createdAt?: string) => {
-    if (!createdAt) return '-';
+    if (!createdAt) return "-";
     try {
       const date = new Date(createdAt);
-      return date.toLocaleDateString('vi-VN', { 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit' 
+      return date.toLocaleDateString("vi-VN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
       });
     } catch {
-      return '-';
+      return "-";
     }
   };
 
@@ -205,39 +253,41 @@ const UserManagementScreen = () => {
   // Handle create user form changes
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setNewUserForm(prev => ({
+    setNewUserForm((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   // Handle create user submit
   const handleCreateUser = async () => {
-    setCreateError('');
-    
+    setCreateError("");
+
     // Validate form
     if (!newUserForm.userName.trim()) {
-      setCreateError('Username không được để trống');
+      setCreateError("Username không được để trống");
       return;
     }
     if (!newUserForm.name.trim()) {
-      setCreateError('Tên người dùng không được để trống');
+      setCreateError("Tên người dùng không được để trống");
       return;
     }
     if (!newUserForm.emailAddress.trim()) {
-      setCreateError('Email không được để trống');
+      setCreateError("Email không được để trống");
       return;
     }
     if (!newUserForm.password) {
-      setCreateError('Mật khẩu không được để trống');
+      setCreateError("Mật khẩu không được để trống");
       return;
     }
     if (newUserForm.password !== newUserForm.repeatPassword) {
-      setCreateError('Mật khẩu không khớp');
+      setCreateError("Mật khẩu không khớp");
       return;
     }
     if (!validatePasswordFormat(newUserForm.password)) {
-      setCreateError('Mật khẩu phải có: chữ thường (a-z), chữ hoa (A-Z), số (0-9), độ dài 6-12 ký tự. VD: Test123');
+      setCreateError(
+        "Mật khẩu phải có: chữ thường (a-z), chữ hoa (A-Z), số (0-9), độ dài 6-12 ký tự. VD: Test123"
+      );
       return;
     }
 
@@ -251,38 +301,38 @@ const UserManagementScreen = () => {
         repeatPassword: newUserForm.repeatPassword,
         active: newUserForm.active,
       } as any);
-      
+
       // Add new user to the list without reload
       const newUser = response.data;
-      setUsers(prevUsers => [newUser, ...prevUsers]);
-      
+      setUsers((prevUsers) => [newUser, ...prevUsers]);
+
       // Reset form and close dialog
       setNewUserForm({
-        userName: '',
-        name: '',
-        emailAddress: '',
-        password: '',
-        repeatPassword: '',
+        userName: "",
+        name: "",
+        emailAddress: "",
+        password: "",
+        repeatPassword: "",
         active: true,
       });
       setCreateDialogOpen(false);
-      setCreateError('');
-      alert('✅ Tạo user thành công!');
+      setCreateError("");
+      alert("✅ Tạo user thành công!");
     } catch (error: any) {
-      console.error('Error creating user:', error);
+      console.error("Error creating user:", error);
       // Get error message from various possible locations
-      let errorMsg = 'Không thể tạo user';
+      let errorMsg = "Không thể tạo user";
       if (error.response?.data) {
         const data = error.response.data;
-        if (typeof data === 'string') {
+        if (typeof data === "string") {
           errorMsg = data;
         } else if (data.errorMessage) {
           errorMsg = data.errorMessage;
           // If there are field errors, append them
-          if (data.errors && typeof data.errors === 'object') {
+          if (data.errors && typeof data.errors === "object") {
             const fieldErrors = Object.entries(data.errors)
               .map(([field, message]) => `${field}: ${message}`)
-              .join(', ');
+              .join(", ");
             if (fieldErrors) {
               errorMsg += ` (${fieldErrors})`;
             }
@@ -302,7 +352,12 @@ const UserManagementScreen = () => {
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
-      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={3}
+      >
         <Typography variant="h4" fontWeight={600}>
           👤 Quản lý người dùng
         </Typography>
@@ -314,7 +369,7 @@ const UserManagementScreen = () => {
             variant="contained"
             color="success"
             onClick={() => setCreateDialogOpen(true)}
-            sx={{ textTransform: 'none' }}
+            sx={{ textTransform: "none" }}
           >
             + Tạo user mới
           </Button>
@@ -332,25 +387,25 @@ const UserManagementScreen = () => {
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ color: '#000' }} />
+                <SearchIcon sx={{ color: "#000" }} />
               </InputAdornment>
             ),
           }}
           sx={{
-            '& .MuiOutlinedInput-root': {
-              color: '#000',
-              '& fieldset': {
+            "& .MuiOutlinedInput-root": {
+              color: "#000",
+              "& fieldset": {
                 borderColor: colors.primary[200],
               },
-              '&:hover fieldset': {
+              "&:hover fieldset": {
                 borderColor: colors.primary[900],
               },
-              '&.Mui-focused fieldset': {
+              "&.Mui-focused fieldset": {
                 borderColor: colors.blueAccent[500],
               },
             },
-            '& .MuiOutlinedInput-input::placeholder': {
-              color: '#999',
+            "& .MuiOutlinedInput-input::placeholder": {
+              color: "#999",
               opacity: 0.7,
             },
           }}
@@ -365,23 +420,49 @@ const UserManagementScreen = () => {
       ) : error ? (
         <Typography color="error">Lỗi: {String(error)}</Typography>
       ) : filteredUsers.length === 0 ? (
-        <Paper sx={{ p: 3, textAlign: 'center', bgcolor: colors.primary[400] }}>
-          <Typography color="textSecondary">Không tìm thấy người dùng nào</Typography>
+        <Paper sx={{ p: 3, textAlign: "center", bgcolor: colors.primary[400] }}>
+          <Typography color="textSecondary">
+            Không tìm thấy người dùng nào
+          </Typography>
         </Paper>
       ) : (
-        <Paper sx={{ bgcolor: colors.primary[400], borderRadius: 2, overflow: 'hidden' }}>
+        <Paper
+          sx={{
+            bgcolor: colors.primary[400],
+            borderRadius: 2,
+            overflow: "hidden",
+          }}
+        >
           <Table>
             <TableHead sx={{ bgcolor: colors.greenAccent[700] }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Avatar</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#fff' }}>ID</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Tên</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Email</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Role</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Trạng thái</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Trạng thái chặn</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Ngày tạo</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#fff', textAlign: 'center' }}>
+                <TableCell sx={{ fontWeight: 600, color: "#fff" }}>
+                  Avatar
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: "#fff" }}>
+                  ID
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: "#fff" }}>
+                  Tên
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: "#fff" }}>
+                  Email
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: "#fff" }}>
+                  Role
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: "#fff" }}>
+                  Trạng thái
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: "#fff" }}>
+                  Trạng thái chặn
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: "#fff" }}>
+                  Ngày tạo
+                </TableCell>
+                <TableCell
+                  sx={{ fontWeight: 600, color: "#fff", textAlign: "center" }}
+                >
                   Thao tác
                 </TableCell>
               </TableRow>
@@ -393,54 +474,88 @@ const UserManagementScreen = () => {
                   hover
                   sx={{
                     backgroundColor: colors.primary[400],
-                    '&:hover': {
+                    "&:hover": {
                       backgroundColor: colors.primary[300],
                     },
                   }}
                 >
-                  <TableCell align="center" sx={{ color: '#000', py: 1 }}>
+                  <TableCell align="center" sx={{ color: "#000", py: 1 }}>
                     <Avatar
                       src={user.avatarUrl}
                       alt={user.fullName}
-                      sx={{ width: 40, height: 40, margin: '0 auto' }}
+                      sx={{ width: 40, height: 40, margin: "0 auto" }}
                     >
                       {user.fullName?.charAt(0).toUpperCase()}
                     </Avatar>
                   </TableCell>
-                  <TableCell sx={{ color: '#000' }}>{user.id}</TableCell>
-                  <TableCell sx={{ fontWeight: 500, color: '#000' }}>{user.fullName}</TableCell>
-                  <TableCell sx={{ color: '#000' }}>{user.email}</TableCell>
-                  <TableCell sx={{ color: '#000' }}>{getRoleNames(user.role)}</TableCell>
-                  <TableCell sx={{ color: '#000' }}>{getStatusChip(user.active ?? true)}</TableCell>
-                  <TableCell sx={{ color: '#000' }}>{getBlockedStatusChip(user.blocked ?? false)}</TableCell>
-                  <TableCell sx={{ color: '#000' }}>{formatCreatedDate(user.createdAt)}</TableCell>
-                  <TableCell align="center" sx={{ color: '#000' }}>
+                  <TableCell sx={{ color: "#000" }}>{user.id}</TableCell>
+                  <TableCell sx={{ fontWeight: 500, color: "#000" }}>
+                    {user.fullName}
+                  </TableCell>
+                  <TableCell sx={{ color: "#000" }}>{user.email}</TableCell>
+                  <TableCell sx={{ color: "#000" }}>
+                    {getRoleNames(user.role)}
+                  </TableCell>
+                  <TableCell sx={{ color: "#000" }}>
+                    {getStatusChip(user.active ?? true)}
+                  </TableCell>
+                  <TableCell sx={{ color: "#000" }}>
+                    {getBlockedStatusChip(user.blocked ?? false)}
+                  </TableCell>
+                  <TableCell sx={{ color: "#000" }}>
+                    {formatCreatedDate(user.createdAt)}
+                  </TableCell>
+                  <TableCell align="center" sx={{ color: "#000" }}>
                     <Stack direction="row" spacing={1} justifyContent="center">
                       <IconButton
                         size="small"
                         onClick={() =>
-                          handleToggleClick(Number(user.id), user.fullName, user.active ?? true)
+                          handleToggleClick(
+                            Number(user.id),
+                            user.fullName,
+                            user.active ?? true
+                          )
                         }
                         disabled={hasSuperAdminRole(user)}
-                        title={hasSuperAdminRole(user) ? 'Không thể chỉnh SUPERADMIN' : (user.active ? 'Vô hiệu hóa' : 'Kích hoạt')}
+                        title={
+                          hasSuperAdminRole(user)
+                            ? "Không thể chỉnh SUPERADMIN"
+                            : user.active
+                            ? "Vô hiệu hóa"
+                            : "Kích hoạt"
+                        }
                         sx={{
-                          color: hasSuperAdminRole(user) ? '#ccc' : (user.active ? '#4caf50' : '#ff9800'),
+                          color: hasSuperAdminRole(user)
+                            ? "#ccc"
+                            : user.active
+                            ? "#4caf50"
+                            : "#ff9800",
                         }}
                       >
                         {user.active ? <ToggleOnIcon /> : <ToggleOffIcon />}
                       </IconButton>
                       <IconButton
                         size="small"
-                        onClick={() =>
-                          handleBlockClick(Number(user.id), user.fullName, user.blocked ?? false)
-                        }
+                        // onClick={() =>
+                        //   handleBlockClick(Number(user.id), user.fullName, user.blocked ?? false)
+                        // }
                         disabled={hasSuperAdminRole(user)}
-                        title={hasSuperAdminRole(user) ? 'Không thể chặn SUPERADMIN' : (user.blocked ? 'Bỏ chặn' : 'Chặn')}
+                        title={
+                          hasSuperAdminRole(user)
+                            ? "Không thể chặn SUPERADMIN"
+                            : user.blocked
+                            ? "Bỏ chặn"
+                            : "Chặn"
+                        }
                         sx={{
-                          color: hasSuperAdminRole(user) ? '#ccc' : (user.blocked ? '#f44336' : '#2196f3'),
+                          color: hasSuperAdminRole(user)
+                            ? "#ccc"
+                            : user.blocked
+                            ? "#f44336"
+                            : "#2196f3",
                         }}
                       >
-                        {user.blocked ? '🚫' : '👤'}
+                        {user.blocked ? "🚫" : "👤"}
                       </IconButton>
                     </Stack>
                   </TableCell>
@@ -460,9 +575,9 @@ const UserManagementScreen = () => {
             onRowsPerPageChange={handleChangeRowsPerPage}
             sx={{
               bgcolor: colors.primary[400],
-              color: '#000',
-              '& .MuiIconButton-root': {
-                color: '#000',
+              color: "#000",
+              "& .MuiIconButton-root": {
+                color: "#000",
               },
             }}
           />
@@ -470,18 +585,29 @@ const UserManagementScreen = () => {
       )}
 
       {/* Toggle Status Confirmation Dialog */}
-      <Dialog open={toggleDialogOpen} onClose={() => setToggleDialogOpen(false)}>
+      <Dialog
+        open={toggleDialogOpen}
+        onClose={() => setToggleDialogOpen(false)}
+      >
         <DialogTitle sx={{ color: colors.blueAccent[400], fontWeight: 600 }}>
           🔄 Cập nhật trạng thái người dùng
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Bạn có chắc chắn muốn {selectedUserCurrentStatus ? 'vô hiệu hóa' : 'kích hoạt'} người dùng{' '}
+            Bạn có chắc chắn muốn{" "}
+            {selectedUserCurrentStatus ? "vô hiệu hóa" : "kích hoạt"} người dùng{" "}
             <strong>{selectedUserName}</strong> không?
             <br />
-            <span style={{ color: colors.blueAccent[400], marginTop: '8px', display: 'block' }}>
-              Trạng thái sẽ chuyển từ "{selectedUserCurrentStatus ? 'Hoạt động' : 'Vô hiệu'}" sang "
-              {selectedUserCurrentStatus ? 'Vô hiệu' : 'Hoạt động'}"
+            <span
+              style={{
+                color: colors.blueAccent[400],
+                marginTop: "8px",
+                display: "block",
+              }}
+            >
+              Trạng thái sẽ chuyển từ "
+              {selectedUserCurrentStatus ? "Hoạt động" : "Vô hiệu"}" sang "
+              {selectedUserCurrentStatus ? "Vô hiệu" : "Hoạt động"}"
             </span>
           </DialogContentText>
         </DialogContent>
@@ -489,7 +615,11 @@ const UserManagementScreen = () => {
           <Button onClick={() => setToggleDialogOpen(false)} color="primary">
             Hủy
           </Button>
-          <Button onClick={handleConfirmToggle} color="success" variant="contained">
+          <Button
+            onClick={handleConfirmToggle}
+            color="success"
+            variant="contained"
+          >
             Xác nhận
           </Button>
         </DialogActions>
@@ -498,20 +628,30 @@ const UserManagementScreen = () => {
       {/* Block User Confirmation Dialog */}
       <Dialog open={blockDialogOpen} onClose={() => setBlockDialogOpen(false)}>
         <DialogTitle sx={{ color: colors.blueAccent[400], fontWeight: 600 }}>
-          🚫 {selectedBlockUserCurrentStatus ? 'Bỏ chặn' : 'Chặn'} người dùng
+          🚫 {selectedBlockUserCurrentStatus ? "Bỏ chặn" : "Chặn"} người dùng
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Bạn có chắc chắn muốn {selectedBlockUserCurrentStatus ? 'bỏ chặn' : 'chặn'} người dùng{' '}
+            Bạn có chắc chắn muốn{" "}
+            {selectedBlockUserCurrentStatus ? "bỏ chặn" : "chặn"} người dùng{" "}
             <strong>{selectedBlockUserName}</strong> không?
             <br />
             {selectedBlockUserCurrentStatus ? (
-              <span style={{ color: colors.blueAccent[400], marginTop: '8px', display: 'block' }}>
+              <span
+                style={{
+                  color: colors.blueAccent[400],
+                  marginTop: "8px",
+                  display: "block",
+                }}
+              >
                 Người dùng sẽ có thể đăng nhập lại bình thường.
               </span>
             ) : (
-              <span style={{ color: '#f44336', marginTop: '8px', display: 'block' }}>
-                ⚠️ Người dùng sẽ không thể đăng nhập và sẽ nhận được thông báo chặn tài khoản.
+              <span
+                style={{ color: "#f44336", marginTop: "8px", display: "block" }}
+              >
+                ⚠️ Người dùng sẽ không thể đăng nhập và sẽ nhận được thông báo
+                chặn tài khoản.
               </span>
             )}
           </DialogContentText>
@@ -520,24 +660,38 @@ const UserManagementScreen = () => {
           <Button onClick={() => setBlockDialogOpen(false)} color="primary">
             Hủy
           </Button>
-          <Button 
-            onClick={handleConfirmBlock} 
-            color={selectedBlockUserCurrentStatus ? 'success' : 'error'} 
+          <Button
+            onClick={handleConfirmBlock}
+            color={selectedBlockUserCurrentStatus ? "success" : "error"}
             variant="contained"
           >
-            {selectedBlockUserCurrentStatus ? 'Bỏ chặn' : 'Chặn'}
+            {selectedBlockUserCurrentStatus ? "Bỏ chặn" : "Chặn"}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Create User Dialog */}
-      <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle sx={{ color: colors.blueAccent[400], fontWeight: 600 }}>
           ➕ Tạo user mới
         </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
           {createError && (
-            <Box sx={{ mb: 2, p: 1.5, bgcolor: '#ffebee', color: '#c62828', borderRadius: 1, fontSize: '0.9rem' }}>
+            <Box
+              sx={{
+                mb: 2,
+                p: 1.5,
+                bgcolor: "#ffebee",
+                color: "#c62828",
+                borderRadius: 1,
+                fontSize: "0.9rem",
+              }}
+            >
               ❌ {createError}
             </Box>
           )}
@@ -581,8 +735,12 @@ const UserManagementScreen = () => {
                 type="password"
                 placeholder="Nhập mật khẩu"
               />
-              <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: '#666' }}>
-                💡 Yêu cầu: Chữ thường (a-z) + Chữ hoa (A-Z) + Số (0-9) + 6-12 ký tự. VD: <strong>Test123</strong>
+              <Typography
+                variant="caption"
+                sx={{ display: "block", mt: 0.5, color: "#666" }}
+              >
+                💡 Yêu cầu: Chữ thường (a-z) + Chữ hoa (A-Z) + Số (0-9) + 6-12
+                ký tự. VD: <strong>Test123</strong>
               </Typography>
             </Box>
             <TextField
@@ -601,13 +759,13 @@ const UserManagementScreen = () => {
           <Button onClick={() => setCreateDialogOpen(false)} color="primary">
             Hủy
           </Button>
-          <Button 
-            onClick={handleCreateUser} 
-            color="success" 
+          <Button
+            onClick={handleCreateUser}
+            color="success"
             variant="contained"
             disabled={createLoading}
           >
-            {createLoading ? 'Đang tạo...' : 'Tạo user'}
+            {createLoading ? "Đang tạo..." : "Tạo user"}
           </Button>
         </DialogActions>
       </Dialog>
