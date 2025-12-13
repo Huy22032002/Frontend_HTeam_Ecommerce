@@ -436,7 +436,7 @@ const UserManagementScreen = () => {
                         onClick={() =>
                           handleBlockClick(Number(user.id), user.fullName, user.blocked ?? false)
                         }
-                        disabled={hasSuperAdminRole(user)}
+                        disabled={true}
                         title={hasSuperAdminRole(user) ? 'Không thể chặn SUPERADMIN' : (user.blocked ? 'Bỏ chặn' : 'Chặn')}
                         sx={{
                           color: hasSuperAdminRole(user) ? '#ccc' : (user.blocked ? '#f44336' : '#2196f3'),
