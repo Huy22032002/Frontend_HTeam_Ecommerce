@@ -100,7 +100,7 @@ const ProductsByCategory = () => {
   return (
     <Box
       display="flex"
-      flexDirection="column"
+      flexDirection={{ xs: "column", md: "row" }}
       sx={{
         px: { xs: 2, sm: 4, md: 8, lg: 20 },
         background: colors.greenAccent[700],
@@ -125,7 +125,12 @@ const ProductsByCategory = () => {
           {/* filter */}
           <Box display="flex" justifyContent="flex-end" p={2} mb={2}>
             <Autocomplete
-              sx={{ width: 200, height: 32, background: colors.primary[400] }}
+              // sx={{ width: 200, height: 32, background: colors.primary[400] }}
+              sx={{
+                width: { xs: "100%", sm: 200 },
+                height: 32,
+                background: colors.primary[400],
+              }}
               options={options}
               value={selectedValue}
               onChange={(_event, newValue) => setSelectedValue(newValue || "")}
