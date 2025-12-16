@@ -24,6 +24,8 @@ import {
   Snackbar,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import { useMediaQuery } from "@mui/material";
+
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import CancelIcon from "@mui/icons-material/Cancel";
 import type { RootState } from "../../../store/store";
@@ -37,6 +39,8 @@ import useOrderHistoryy from "./OrderHistory.hook";
 const OrderHistoryScreen = () => {
   const navigate = useNavigate();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const { orders, isLoading, error } = useOrderHistory();
 
   const {
@@ -153,7 +157,9 @@ const OrderHistoryScreen = () => {
         throw new Error("Vui lòng đăng nhập để thực hiện hành động này");
       }
 
-      const apiUrl = (import.meta.env.VITE_BASE_URL || "https://www.hecommerce.shop") + "/api";
+      const apiUrl =
+        (import.meta.env.VITE_BASE_URL || "https://www.hecommerce.shop") +
+        "/api";
       const response = await fetch(
         `${apiUrl}/customers/orders/${selectedOrder.id}/status`,
         {
@@ -196,7 +202,9 @@ const OrderHistoryScreen = () => {
     } catch (error: any) {
       console.error("Lỗi khi xác nhận nhận hàng:", error);
       const errorMessage =
-        error?.message || error?.response?.data?.message || "Lỗi khi xác nhận nhận hàng";
+        error?.message ||
+        error?.response?.data?.message ||
+        "Lỗi khi xác nhận nhận hàng";
       setSnackbar({
         open: true,
         message: `❌ ${errorMessage}`,
@@ -272,6 +280,52 @@ const OrderHistoryScreen = () => {
                   </Button>
                 </CardContent>
               </Card>
+            ) : isMobile ? (
+              /* render trên mobile thì dùng CARD thay vì Table */
+              <Stack spacing={2}>
+                {orders.map((order) => (
+                  <Card key={order.id} sx={{ borderRadius: 2 }}>
+                    <CardContent>
+                      <Typography
+                        fontWeight={600}
+                        sx={{
+                          color: "#1976d2",
+                          cursor: "pointer",
+                          mb: 0.5,
+                        }}
+                        onClick={() => handleViewDetails(order)}
+                      >
+                        {order.orderCode}
+                      </Typography>
+
+                      <Typography variant="body2" color="textSecondary">
+                        {formatDateWithoutTimezoneShift(order.createdAt)}
+                      </Typography>
+
+                      <Typography fontWeight={600} sx={{ mt: 1 }}>
+                        {formatCurrency(order.total)}
+                      </Typography>
+
+                      <Chip
+                        label={getStatusLabel(order.status)}
+                        color={getStatusColor(order.status)}
+                        size="small"
+                        sx={{ mt: 1 }}
+                      />
+
+                      <Button
+                        fullWidth
+                        size="small"
+                        startIcon={<VisibilityIcon />}
+                        onClick={() => handleViewDetails(order)}
+                        sx={{ mt: 2, textTransform: "none" }}
+                      >
+                        Xem chi tiết
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </Stack>
             ) : (
               /* Orders Table */
               <TableContainer
@@ -419,7 +473,9 @@ const OrderHistoryScreen = () => {
                           Ngày tạo:
                         </Typography>
                         <Typography variant="body2" fontWeight={600}>
-                          {formatDateWithoutTimezoneShift(selectedOrder.createdAt)}
+                          {formatDateWithoutTimezoneShift(
+                            selectedOrder.createdAt
+                          )}
                         </Typography>
                       </Box>
                       <Box display="flex" justifyContent="space-between">
